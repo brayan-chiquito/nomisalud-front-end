@@ -81,6 +81,13 @@ jobs:
           name: coverage-report
           path: coverage/
 
+      - name: Verify coverage file
+        run: |
+          echo "=== Contenido de coverage/ ==="
+          ls -la coverage/ || echo "Directorio coverage/ no encontrado"
+          echo "=== Verificando lcov.info ==="
+          [ -f coverage/lcov.info ] && echo "lcov.info encontrado ✓" || echo "lcov.info NO encontrado ✗"
+
       - name: SonarCloud Analysis
         uses: SonarSource/sonarcloud-github-action@master
         env:
