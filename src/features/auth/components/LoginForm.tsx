@@ -35,7 +35,7 @@ export function LoginForm() {
       // Reemplazar con: const response = await loginService({ email, password })
       //                 localStorage.setItem('access_token', response.accessToken)
       const MOCK_EMAIL = 'admin@nomisalud.com'
-      const MOCK_PASSWORD = 'Admin1234'
+      const MOCK_PASSWORD = 'Admin12345'
       const isValid = email === MOCK_EMAIL && password === MOCK_PASSWORD
 
       if (!isValid) throw new Error('invalid_credentials')
