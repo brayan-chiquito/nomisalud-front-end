@@ -40,7 +40,7 @@ export function LoginForm() {
 
       if (!isValid) throw new Error('invalid_credentials')
 
-      // TODO: redirigir a la ruta correcta según el rol del usuario si aplica
+      // TODO: redirigir a la ruta correcta según el rol del usuario si aplica xd
       setFormState('success')
       setTimeout(() => navigate('/dashboard'), 1500)
     } catch {
