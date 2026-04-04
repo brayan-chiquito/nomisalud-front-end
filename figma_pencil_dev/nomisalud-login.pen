@@ -1,0 +1,825 @@
+{
+  "version": "2.10",
+  "children": [
+    {
+      "type": "frame",
+      "id": "bi8Au",
+      "x": -111,
+      "y": -52,
+      "name": "Frame",
+      "clip": true,
+      "width": 800,
+      "height": 693,
+      "fill": "#F1F5F9",
+      "layout": "vertical",
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "5wuSt",
+          "name": "card",
+          "width": 400,
+          "fill": "#FFFFFF",
+          "cornerRadius": 12,
+          "effect": {
+            "type": "shadow",
+            "shadowType": "outer",
+            "color": "#0000001A",
+            "offset": {
+              "x": 0,
+              "y": 8
+            },
+            "blur": 32
+          },
+          "layout": "vertical",
+          "gap": 20,
+          "padding": 40,
+          "children": [
+            {
+              "type": "frame",
+              "id": "mqiHF",
+              "name": "logoSection",
+              "width": "fill_container",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "UVeuL",
+                  "name": "logoImg",
+                  "width": 150,
+                  "height": 100,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../src/assets/logo.png",
+                    "mode": "fit"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "k8slL",
+              "name": "subtitle",
+              "fill": "#6B7280",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Inicia sesión en tu cuenta",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "mQelr",
+              "name": "emailGroup",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 6,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "iAEd4",
+                  "name": "emailLabel",
+                  "fill": "#374151",
+                  "content": "Correo electrónico",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "jfa5R",
+                  "name": "emailInput",
+                  "width": "fill_container",
+                  "height": 46,
+                  "fill": "#F9FAFB",
+                  "cornerRadius": 8,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#D1D5DB"
+                  },
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "HTnas",
+                      "name": "emailIcon",
+                      "width": 16,
+                      "height": 16,
+                      "iconFontName": "mail",
+                      "iconFontFamily": "lucide",
+                      "fill": "#9CA3AF"
+                    },
+                    {
+                      "type": "text",
+                      "id": "rpzvC",
+                      "name": "emailPlaceholder",
+                      "fill": "#9CA3AF",
+                      "content": "correo@ejemplo.com",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "YZQEZ",
+              "name": "passwordGroup",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 6,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "KmS59",
+                  "name": "passwordLabel",
+                  "fill": "#374151",
+                  "content": "Contraseña",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "O5OPt",
+                  "name": "passwordInput",
+                  "width": "fill_container",
+                  "height": 46,
+                  "fill": "#F9FAFB",
+                  "cornerRadius": 8,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#D1D5DB"
+                  },
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "lsjpn",
+                      "name": "passwordDots",
+                      "fill": "#C0C0C0",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "••••••••",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "icon_font",
+                      "id": "Y8HpS",
+                      "name": "eyeIcon",
+                      "width": 16,
+                      "height": 16,
+                      "iconFontName": "eye",
+                      "iconFontFamily": "lucide",
+                      "fill": "#9CA3AF"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "dvk0Q",
+              "name": "forgotLink",
+              "fill": "#2563EB",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "¿Olvidaste tu contraseña?",
+              "textAlign": "right",
+              "fontFamily": "Inter",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "mOUcL",
+              "name": "loginBtn",
+              "width": "fill_container",
+              "height": 48,
+              "fill": "#2563EB",
+              "cornerRadius": 8,
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#2563EB40",
+                "offset": {
+                  "x": 0,
+                  "y": 2
+                },
+                "blur": 8
+              },
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "lDJ6M",
+                  "name": "btnText",
+                  "fill": "#FFFFFF",
+                  "content": "Iniciar sesión",
+                  "fontFamily": "Inter",
+                  "fontSize": 15,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "CehOZ",
+              "name": "copyright",
+              "fill": "#9CA3AF",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "© 2025 Nomisalud. Todos los derechos reservados.",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "NjnDO",
+      "x": 769,
+      "y": -52,
+      "name": "Login - Estado Error",
+      "width": 800,
+      "height": 693,
+      "fill": "#F1F5F9",
+      "layout": "vertical",
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "MVUHr",
+          "name": "errCard",
+          "width": 400,
+          "fill": "#FFFFFF",
+          "cornerRadius": 12,
+          "effect": {
+            "type": "shadow",
+            "shadowType": "outer",
+            "color": "#0000001A",
+            "offset": {
+              "x": 0,
+              "y": 8
+            },
+            "blur": 32
+          },
+          "layout": "vertical",
+          "gap": 20,
+          "padding": 40,
+          "children": [
+            {
+              "type": "frame",
+              "id": "3hvtt",
+              "name": "errLogoSec",
+              "width": "fill_container",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "UhF3J",
+                  "name": "errLogoImg",
+                  "width": 150,
+                  "height": 100,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../src/assets/logo.png",
+                    "mode": "fit"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "Ase33",
+              "name": "errSubtitle",
+              "fill": "#6B7280",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Inicia sesión en tu cuenta",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "Kh2Lv",
+              "name": "errAlert",
+              "width": "fill_container",
+              "fill": "#FEF2F2",
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#FECACA"
+              },
+              "gap": 10,
+              "padding": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "Wd6eC",
+                  "name": "errAlertIcon",
+                  "width": 18,
+                  "height": 18,
+                  "iconFontName": "circle-alert",
+                  "iconFontFamily": "lucide",
+                  "fill": "#DC2626"
+                },
+                {
+                  "type": "text",
+                  "id": "z1qkx",
+                  "name": "errAlertText",
+                  "fill": "#DC2626",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Correo o contraseña incorrectos. Por favor, intenta de nuevo.",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ewpCX",
+              "name": "errEmailGroup",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 6,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "anB35",
+                  "name": "errEmailLabel",
+                  "fill": "#374151",
+                  "content": "Correo electrónico",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "oYZWe",
+                  "name": "errEmailInput",
+                  "width": "fill_container",
+                  "height": 46,
+                  "fill": "#FFF5F5",
+                  "cornerRadius": 8,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#DC2626"
+                  },
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "QZeVa",
+                      "name": "errEmailIcon",
+                      "width": 16,
+                      "height": 16,
+                      "iconFontName": "mail",
+                      "iconFontFamily": "lucide",
+                      "fill": "#9CA3AF"
+                    },
+                    {
+                      "type": "text",
+                      "id": "HOP1V",
+                      "name": "errEmailPh",
+                      "fill": "#9CA3AF",
+                      "content": "correo@ejemplo.com",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "e4DHr",
+              "name": "errPassGroup",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 6,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "032kV",
+                  "name": "errPassLabel",
+                  "fill": "#374151",
+                  "content": "Contraseña",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "LSbxA",
+                  "name": "errPassInput",
+                  "width": "fill_container",
+                  "height": 46,
+                  "fill": "#FFF5F5",
+                  "cornerRadius": 8,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#DC2626"
+                  },
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "k1uGK",
+                      "name": "errPassDots",
+                      "fill": "#C0C0C0",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "••••••••",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "icon_font",
+                      "id": "98KCl",
+                      "name": "errEyeIcon",
+                      "width": 16,
+                      "height": 16,
+                      "iconFontName": "eye",
+                      "iconFontFamily": "lucide",
+                      "fill": "#9CA3AF"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "p9NG4",
+              "name": "errForgot",
+              "fill": "#2563EB",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "¿Olvidaste tu contraseña?",
+              "textAlign": "right",
+              "fontFamily": "Inter",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "PVb0B",
+              "name": "errBtn",
+              "width": "fill_container",
+              "height": 48,
+              "fill": "#DC2626",
+              "cornerRadius": 8,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "2yqQV",
+                  "name": "errBtnText",
+                  "fill": "#FFFFFF",
+                  "content": "Intentar de nuevo",
+                  "fontFamily": "Inter",
+                  "fontSize": 15,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "aXNKU",
+              "name": "errCopyright",
+              "fill": "#9CA3AF",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "© 2025 Nomisalud. Todos los derechos reservados.",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "JCylB",
+      "x": 1626,
+      "y": -52,
+      "name": "Login - Estado Éxito",
+      "width": 800,
+      "height": 693,
+      "fill": "#F1F5F9",
+      "layout": "vertical",
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "nJZXy",
+          "name": "sucCard",
+          "width": 400,
+          "fill": "#FFFFFF",
+          "cornerRadius": 12,
+          "effect": {
+            "type": "shadow",
+            "shadowType": "outer",
+            "color": "#0000001A",
+            "offset": {
+              "x": 0,
+              "y": 8
+            },
+            "blur": 32
+          },
+          "layout": "vertical",
+          "gap": 20,
+          "padding": 40,
+          "children": [
+            {
+              "type": "frame",
+              "id": "gxuZg",
+              "name": "sucLogoSec",
+              "width": "fill_container",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "FHvQ2",
+                  "name": "sucLogoImg",
+                  "width": 150,
+                  "height": 100,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../src/assets/logo.png",
+                    "mode": "fit"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "x0nNa",
+              "name": "sucSubtitle",
+              "fill": "#6B7280",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Inicia sesión en tu cuenta",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "1gf5x",
+              "name": "sucAlert",
+              "width": "fill_container",
+              "fill": "#F0FDF4",
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#BBF7D0"
+              },
+              "gap": 10,
+              "padding": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "S5B5k",
+                  "name": "sucAlertIcon",
+                  "width": 18,
+                  "height": 18,
+                  "iconFontName": "circle-check",
+                  "iconFontFamily": "lucide",
+                  "fill": "#16A34A"
+                },
+                {
+                  "type": "text",
+                  "id": "bHKdP",
+                  "name": "sucAlertText",
+                  "fill": "#16A34A",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "¡Inicio de sesión exitoso! Redirigiendo al sistema...",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "4XDp1",
+              "name": "sucEmailGroup",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 6,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "nAHy9",
+                  "name": "sucEmailLabel",
+                  "fill": "#374151",
+                  "content": "Correo electrónico",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "w0WMk",
+                  "name": "sucEmailInput",
+                  "width": "fill_container",
+                  "height": 46,
+                  "fill": "#F9FAFB",
+                  "cornerRadius": 8,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#D1D5DB"
+                  },
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "g6SJK",
+                      "name": "sucEmailIcon",
+                      "width": 16,
+                      "height": 16,
+                      "iconFontName": "mail",
+                      "iconFontFamily": "lucide",
+                      "fill": "#9CA3AF"
+                    },
+                    {
+                      "type": "text",
+                      "id": "F7zVd",
+                      "name": "sucEmailPh",
+                      "fill": "#374151",
+                      "content": "usuario@empresa.com",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "DFazG",
+              "name": "sucPassGroup",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 6,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "6HRgy",
+                  "name": "sucPassLabel",
+                  "fill": "#374151",
+                  "content": "Contraseña",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "49hR1",
+                  "name": "sucPassInput",
+                  "width": "fill_container",
+                  "height": 46,
+                  "fill": "#F0FDF4",
+                  "cornerRadius": 8,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#16A34A"
+                  },
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "gn1mv",
+                      "name": "sucPassDots",
+                      "fill": "#374151",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "••••••••",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "icon_font",
+                      "id": "zZl6E",
+                      "name": "sucCheckIcon",
+                      "width": 16,
+                      "height": 16,
+                      "iconFontName": "check",
+                      "iconFontFamily": "lucide",
+                      "fill": "#16A34A"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "z4Zbc",
+              "name": "sucForgot",
+              "fill": "#2563EB",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "¿Olvidaste tu contraseña?",
+              "textAlign": "right",
+              "fontFamily": "Inter",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "KvxlE",
+              "name": "sucBtn",
+              "width": "fill_container",
+              "height": 48,
+              "fill": "#16A34A",
+              "cornerRadius": 8,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "d14ML",
+                  "name": "sucBtnText",
+                  "fill": "#FFFFFF",
+                  "content": "¡Bienvenido!",
+                  "fontFamily": "Inter",
+                  "fontSize": 15,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "92Q1e",
+              "name": "sucCopyright",
+              "fill": "#9CA3AF",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "© 2025 Nomisalud. Todos los derechos reservados.",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
