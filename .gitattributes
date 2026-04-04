@@ -1,0 +1,13 @@
+# Normaliza todos los archivos de texto a LF al hacer commit
+* text=auto eol=lf
+
+# Archivos binarios — sin conversión
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff2 binary
+*.woff binary
+*.ttf binary
+*.eot binary
