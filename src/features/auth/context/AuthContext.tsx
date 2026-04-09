@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, type ReactNode } from 'react'
 import type { AuthUser } from '../types'
 
-interface AuthContextValue {
+export interface AuthContextValue {
   user: AuthUser | null
   isAuthenticated: boolean
   login: (token: string) => void
