@@ -29,8 +29,12 @@ http.interceptors.response.use(
   (response) => response,
   (error: unknown) => {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
-      localStorage.removeItem('access_token')
-      window.location.href = '/login'
+      const requestUrl = error.config?.url ?? ''
+      const isAuthRequest = requestUrl.includes('/auth/login')
+      if (!isAuthRequest) {
+        localStorage.removeItem('access_token')
+        window.location.href = '/login'
+      }
     }
     return Promise.reject(error)
   },

@@ -9,6 +9,14 @@ vi.mock('react-router-dom', async (importOriginal) => {
 
 vi.mock('@/assets/logo.png', () => ({ default: 'logo.png' }))
 
+vi.mock('@/features/auth/context/AuthContext', () => ({
+  useAuth: () => ({ login: vi.fn() }),
+}))
+
+vi.mock('@/features/auth/services/auth.service', () => ({
+  loginService: vi.fn(),
+}))
+
 describe('LoginPage', () => {
   it('renderiza el formulario de login', () => {
     render(<LoginPage />)
