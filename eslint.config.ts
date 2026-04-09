@@ -32,4 +32,13 @@ export default defineConfig([
       'react-hooks/exhaustive-deps': 'warn',
     },
   },
+  {
+    // Los archivos de contexto exportan por convención tanto el Provider (componente)
+    // como el hook use<Nombre>. Fast Refresh sigue funcionando correctamente
+    // porque el Provider es el único componente renderizable del archivo.
+    files: ['**/context/**/*.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ])

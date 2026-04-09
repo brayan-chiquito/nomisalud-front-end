@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom'
 import { LoginPage } from '@/pages/LoginPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
+import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute'
 
 export const router = createBrowserRouter([
   {
@@ -13,10 +14,12 @@ export const router = createBrowserRouter([
     element: <LoginPage />,
   },
   {
-    // TODO: proteger esta ruta con un guard de autenticación
-    // cuando esté implementado el sistema de auth (verificar token válido)
     path: '/dashboard',
-    element: <DashboardPage />,
+    element: (
+      <ProtectedRoute>
+        <DashboardPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '*',

@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Mail, CircleAlert, CircleCheck, Loader2 } from 'lucide-react'
 import logo from '@/assets/logo.png'
 import type { LoginFormState } from '../types'
-
-// TODO: importar loginService cuando esté implementado el backend
-// import { loginService } from '../services/auth.service'
+import { loginService } from '../services/auth.service'
+import { useAuth } from '../context/AuthContext'
 
 export function LoginForm() {
   const navigate = useNavigate()
+  const { login } = useAuth()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -21,31 +21,14 @@ export function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-
-    // TODO: validar campos con una librería de validación (ej. zod + react-hook-form)
-    // Ejemplo mínimo:
-    // if (!email || !password) return
-
     setFormState('loading')
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800))
-
-      // TODO: ELIMINAR — credenciales hardcodeadas solo para pruebas visuales.
-      // Reemplazar con: const response = await loginService({ email, password })
-      //                 localStorage.setItem('access_token', response.accessToken)
-      const MOCK_EMAIL = 'admin@nomisalud.com'
-      const MOCK_PASSWORD = 'Admin1234'
-      const isValid = email === MOCK_EMAIL && password === MOCK_PASSWORD
-
-      if (!isValid) throw new Error('invalid_credentials')
-
-      // TODO: redirigir a la ruta correcta según el rol del usuario si aplica xd
+      const response = await loginService({ email, password })
+      login(response.access_token)
       setFormState('success')
       setTimeout(() => navigate('/dashboard'), 1500)
     } catch {
-      // TODO: distinguir errores (credenciales incorrectas vs. error de red)
-      // y mostrar mensajes específicos según el código de error del backend
       setFormState('error')
     }
   }
@@ -107,7 +90,10 @@ export function LoginForm() {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value)
+                  if (isError) setFormState('idle')
+                }}
                 placeholder="correo@ejemplo.com"
                 disabled={isSuccess || isLoading}
                 autoComplete="email"
@@ -135,7 +121,10 @@ export function LoginForm() {
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value)
+                  if (isError) setFormState('idle')
+                }}
                 placeholder="••••••••"
                 disabled={isSuccess || isLoading}
                 autoComplete="current-password"
@@ -155,7 +144,6 @@ export function LoginForm() {
 
           {/* Link olvidé mi contraseña */}
           <div className="mb-5 text-right">
-            {/* TODO: conectar con el flujo de recuperación de contraseña */}
             <button
               type="button"
               className="text-[12px] text-blue-600 hover:underline focus:outline-none"

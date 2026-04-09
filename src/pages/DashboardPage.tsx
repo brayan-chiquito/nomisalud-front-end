@@ -1,6 +1,3 @@
-// TODO: reemplazar este placeholder con el layout real del dashboard
-// cuando esté definido el diseño de la vista principal post-login
-
 export function DashboardPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-slate-100">
