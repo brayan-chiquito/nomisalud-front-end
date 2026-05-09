@@ -63,6 +63,22 @@ npm run dev
 
 La aplicación estará disponible en http://localhost:3000.
 
+## Rutas
+
+Rutas definidas en `src/router/index.tsx`. Las marcadas como **protegidas** requieren sesión válida (JWT); si no hay token, el usuario es redirigido al login.
+
+| Ruta | Acceso | Descripción |
+|------|--------|-------------|
+| `/` | Pública | Inicio de sesión |
+| `/login` | Pública | Inicio de sesión (alias) |
+| `/dashboard` | Protegida | Panel principal tras autenticación |
+| `/portal/mi-tramite` | Protegida | Portal colaborador: seguimiento del trámite |
+| `/portal/radicar-incapacidad` | Protegida | Portal colaborador: radicar incapacidad (carga de archivo) |
+| `/incapacidad/revision-ia` | Protegida | Revisión de incapacidad asistida por IA |
+| `*` (cualquier otra) | Pública | Página 404 |
+
+> Tras subir un archivo en radicación, la app puede navegar a `/incapacidad/revision-ia` pasando datos por el `state` del router (por ejemplo respuesta del upload y nombre del archivo).
+
 ## Scripts disponibles
 
 | Comando | Descripción |
