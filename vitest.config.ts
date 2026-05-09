@@ -30,6 +30,7 @@ export default defineConfig({
         'src/App.tsx',
         'src/router/**',
         'src/services/http.ts',
+        'src/services/uploadHttp.ts',
         'vite.config.ts',
         'vitest.config.ts',
       ],
