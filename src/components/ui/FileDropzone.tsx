@@ -1,7 +1,7 @@
 import { useCallback, useId, useRef, useState } from 'react'
 import { CloudUpload, FolderOpen } from 'lucide-react'
 
-export interface FileDropzoneProps {
+export type FileDropzoneProps = Readonly<{
   /** Valor del atributo `accept` del input (MIME y/o extensiones). */
   accept: string
   /** Tamaño máximo mostrado en la leyenda (MB). */
@@ -12,7 +12,7 @@ export interface FileDropzoneProps {
   uploadProgress: number | null
   disabled?: boolean
   browseButtonLabel?: string
-}
+}>
 
 /**
  * Zona dual: arrastrar y soltar + selección por clic (input file).

@@ -34,7 +34,7 @@ uploadHttp.interceptors.response.use(
       const isAuthRequest = requestUrl.includes('/auth/login')
       if (!isAuthRequest) {
         localStorage.removeItem('access_token')
-        window.location.href = '/login'
+        globalThis.location.href = '/login'
       }
     }
     return Promise.reject(error)

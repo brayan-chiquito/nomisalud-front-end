@@ -110,4 +110,23 @@ describe('uploadIncapacityFile', () => {
       uploadIncapacityFile(new File(['x'], 'a.pdf', { type: 'application/pdf' })),
     ).rejects.toThrow('Error interno')
   })
+
+  it('ignora detail en lista sin msg útil y usa message si existe', async () => {
+    const err = new AxiosError('fail')
+    err.response = {
+      status: 422,
+      data: { detail: [{}], message: 'Validación' },
+    } as AxiosError['response']
+    vi.mocked(uploadHttp.post).mockRejectedValue(err)
+    await expect(
+      uploadIncapacityFile(new File(['x'], 'a.pdf', { type: 'application/pdf' })),
+    ).rejects.toThrow('Validación')
+  })
+
+  it('lanza Error genérico si la causa no es Error', async () => {
+    vi.mocked(uploadHttp.post).mockRejectedValue('fatal')
+    await expect(
+      uploadIncapacityFile(new File(['x'], 'a.pdf', { type: 'application/pdf' })),
+    ).rejects.toThrow(/No se pudo completar la carga/)
+  })
 })

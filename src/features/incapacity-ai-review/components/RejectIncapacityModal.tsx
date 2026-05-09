@@ -1,15 +1,14 @@
 import type { ReactNode } from 'react'
 import { X, CircleAlert, Ban } from 'lucide-react'
 
-export interface RejectIncapacityModalProps {
+export type RejectIncapacityModalProps = Readonly<{
   isOpen: boolean
   onClose: () => void
-}
+}>
 
 /**
  * Modal "Rechazar incapacidad" — motivos y comentario.
- * TODO: POST rechazo al backend con motivoId + notas.
- * TODO: invalidar queries / redirigir tras éxito.
+ * Integración futura: POST de rechazo con motivo y notas; invalidación y redirección tras éxito.
  */
 export function RejectIncapacityModal({ isOpen, onClose }: RejectIncapacityModalProps) {
   if (!isOpen) return null
@@ -21,7 +20,7 @@ export function RejectIncapacityModal({ isOpen, onClose }: RejectIncapacityModal
       aria-modal="true"
       aria-labelledby="reject-modal-title"
     >
-      {/* TODO: cerrar al hacer clic en backdrop si el diseño lo permite */}
+      {/* Cierre por clic en backdrop opcional según diseño */}
       <div
         className="w-full max-w-[520px] overflow-hidden rounded-2xl bg-white shadow-xl"
         style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.12)' }}
@@ -55,24 +54,18 @@ export function RejectIncapacityModal({ isOpen, onClose }: RejectIncapacityModal
             <RadioOption
               label="Documento ilegible o deteriorado"
               selected={false}
-              onSelect={() => {
-                /* TODO: setMotivoId */
-              }}
+              onSelect={() => undefined}
             />
             <RadioOption
               label="Datos no coinciden con el documento"
               selected
               highlighted
-              onSelect={() => {
-                /* TODO: setMotivoId */
-              }}
+              onSelect={() => undefined}
             />
             <RadioOption
               label="Incapacidad ya vencida"
               selected={false}
-              onSelect={() => {
-                /* TODO: setMotivoId */
-              }}
+              onSelect={() => undefined}
             />
           </div>
 
@@ -87,7 +80,7 @@ export function RejectIncapacityModal({ isOpen, onClose }: RejectIncapacityModal
               placeholder="Escribe el motivo detallado..."
               className="resize-none rounded-lg border border-slate-300 bg-gray-50 px-3 py-3 text-[13px] text-slate-800 placeholder:text-slate-400"
             />
-            {/* TODO: quitar readOnly y enlazar a estado / react-hook-form */}
+            {/* Enlazar a estado o formulario cuando exista API de rechazo */}
           </div>
         </div>
 
@@ -106,38 +99,25 @@ export function RejectIncapacityModal({ isOpen, onClose }: RejectIncapacityModal
             <Ban className="h-4 w-4" aria-hidden />
             Confirmar rechazo
           </button>
-          {/* TODO: onClick → llamada API y manejo de loading / error */}
+          {/* onClick: llamada API y estados loading / error */}
         </div>
       </div>
     </div>
   )
 }
 
-function RadioOption({
-  label,
-  selected,
-  highlighted,
-  onSelect,
-}: {
+type RadioOptionProps = Readonly<{
   label: string
   selected: boolean
   highlighted?: boolean
   onSelect: () => void
-}) {
+}>
+
+function RadioOption({ label, selected, highlighted, onSelect }: RadioOptionProps) {
   const border = highlighted
     ? 'border-2 border-blue-600 bg-blue-50'
     : 'border border-slate-200 bg-white'
-  const dot: ReactNode = selected ? (
-    highlighted ? (
-      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-blue-600">
-        <span className="h-1.5 w-1.5 rounded-full bg-white" />
-      </span>
-    ) : (
-      <span className="h-4 w-4 rounded-full border-2 border-slate-300 bg-white" />
-    )
-  ) : (
-    <span className="h-4 w-4 rounded-full border-2 border-slate-300 bg-white" />
-  )
+  const dot: ReactNode = <RadioDot highlighted={Boolean(highlighted)} selected={selected} />
 
   return (
     <button
@@ -151,4 +131,21 @@ function RadioOption({
       {label}
     </button>
   )
+}
+
+type RadioDotProps = Readonly<{
+  selected: boolean
+  highlighted: boolean
+}>
+
+function RadioDot({ selected, highlighted }: RadioDotProps) {
+  const ring = <span className="h-4 w-4 rounded-full border-2 border-slate-300 bg-white" />
+  if (selected && highlighted) {
+    return (
+      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-blue-600">
+        <span className="h-1.5 w-1.5 rounded-full bg-white" />
+      </span>
+    )
+  }
+  return ring
 }

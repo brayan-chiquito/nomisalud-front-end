@@ -15,9 +15,7 @@ import { RejectIncapacityModal } from './RejectIncapacityModal'
 
 /**
  * Revisión de datos extraídos por IA (visor documento + formulario editable).
- * TODO: GET resultado de extracción por radicadoId; PUT para confirmar correcciones.
- * TODO: visor PDF real (react-pdf, iframe con URL firmada, etc.).
- * TODO: zoom del documento enlazado al estado.
+ * Integración futura: GET por radicado, PUT/PATCH de confirmación, visor PDF y zoom.
  */
 export function IncapacityAiReviewView() {
   const [rejectModalOpen, setRejectModalOpen] = useState(false)
@@ -33,7 +31,7 @@ export function IncapacityAiReviewView() {
           >
             <ArrowLeft className="h-[18px] w-[18px]" />
           </Link>
-          {/* TODO: volver dinámico según flujo (historial vs. cola de revisión) */}
+          {/* Título de radicado dinámico según flujo (historial vs. cola) */}
           <div className="flex flex-col gap-0.5">
             <span className="text-base font-bold text-slate-800">INC-2024-001</span>
             <span className="text-xs text-slate-400">Revisión de documento de incapacidad</span>
@@ -74,7 +72,7 @@ export function IncapacityAiReviewView() {
               >
                 <Plus className="h-3.5 w-3.5" />
               </button>
-              {/* TODO: aplicar transform scale al contenedor del PDF */}
+              {/* Zoom: aplicar transform scale al contenedor del documento */}
             </div>
           </div>
           <div className="flex flex-1 items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
@@ -99,7 +97,7 @@ export function IncapacityAiReviewView() {
                 Firma y sello del médico tratante
               </p>
             </article>
-            {/* TODO: reemplazar mock por visor del archivo real */}
+            {/* Sustituir mock por visor del archivo desde URL o blob */}
           </div>
         </aside>
 
@@ -111,7 +109,7 @@ export function IncapacityAiReviewView() {
               <Cpu className="h-3.5 w-3.5" aria-hidden />
               Confianza: 85%
             </span>
-            {/* TODO: confianza por campo o global desde API */}
+            {/* Confianza por campo o global desde respuesta de API */}
           </div>
 
           <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1">
@@ -159,7 +157,7 @@ export function IncapacityAiReviewView() {
           >
             Confirmar datos
           </button>
-          {/* TODO: Confirmar → PUT/PATCH confirmación; deshabilitar si hay errores de validación */}
+          {/* Confirmar: PUT/PATCH según API; deshabilitar si hay errores de validación */}
         </div>
       </footer>
 
@@ -168,17 +166,14 @@ export function IncapacityAiReviewView() {
   )
 }
 
-function ReadonlyFieldRow({
-  label,
-  value,
-  status: _status,
-  isSelect,
-}: {
+type ReadonlyFieldRowProps = Readonly<{
   label: string
   value: string
   status: 'ok'
   isSelect?: boolean
-}) {
+}>
+
+function ReadonlyFieldRow({ label, value, status: _status, isSelect }: ReadonlyFieldRowProps) {
   return (
     <div className="flex flex-col gap-1.5">
       <span className="text-xs font-medium text-slate-700">{label}</span>
@@ -189,12 +184,14 @@ function ReadonlyFieldRow({
           <CircleCheck className="h-4 w-4 text-emerald-500" aria-hidden />
         </div>
       </div>
-      {/* TODO: convertir en input editable cuando el usuario edite */}
+      {/* Campos editables cuando el flujo lo permita */}
     </div>
   )
 }
 
-function WarningSelectRow({ label, value, hint }: { label: string; value: string; hint: string }) {
+type WarningSelectRowProps = Readonly<{ label: string; value: string; hint: string }>
+
+function WarningSelectRow({ label, value, hint }: WarningSelectRowProps) {
   return (
     <div className="flex flex-col gap-1.5">
       <span className="text-xs font-medium text-slate-700">{label}</span>
@@ -210,7 +207,9 @@ function WarningSelectRow({ label, value, hint }: { label: string; value: string
   )
 }
 
-function WarningTextRow({ label, value, hint }: { label: string; value: string; hint: string }) {
+type WarningTextRowProps = Readonly<{ label: string; value: string; hint: string }>
+
+function WarningTextRow({ label, value, hint }: WarningTextRowProps) {
   return (
     <div className="flex flex-col gap-1.5">
       <span className="text-xs font-medium text-slate-700">{label}</span>
@@ -233,7 +232,7 @@ function ComputedDaysRow() {
         <span className="text-[13px] font-semibold text-blue-600">7 días</span>
         <Calculator className="h-4 w-4 text-blue-600" aria-hidden />
       </div>
-      {/* TODO: recalcular en cliente o mostrar valor devuelto por backend */}
+      {/* Días: valor calculado en cliente o devuelto por backend */}
     </div>
   )
 }

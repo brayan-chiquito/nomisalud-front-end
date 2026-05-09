@@ -8,25 +8,37 @@ export interface UploadIncapacityOptions {
   signal?: AbortSignal
 }
 
+function detailStringFromUnknown(detail: unknown): string | null {
+  if (typeof detail === 'string') return detail
+  if (Array.isArray(detail) && detail[0] && typeof detail[0] === 'object') {
+    const msg = (detail[0] as { msg?: string }).msg
+    if (typeof msg === 'string') return msg
+  }
+  return null
+}
+
+function messageFromResponseData(data: object): string | null {
+  if ('detail' in data) {
+    const fromDetail = detailStringFromUnknown((data as { detail: unknown }).detail)
+    if (fromDetail) return fromDetail
+  }
+  if ('message' in data && typeof (data as { message: unknown }).message === 'string') {
+    return (data as { message: string }).message
+  }
+  return null
+}
+
 function messageFromAxiosError(error: unknown): string {
+  const fallback = 'No se pudo completar la carga. Intenta de nuevo.'
   if (!axios.isAxiosError(error)) {
-    return 'No se pudo completar la carga. Intenta de nuevo.'
+    return fallback
   }
   const data = error.response?.data
   if (data && typeof data === 'object') {
-    if ('detail' in data) {
-      const detail = (data as { detail: unknown }).detail
-      if (typeof detail === 'string') return detail
-      if (Array.isArray(detail) && detail[0] && typeof detail[0] === 'object') {
-        const msg = (detail[0] as { msg?: string }).msg
-        if (typeof msg === 'string') return msg
-      }
-    }
-    if ('message' in data && typeof (data as { message: unknown }).message === 'string') {
-      return (data as { message: string }).message
-    }
+    const msg = messageFromResponseData(data)
+    if (msg) return msg
   }
-  return 'No se pudo completar la carga. Intenta de nuevo.'
+  return fallback
 }
 
 /**

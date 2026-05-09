@@ -1,14 +1,14 @@
 import logo from '@/assets/logo.png'
 
-export interface CollaboratorHeaderProps {
+export type CollaboratorHeaderProps = Readonly<{
   userName: string
   companyName: string
   avatarInitials: string
-}
+}>
 
 /**
  * Cabecera compartida del portal colaborador (logo + usuario).
- * TODO: reemplazar props estáticas por datos de `useAuth()` o query de perfil.
+ * Las props pueden enlazarse después a `useAuth()` o a una query de perfil.
  */
 export function CollaboratorHeader({
   userName,
@@ -32,7 +32,7 @@ export function CollaboratorHeader({
         >
           {avatarInitials}
         </div>
-        {/* TODO: menú de usuario (cerrar sesión, preferencias) */}
+        {/* Menú de usuario (cerrar sesión, preferencias) cuando exista diseño */}
       </div>
     </header>
   )

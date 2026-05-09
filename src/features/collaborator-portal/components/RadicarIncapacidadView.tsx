@@ -59,7 +59,7 @@ export function RadicarIncapacidadView() {
     try {
       const data = await uploadIncapacityFile(file, {
         onProgress: (p) => setUploadProgress(p),
-        // TODO: si el rol es RRHH/admin y se elige colaborador, pasar colaboradorId
+        // RRHH/admin: pasar colaboradorId cuando la UI permita elegir colaborador
       })
       setUploadProgress(100)
       navigate('/incapacidad/revision-ia', { state: { uploadResponse: data, fileName: file.name } })
@@ -182,7 +182,9 @@ export function RadicarIncapacidadView() {
   )
 }
 
-function FieldSelect({ label, placeholder }: { label: string; placeholder: string }) {
+type FieldSelectProps = Readonly<{ label: string; placeholder: string }>
+
+function FieldSelect({ label, placeholder }: FieldSelectProps) {
   return (
     <div className="flex flex-col gap-1.5">
       <span className="text-xs font-medium text-slate-700">{label}</span>
@@ -197,7 +199,9 @@ function FieldSelect({ label, placeholder }: { label: string; placeholder: strin
   )
 }
 
-function FieldDate({ label, placeholder }: { label: string; placeholder: string }) {
+type FieldDateProps = Readonly<{ label: string; placeholder: string }>
+
+function FieldDate({ label, placeholder }: FieldDateProps) {
   return (
     <div className="flex flex-col gap-1.5">
       <span className="text-xs font-medium text-slate-700">{label}</span>

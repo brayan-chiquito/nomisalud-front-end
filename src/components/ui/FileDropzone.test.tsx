@@ -119,4 +119,102 @@ describe('FileDropzone', () => {
     expect(clickSpy).toHaveBeenCalled()
     clickSpy.mockRestore()
   })
+
+  it('abre el selector con Espacio en la zona', () => {
+    const clickSpy = vi.spyOn(HTMLInputElement.prototype, 'click')
+    render(
+      <FileDropzone
+        accept="application/pdf"
+        maxSizeLabelMb={10}
+        selectedFile={null}
+        onFileSelected={() => {}}
+        uploadProgress={null}
+      />,
+    )
+    const zone = screen.getByRole('button', { name: /arrastra tu documento aquí/i })
+    fireEvent.keyDown(zone, { key: ' ' })
+    expect(clickSpy).toHaveBeenCalled()
+    clickSpy.mockRestore()
+  })
+
+  it('muestra el nombre del archivo seleccionado', () => {
+    const file = new File(['x'], 'mi-doc.pdf', { type: 'application/pdf' })
+    render(
+      <FileDropzone
+        accept="application/pdf"
+        maxSizeLabelMb={10}
+        selectedFile={file}
+        onFileSelected={() => {}}
+        uploadProgress={null}
+      />,
+    )
+    expect(screen.getByText('mi-doc.pdf')).toBeInTheDocument()
+  })
+
+  it('no abre el picker con teclado cuando está deshabilitado', () => {
+    const clickSpy = vi.spyOn(HTMLInputElement.prototype, 'click')
+    render(
+      <FileDropzone
+        accept="application/pdf"
+        maxSizeLabelMb={10}
+        selectedFile={null}
+        onFileSelected={() => {}}
+        uploadProgress={null}
+        disabled
+      />,
+    )
+    const zone = screen.getByRole('button', { name: /arrastra tu documento aquí/i })
+    fireEvent.keyDown(zone, { key: 'Enter' })
+    expect(clickSpy).not.toHaveBeenCalled()
+    clickSpy.mockRestore()
+  })
+
+  it('abre el selector al hacer clic en la zona principal', () => {
+    const clickSpy = vi.spyOn(HTMLInputElement.prototype, 'click')
+    render(
+      <FileDropzone
+        accept="application/pdf"
+        maxSizeLabelMb={10}
+        selectedFile={null}
+        onFileSelected={() => {}}
+        uploadProgress={null}
+      />,
+    )
+    const zone = screen.getByRole('button', { name: /arrastra tu documento aquí/i })
+    fireEvent.click(zone)
+    expect(clickSpy).toHaveBeenCalled()
+    clickSpy.mockRestore()
+  })
+
+  it('abre el selector desde el botón secundario sin propagar al contenedor', () => {
+    const clickSpy = vi.spyOn(HTMLInputElement.prototype, 'click')
+    render(
+      <FileDropzone
+        accept="application/pdf"
+        maxSizeLabelMb={10}
+        selectedFile={null}
+        onFileSelected={() => {}}
+        uploadProgress={null}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /selecciona un archivo/i }))
+    expect(clickSpy).toHaveBeenCalled()
+    clickSpy.mockRestore()
+  })
+
+  it('restaura el estado visual tras dragLeave', () => {
+    render(
+      <FileDropzone
+        accept="application/pdf"
+        maxSizeLabelMb={10}
+        selectedFile={null}
+        onFileSelected={() => {}}
+        uploadProgress={null}
+      />,
+    )
+    const zone = screen.getByRole('button', { name: /arrastra tu documento aquí/i })
+    fireEvent.dragOver(zone)
+    fireEvent.dragLeave(zone)
+    expect(zone.className).not.toMatch(/border-blue-500 bg-blue-100/)
+  })
 })

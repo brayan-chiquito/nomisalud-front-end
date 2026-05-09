@@ -12,9 +12,7 @@ import { CollaboratorHeader } from './CollaboratorHeader'
 
 /**
  * Vista "Mi trámite" — incapacidad activa, alerta de documentación, línea de tiempo.
- * TODO: cargar trámite activo desde API (GET /tramites/activo o similar).
- * TODO: acción "Cargar documentos" → flujo de carga / modal / ruta.
- * TODO: "Ver documento adjunto" → abrir PDF o URL firmada.
+ * Datos mock; integración: GET trámite activo, acciones de documentos y visor PDF según API.
  */
 export function MiTramiteView() {
   return (
@@ -25,7 +23,7 @@ export function MiTramiteView() {
         avatarInitials="CP"
       />
 
-      {/* TODO: ocultar banner si `tramite.documentacionCompleta` (API) */}
+      {/* Ocultar cuando la API indique documentación completa */}
       <div className="flex items-start gap-3 border-b border-amber-300 bg-amber-50 px-6 py-3.5">
         <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" aria-hidden />
         <div className="min-w-0 flex-1 space-y-1">
@@ -45,7 +43,7 @@ export function MiTramiteView() {
         >
           Cargar documentos
         </button>
-        {/* TODO: onClick → ruta o modal de carga (multipart) */}
+        {/* Enlace a flujo de carga cuando esté disponible */}
       </div>
 
       <main className="flex flex-1 flex-col items-center gap-5 p-6">

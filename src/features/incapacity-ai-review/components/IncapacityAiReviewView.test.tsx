@@ -14,5 +14,16 @@ describe('IncapacityAiReviewView', () => {
     fireEvent.click(screen.getByRole('button', { name: /rechazar con motivo/i }))
     expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(screen.getByText('Rechazar incapacidad')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /^cancelar$/i }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('expone el botón confirmar datos', () => {
+    render(
+      <MemoryRouter>
+        <IncapacityAiReviewView />
+      </MemoryRouter>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /confirmar datos/i }))
   })
 })
