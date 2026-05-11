@@ -2,15 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { DashboardPage } from './DashboardPage'
+import { useAuth } from '@/features/auth/context/AuthContext'
 
 vi.mock('@/features/auth/context/AuthContext', () => ({
-  useAuth: vi.fn(() => ({
-    user: { id: 'u1', email: 'ana.garcia@nomisalud.com', role: 'admin' },
-    isAuthenticated: true,
-    login: vi.fn(),
-    logout: vi.fn(),
-  })),
+  useAuth: vi.fn(),
 }))
+
+const mockUseAuth = vi.mocked(useAuth)
 
 vi.mock('@/features/incapacidades/services/listIncapacidades.service', () => ({
   listIncapacidades: vi.fn(),
@@ -25,6 +23,12 @@ import { listIncapacidades } from '@/features/incapacidades/services/listIncapac
 
 describe('DashboardPage', () => {
   beforeEach(() => {
+    mockUseAuth.mockReturnValue({
+      user: { id: 'u1', email: 'ana.garcia@nomisalud.com', role: 'admin' },
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+    })
     vi.mocked(listIncapacidades).mockResolvedValue({ items: [], total: 0, pages: 0 })
     vi.mocked(fetchIncapacidadKpis).mockResolvedValue({
       totalRecibidas: 0,
@@ -52,5 +56,36 @@ describe('DashboardPage', () => {
       </MemoryRouter>,
     )
     expect(screen.getByText(/ana garcia/i)).toBeInTheDocument()
+  })
+
+  it('muestra "Usuario" e iniciales desde id cuando no hay email', () => {
+    mockUseAuth.mockReturnValue({
+      user: { id: 'ab12cd', email: undefined, role: 'admin' },
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+    })
+    render(
+      <MemoryRouter>
+        <DashboardPage />
+      </MemoryRouter>,
+    )
+    expect(screen.getByText('Usuario')).toBeInTheDocument()
+    expect(screen.getByText('AB')).toBeInTheDocument()
+  })
+
+  it('usa iniciales NS cuando no hay email y el id es demasiado corto', () => {
+    mockUseAuth.mockReturnValue({
+      user: { id: 'x', email: undefined, role: 'admin' },
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+    })
+    render(
+      <MemoryRouter>
+        <DashboardPage />
+      </MemoryRouter>,
+    )
+    expect(screen.getByText('NS')).toBeInTheDocument()
   })
 })

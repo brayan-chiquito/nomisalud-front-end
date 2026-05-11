@@ -27,4 +27,13 @@ describe('RrhhDashboardKpis', () => {
     })
     expect(screen.getByText('Total recibidas')).toBeInTheDocument()
   })
+
+  it('muestra guiones cuando falla la carga de KPIs', async () => {
+    vi.mocked(fetchIncapacidadKpis).mockRejectedValueOnce(new Error('network'))
+    render(<RrhhDashboardKpis />)
+    await waitFor(() => {
+      const dashes = screen.getAllByText('—')
+      expect(dashes.length).toBeGreaterThanOrEqual(4)
+    })
+  })
 })
