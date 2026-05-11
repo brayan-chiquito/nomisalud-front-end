@@ -71,7 +71,7 @@ Rutas definidas en `src/router/index.tsx`. Las marcadas como **protegidas** requ
 |------|--------|-------------|
 | `/` | Pública | Inicio de sesión |
 | `/login` | Pública | Inicio de sesión (alias) |
-| `/dashboard` | Protegida | Panel principal tras autenticación |
+| `/dashboard` | Protegida | Dashboard RRHH: layout con sidebar, KPIs por estado, tabla de incapacidades (`GET /incapacidades`) con filtros estado/tipo/búsqueda y paginación |
 | `/portal/mi-tramite` | Protegida | Portal colaborador: seguimiento del trámite |
 | `/portal/radicar-incapacidad` | Protegida | Portal colaborador: radicar incapacidad (carga de archivo) |
 | `/incapacidad/revision-ia` | Protegida | Revisión de incapacidad asistida por IA |
