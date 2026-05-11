@@ -3,12 +3,13 @@ import { renderHook, waitFor, act } from '@testing-library/react'
 import axios, { AxiosError } from 'axios'
 import { useIncapacidadesList } from './useIncapacidadesList'
 import { listIncapacidades } from '../services/listIncapacidades.service'
+import type { IncapacidadesListResponse } from '../types/listIncapacidades'
 
 vi.mock('../services/listIncapacidades.service', () => ({
   listIncapacidades: vi.fn(),
 }))
 
-const emptyList = { items: [] as const, total: 0, pages: 0 }
+const emptyList: IncapacidadesListResponse = { items: [], total: 0, pages: 0 }
 
 describe('useIncapacidadesList', () => {
   beforeEach(() => {
@@ -203,8 +204,8 @@ describe('useIncapacidadesList', () => {
   })
 
   it('no aplica resultado si el request fue abortado (desmontaje)', async () => {
-    let resolveLoad!: (v: typeof emptyList) => void
-    const deferred = new Promise<typeof emptyList>((r) => {
+    let resolveLoad!: (v: IncapacidadesListResponse) => void
+    const deferred = new Promise<IncapacidadesListResponse>((r) => {
       resolveLoad = r
     })
     vi.mocked(listIncapacidades).mockReturnValueOnce(deferred)
@@ -213,7 +214,7 @@ describe('useIncapacidadesList', () => {
 
     await waitFor(() => expect(result.current.loading).toBe(true))
     unmount()
-    resolveLoad({ items: [], total: 99, pages: 1 })
+    resolveLoad({ items: [], total: 99, pages: 1 } satisfies IncapacidadesListResponse)
 
     await act(async () => {
       await Promise.resolve()

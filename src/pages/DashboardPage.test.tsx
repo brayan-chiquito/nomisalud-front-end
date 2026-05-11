@@ -58,9 +58,9 @@ describe('DashboardPage', () => {
     expect(screen.getByText(/ana garcia/i)).toBeInTheDocument()
   })
 
-  it('muestra "Usuario" e iniciales desde id cuando no hay email', () => {
+  it('muestra "Usuario" e iniciales desde id cuando el email está vacío', () => {
     mockUseAuth.mockReturnValue({
-      user: { id: 'ab12cd', email: undefined, role: 'admin' },
+      user: { id: 'ab12cd', email: '', role: 'admin' },
       isAuthenticated: true,
       login: vi.fn(),
       logout: vi.fn(),
@@ -74,9 +74,9 @@ describe('DashboardPage', () => {
     expect(screen.getByText('AB')).toBeInTheDocument()
   })
 
-  it('usa iniciales NS cuando no hay email y el id es demasiado corto', () => {
+  it('usa iniciales NS cuando el email está vacío y el id es demasiado corto', () => {
     mockUseAuth.mockReturnValue({
-      user: { id: 'x', email: undefined, role: 'admin' },
+      user: { id: 'x', email: '', role: 'admin' },
       isAuthenticated: true,
       login: vi.fn(),
       logout: vi.fn(),
