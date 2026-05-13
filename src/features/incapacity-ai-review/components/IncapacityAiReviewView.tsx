@@ -103,13 +103,14 @@ export function IncapacityAiReviewView() {
         <p className="text-center text-slate-700">
           Falta el identificador del trámite. Abre esta pantalla desde el listado (enlace{' '}
           <strong>Revisar</strong>) con el parámetro{' '}
-          <code className="rounded bg-slate-200 px-1">id</code>.
+          <code className="rounded bg-slate-200 px-1">id</code>, o desde{' '}
+          <strong>Continuar al resumen</strong> tras radicar una incapacidad.
         </p>
         <Link
-          to="/dashboard"
+          to={backHref}
           className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
         >
-          Ir al dashboard
+          {puedeVerificar ? 'Ir al dashboard' : 'Ir a mi trámite'}
         </Link>
       </div>
     )

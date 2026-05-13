@@ -51,7 +51,7 @@ describe('RadicarIncapacidadView — subida', () => {
       expect(uploadIncapacityFile).toHaveBeenCalled()
     })
 
-    expect(mockNavigate).toHaveBeenCalledWith('/incapacidad/revision-ia', {
+    expect(mockNavigate).toHaveBeenCalledWith('/incapacidad/revision-ia?id=abc', {
       state: { uploadResponse: { tramite_id: 'abc' }, fileName: 'doc.pdf' },
     })
   })
