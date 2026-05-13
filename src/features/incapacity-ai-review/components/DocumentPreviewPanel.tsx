@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { FileWarning, Loader2, Minus, Plus } from 'lucide-react'
 
 export type DocumentPreviewPanelProps = Readonly<{
@@ -10,6 +10,92 @@ export type DocumentPreviewPanelProps = Readonly<{
   onZoomIn: () => void
   onZoomOut: () => void
 }>
+
+function urlListo(url: string | null): url is string {
+  return url !== null && url.length > 0
+}
+
+function previewBody(
+  kind: 'pdf' | 'image' | 'unsupported',
+  props: Readonly<{
+    archivoTipo: string | undefined
+    objectUrl: string | null
+    loading: boolean
+    error: string | null
+    zoomPercent: number
+  }>,
+): ReactNode {
+  const { archivoTipo, objectUrl, loading, error, zoomPercent } = props
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center gap-2 text-slate-500">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" aria-hidden />
+        <span className="text-sm">Cargando documento…</span>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <p className="max-w-sm text-center text-sm text-red-600" role="alert">
+        {error}
+      </p>
+    )
+  }
+
+  if (kind === 'unsupported') {
+    return (
+      <div className="flex max-w-sm flex-col items-center gap-2 text-center text-slate-500">
+        <FileWarning className="h-10 w-10 text-amber-500" aria-hidden />
+        <p className="text-sm">
+          Vista previa no disponible para este tipo de archivo ({archivoTipo || 'desconocido'}).
+        </p>
+      </div>
+    )
+  }
+
+  if (!urlListo(objectUrl)) {
+    return (
+      <p className="text-center text-sm text-slate-500">No hay archivo adjunto para mostrar.</p>
+    )
+  }
+
+  if (kind === 'pdf') {
+    return (
+      <div
+        className="h-full min-h-[480px] w-full overflow-auto"
+        style={{
+          transform: `scale(${zoomPercent / 100})`,
+          transformOrigin: 'top center',
+        }}
+      >
+        <iframe
+          title="Vista previa del PDF"
+          src={objectUrl}
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-downloads"
+          className="h-[720px] w-full min-w-[320px] rounded border border-slate-200 bg-slate-100"
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div
+      className="flex max-h-[80vh] max-w-full justify-center overflow-auto p-2"
+      style={{
+        transform: `scale(${zoomPercent / 100})`,
+        transformOrigin: 'top center',
+      }}
+    >
+      <img
+        src={objectUrl}
+        alt="Documento de incapacidad"
+        className="max-w-none rounded border border-slate-200 shadow-sm"
+      />
+    </div>
+  )
+}
 
 export function DocumentPreviewPanel({
   archivoTipo,
@@ -27,6 +113,8 @@ export function DocumentPreviewPanel({
     return 'unsupported' as const
   }, [archivoTipo])
 
+  const zoomDisabled = loading || !urlListo(objectUrl)
+
   return (
     <aside className="flex min-h-[320px] flex-1 flex-col gap-3 bg-slate-50 p-5 lg:max-w-[50%]">
       <div className="flex items-center justify-between">
@@ -35,7 +123,7 @@ export function DocumentPreviewPanel({
           <button
             type="button"
             onClick={onZoomOut}
-            disabled={zoomPercent <= 50 || loading || !objectUrl}
+            disabled={zoomPercent <= 50 || zoomDisabled}
             className="flex h-[30px] w-[30px] items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
             aria-label="Alejar"
           >
@@ -47,7 +135,7 @@ export function DocumentPreviewPanel({
           <button
             type="button"
             onClick={onZoomIn}
-            disabled={zoomPercent >= 200 || loading || !objectUrl}
+            disabled={zoomPercent >= 200 || zoomDisabled}
             className="flex h-[30px] w-[30px] items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
             aria-label="Acercar"
           >
@@ -57,53 +145,7 @@ export function DocumentPreviewPanel({
       </div>
 
       <div className="flex min-h-[280px] flex-1 items-center justify-center overflow-auto rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
-        {loading ? (
-          <div className="flex flex-col items-center gap-2 text-slate-500">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" aria-hidden />
-            <span className="text-sm">Cargando documento…</span>
-          </div>
-        ) : error ? (
-          <p className="max-w-sm text-center text-sm text-red-600" role="alert">
-            {error}
-          </p>
-        ) : kind === 'unsupported' ? (
-          <div className="flex max-w-sm flex-col items-center gap-2 text-center text-slate-500">
-            <FileWarning className="h-10 w-10 text-amber-500" aria-hidden />
-            <p className="text-sm">
-              Vista previa no disponible para este tipo de archivo ({archivoTipo || 'desconocido'}).
-            </p>
-          </div>
-        ) : !objectUrl ? (
-          <p className="text-center text-sm text-slate-500">No hay archivo adjunto para mostrar.</p>
-        ) : kind === 'pdf' ? (
-          <div
-            className="h-full min-h-[480px] w-full overflow-auto"
-            style={{
-              transform: `scale(${zoomPercent / 100})`,
-              transformOrigin: 'top center',
-            }}
-          >
-            <iframe
-              title="Vista previa del PDF"
-              src={objectUrl}
-              className="h-[720px] w-full min-w-[320px] rounded border border-slate-200 bg-slate-100"
-            />
-          </div>
-        ) : (
-          <div
-            className="flex max-h-[80vh] max-w-full justify-center overflow-auto p-2"
-            style={{
-              transform: `scale(${zoomPercent / 100})`,
-              transformOrigin: 'top center',
-            }}
-          >
-            <img
-              src={objectUrl}
-              alt="Documento de incapacidad"
-              className="max-w-none rounded border border-slate-200 shadow-sm"
-            />
-          </div>
-        )}
+        {previewBody(kind, { archivoTipo, objectUrl, loading, error, zoomPercent })}
       </div>
     </aside>
   )

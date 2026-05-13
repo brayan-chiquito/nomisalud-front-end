@@ -20,6 +20,7 @@ export function emptyReviewForm(): ReviewFormFields {
 
 function pickStr(v: unknown): string {
   if (v === null || v === undefined) return ''
+  if (typeof v === 'object') return ''
   return String(v).trim()
 }
 
@@ -35,10 +36,12 @@ function pickDiagnosticoNested(
   const blocks: Record<string, unknown>[] = []
   const rootD = d?.diagnostico
   const incD = inc.diagnostico
-  if (rootD && typeof rootD === 'object' && !Array.isArray(rootD))
+  if (rootD && typeof rootD === 'object' && !Array.isArray(rootD)) {
     blocks.push(rootD as Record<string, unknown>)
-  if (incD && typeof incD === 'object' && !Array.isArray(incD))
+  }
+  if (incD && typeof incD === 'object' && !Array.isArray(incD)) {
     blocks.push(incD as Record<string, unknown>)
+  }
   for (const b of blocks) {
     const codigo = pickStr(
       b.codigo ?? b.codigo_cie10 ?? b.codigo_cie ?? b.cie10 ?? b.codigoCIE10 ?? b.codigo_cie_10,
@@ -88,7 +91,7 @@ export function datosExtraidosToForm(
   const col = mergedPersonaBlock(d ?? undefined)
   const inc = nestedObj(d?.incapacidad)
   const ent = nestedObj(d?.entidad)
-  const root = d && typeof d === 'object' ? (d as Record<string, unknown>) : {}
+  const root = d == null ? {} : { ...d }
   const nombreColaborador = pickStr(
     col.nombre_completo ??
       col.nombre ??
@@ -236,6 +239,23 @@ function parseFechaFlexible(s: string): number | null {
   const iso = Date.parse(t)
   if (!Number.isNaN(iso)) return iso
   return null
+}
+
+/** Texto del bloque "días" en la revisión IA (cálculo por fechas o valor extraído). */
+export function formatDiasIncapacidadLabel(
+  diasCalculados: number | null,
+  diasIncapacidadTrimmed: string,
+): string {
+  if (diasCalculados !== null) {
+    return `${diasCalculados} días`
+  }
+  if (!diasIncapacidadTrimmed) {
+    return '—'
+  }
+  if (/\d/.test(diasIncapacidadTrimmed)) {
+    return diasIncapacidadTrimmed
+  }
+  return `${diasIncapacidadTrimmed} días`
 }
 
 /** Días inclusivos entre dos fechas si ambas se pueden interpretar; si no, null. */

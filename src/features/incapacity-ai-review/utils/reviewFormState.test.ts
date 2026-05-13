@@ -8,6 +8,7 @@ import {
   contarAlertasValidacion,
   computeDiasIncapacidad,
   splitDiagnosticoCie10,
+  formatDiasIncapacidadLabel,
 } from './reviewFormState'
 
 describe('reviewFormState', () => {
@@ -116,6 +117,21 @@ describe('reviewFormState', () => {
     const inc = next.incapacidad as Record<string, unknown>
     expect(inc.total_dias).toBe('4')
     expect(inc.diagnostico_principal).toBe('A01 - Fiebre')
+  })
+
+  it('formatDiasIncapacidadLabel prioriza cálculo, guión o sufijo días', () => {
+    expect(formatDiasIncapacidadLabel(3, '')).toBe('3 días')
+    expect(formatDiasIncapacidadLabel(null, '')).toBe('—')
+    expect(formatDiasIncapacidadLabel(null, '5')).toBe('5')
+    expect(formatDiasIncapacidadLabel(null, 'tres')).toBe('tres días')
+  })
+
+  it('datosExtraidosToForm ignora diagnostico cuando es objeto (no stringifica)', () => {
+    const f = datosExtraidosToForm({
+      incapacidad: { tipo: 'eg', diagnostico: { codigo: 'J00' } as unknown as string },
+    })
+    expect(f.tipoIncapacidad).toBe('eg')
+    expect(f.diagnostico).toBe('')
   })
 
   it('computeDiasIncapacidad calcula rango inclusivo', () => {

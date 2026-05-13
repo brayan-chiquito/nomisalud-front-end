@@ -13,6 +13,7 @@ import {
   canHumanVerifyIncapacidad,
   computeDiasIncapacidad,
   contarAlertasValidacion,
+  formatDiasIncapacidadLabel,
 } from '../utils/reviewFormState'
 import { DocumentPreviewPanel } from './DocumentPreviewPanel'
 import { RejectIncapacityModal } from './RejectIncapacityModal'
@@ -20,7 +21,7 @@ import { RejectIncapacityModal } from './RejectIncapacityModal'
 function displayNameFromEmail(email: string | undefined): string {
   if (!email) return 'Usuario'
   const local = email.split('@')[0] ?? email
-  return local.replace(/\./g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+  return local.replaceAll('.', ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
 function initialsFromEmail(email: string | undefined, id: string | undefined): string {
@@ -71,11 +72,10 @@ export function IncapacityAiReviewView() {
     [form.fechaInicio, form.fechaFin],
   )
 
-  const diasMostrar = useMemo(() => {
-    if (diasCalculados !== null) return `${diasCalculados} días`
-    const d = form.diasIncapacidad.trim()
-    return d ? (/\d/.test(d) ? d : `${d} días`) : '—'
-  }, [diasCalculados, form.diasIncapacidad])
+  const diasMostrar = useMemo(
+    () => formatDiasIncapacidadLabel(diasCalculados, form.diasIncapacidad.trim()),
+    [diasCalculados, form.diasIncapacidad],
+  )
 
   const alertasCount = useMemo(
     () => contarAlertasValidacion(detail?.extraccion_ia?.validaciones),
@@ -95,7 +95,7 @@ export function IncapacityAiReviewView() {
     setZoomPercent((z) => Math.max(50, z - 25))
   }, [])
 
-  const formDisabled = !puedeVerificar || submitting || loadingDetail
+  const formDisabled = puedeVerificar === false || submitting || loadingDetail
 
   if (!incapacidadId) {
     return (
@@ -143,6 +143,8 @@ export function IncapacityAiReviewView() {
   if (!detail) return null
 
   const estadoLabel = labelEstadoIncapacidad(detail.estado)
+  const accionesRevisionDeshabilitadas =
+    puedeVerificar === false || submitting || detail.extraccion_ia == null
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-100">
@@ -206,25 +208,25 @@ export function IncapacityAiReviewView() {
         <section className="flex min-h-0 flex-1 flex-col gap-4 border-l border-slate-200 bg-white p-6 lg:max-w-[50%]">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
             <h2 className="text-[15px] font-bold text-slate-800">Datos extraídos por IA</h2>
-            {confianza !== null ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
-                <Cpu className="h-3.5 w-3.5" aria-hidden />
-                Confianza: {confianza}%
-              </span>
-            ) : (
+            {confianza === null ? (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
                 <Cpu className="h-3.5 w-3.5" aria-hidden />
                 Extracción IA
               </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
+                <Cpu className="h-3.5 w-3.5" aria-hidden />
+                Confianza: {confianza}%
+              </span>
             )}
           </div>
 
-          {!detail.extraccion_ia ? (
+          {detail.extraccion_ia ? null : (
             <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
               Aún no hay extracción IA para este trámite. Cuando el proceso termine, los campos se
               llenarán automáticamente.
             </p>
-          ) : null}
+          )}
 
           <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1">
             <FormInput
@@ -309,12 +311,12 @@ export function IncapacityAiReviewView() {
           {alertasCount > 0
             ? `${alertasCount} validación(es) marcada(s) por el motor IA — revisa con cuidado.`
             : 'Revisa los campos antes de confirmar.'}
-          {!puedeVerificar ? ' Solo personal RRHH puede confirmar o rechazar.' : null}
+          {puedeVerificar ? null : ' Solo personal RRHH puede confirmar o rechazar.'}
         </p>
         <div className="flex items-center gap-3">
           <button
             type="button"
-            disabled={!puedeVerificar || submitting || !detail.extraccion_ia}
+            disabled={accionesRevisionDeshabilitadas}
             onClick={() => {
               setRejectModalKey((k) => k + 1)
               setRejectModalOpen(true)
@@ -325,8 +327,10 @@ export function IncapacityAiReviewView() {
           </button>
           <button
             type="button"
-            disabled={!puedeVerificar || submitting || !detail.extraccion_ia}
-            onClick={() => void handleConfirmar()}
+            disabled={accionesRevisionDeshabilitadas}
+            onClick={() => {
+              handleConfirmar().catch(() => false)
+            }}
             className="rounded-lg bg-blue-600 px-[22px] py-[11px] text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {submitting ? 'Guardando…' : 'Confirmar datos'}
