@@ -21,7 +21,11 @@ export function emptyReviewForm(): ReviewFormFields {
 function pickStr(v: unknown): string {
   if (v === null || v === undefined) return ''
   if (typeof v === 'object') return ''
-  return String(v).trim()
+  if (typeof v === 'string') return v.trim()
+  if (typeof v === 'number') return Number.isFinite(v) ? String(v) : ''
+  if (typeof v === 'boolean') return v ? 'true' : 'false'
+  if (typeof v === 'bigint') return String(v)
+  return ''
 }
 
 function nestedObj(v: unknown): Record<string, unknown> {
@@ -72,16 +76,67 @@ function mergedPersonaBlock(
   }
 }
 
-/** Texto tipo "K30X - Dispepsia" o "J069: Infección…" → código + descripción. */
+/** Separadores entre código CIE-10 y texto (ASCII, Unicode y dos puntos). */
+const CIE10_SEP_CHARS = '-\u2010\u2011\u2012\u2013\u2014\u2212:\uFF1A'
+
+function isCie10Separator(ch: string): boolean {
+  return CIE10_SEP_CHARS.includes(ch)
+}
+
+/** Texto tipo "K30X - Dispepsia" o "J069: Infección…" → código + descripción (sin regex vulnerable a ReDoS). */
 export function splitDiagnosticoCie10(raw: string): { codigo: string; descripcion: string } {
   const t = raw.trim()
   if (!t) return { codigo: '', descripcion: '' }
-  // Guiones Unicode frecuentes en PDFs/IA: - ‐ ‑ – — −
-  const m = /^([A-Z][A-Z0-9.-]*)\s*[-‐‑–—−:]\s*(.+)$/iu.exec(t)
-  if (m && m[2].trim().length > 0) {
-    return { codigo: m[1].toUpperCase(), descripcion: m[2].trim() }
+
+  const maxLen = 512
+  const s = t.length > maxLen ? t.slice(0, maxLen) : t
+
+  const first = s[0]
+  if (first === undefined || !/[A-Za-z]/u.test(first)) {
+    return { codigo: '', descripcion: t }
   }
-  return { codigo: '', descripcion: t }
+
+  let i = 1
+  const maxCodeLen = 16
+  while (i < s.length && i < maxCodeLen) {
+    const ch = s[i]
+    if (ch !== undefined && /[-A-Za-z0-9.]/u.test(ch)) {
+      i += 1
+      continue
+    }
+    break
+  }
+
+  let j = i
+  while (j < s.length) {
+    const ch = s[j]
+    if (ch !== undefined && /\s/u.test(ch)) {
+      j += 1
+      continue
+    }
+    break
+  }
+  if (j >= s.length) return { codigo: '', descripcion: t }
+
+  const sep = s[j]
+  if (sep === undefined || !isCie10Separator(sep)) {
+    return { codigo: '', descripcion: t }
+  }
+
+  let k = j + 1
+  while (k < s.length) {
+    const ch = s[k]
+    if (ch !== undefined && /\s/u.test(ch)) {
+      k += 1
+      continue
+    }
+    break
+  }
+
+  const descripcion = s.slice(k).trim()
+  if (descripcion.length === 0) return { codigo: '', descripcion: t }
+
+  return { codigo: s.slice(0, i).toUpperCase(), descripcion }
 }
 
 /** Lee `datos_extraidos` de la extracción y llena el formulario de revisión. */

@@ -85,6 +85,17 @@ describe('reviewFormState', () => {
     expect(f.diagnostico).toBe('Dispepsia')
   })
 
+  it('pickStr serializa números en campos numéricos', () => {
+    const f = datosExtraidosToForm({
+      incapacidad: { tipo: 'eg', dias: 7 as unknown as string },
+    })
+    expect(f.diasIncapacidad).toBe('7')
+  })
+
+  it('splitDiagnosticoCie10 sin patrón válido devuelve el texto original como descripción', () => {
+    expect(splitDiagnosticoCie10('solo texto')).toEqual({ codigo: '', descripcion: 'solo texto' })
+  })
+
   it('splitDiagnosticoCie10 reconoce guión o dos puntos', () => {
     expect(splitDiagnosticoCie10('J00 - Gripe')).toEqual({ codigo: 'J00', descripcion: 'Gripe' })
     expect(splitDiagnosticoCie10('K30: Reflujo')).toEqual({ codigo: 'K30', descripcion: 'Reflujo' })
