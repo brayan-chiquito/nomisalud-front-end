@@ -236,7 +236,13 @@ export function RrhhIncapacidadesPanel() {
                   <span className="min-w-0 truncate text-slate-500">
                     {formatFechaCorta(row.fecha_recepcion)}
                   </span>
-                  <div className="flex min-w-0 justify-center">
+                  <div className="flex min-w-0 items-center justify-center gap-1">
+                    <Link
+                      to={`/incapacidad/revision-ia?id=${encodeURIComponent(row.id)}`}
+                      className="rounded px-2 py-1 text-[12px] font-medium text-blue-600 hover:bg-blue-50 hover:underline"
+                    >
+                      Revisar
+                    </Link>
                     <button
                       type="button"
                       className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"

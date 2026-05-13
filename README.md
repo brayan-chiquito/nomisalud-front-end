@@ -74,10 +74,10 @@ Rutas definidas en `src/router/index.tsx`. Las marcadas como **protegidas** requ
 | `/dashboard` | Protegida | Dashboard RRHH: layout con sidebar, KPIs por estado, tabla de incapacidades (`GET /incapacidades`) con filtros estado/tipo/búsqueda y paginación |
 | `/portal/mi-tramite` | Protegida | Portal colaborador: seguimiento del trámite |
 | `/portal/radicar-incapacidad` | Protegida | Portal colaborador: radicar incapacidad (carga de archivo) |
-| `/incapacidad/revision-ia` | Protegida | Revisión de incapacidad asistida por IA |
+| `/incapacidad/revision-ia` | Protegida | Revisión side-by-side: `?id={uuid}`; consume `extraccion_ia.datos_extraidos` según contrato en `docs/README.md` (§ detalle `GET /incapacidades/{id}`): `colaborador`, `incapacidad` (`dias`/`total_dias`, `origen`, `codigo_cie10`, `diagnostico`, `diagnostico_principal`, objeto `diagnostico` anidado), `entidad`; `PUT …/verificar` con enriquecimiento alineado al backend |
 | `*` (cualquier otra) | Pública | Página 404 |
 
-> Tras subir un archivo en radicación, la app puede navegar a `/incapacidad/revision-ia` pasando datos por el `state` del router (por ejemplo respuesta del upload y nombre del archivo).
+> Desde el **dashboard**, el enlace **Revisar** en cada fila abre `/incapacidad/revision-ia?id={id}`. Tras un upload también puedes navegar allí si conoces el `id` del trámite (por ejemplo desde el listado).
 
 ## Scripts disponibles
 

@@ -1,17 +1,52 @@
+import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { X, CircleAlert, Ban } from 'lucide-react'
+import { X, CircleAlert, Ban, Loader2 } from 'lucide-react'
 
 export type RejectIncapacityModalProps = Readonly<{
   isOpen: boolean
   onClose: () => void
+  /** Devuelve true si el rechazo se aplicó en el servidor. */
+  onConfirm: (motivo: string) => Promise<boolean>
+  isSubmitting?: boolean
+  error?: string | null
 }>
 
+const PRESETS = [
+  'Documento ilegible o deteriorado',
+  'Datos no coinciden con el documento',
+  'Incapacidad ya vencida',
+] as const
+
 /**
- * Modal "Rechazar incapacidad" — motivos y comentario.
- * Integración futura: POST de rechazo con motivo y notas; invalidación y redirección tras éxito.
+ * Modal de rechazo — motivo obligatorio; integra `PUT /incapacidades/{id}/verificar` vía `onConfirm`.
  */
-export function RejectIncapacityModal({ isOpen, onClose }: RejectIncapacityModalProps) {
+export function RejectIncapacityModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  isSubmitting = false,
+  error = null,
+}: RejectIncapacityModalProps) {
+  const [preset, setPreset] = useState<(typeof PRESETS)[number] | null>(null)
+  const [notes, setNotes] = useState('')
+  const [localError, setLocalError] = useState<string | null>(null)
+
   if (!isOpen) return null
+
+  const motivoCompuesto = [preset, notes.trim()].filter(Boolean).join('. ').trim()
+  const canSubmit = motivoCompuesto.length >= 3 && !isSubmitting
+
+  const handleConfirm = async () => {
+    setLocalError(null)
+    if (!canSubmit) {
+      setLocalError('Describe el motivo del rechazo (mínimo 3 caracteres).')
+      return
+    }
+    const ok = await onConfirm(motivoCompuesto)
+    if (ok) onClose()
+  }
+
+  const mergedError = localError || error
 
   return (
     <div
@@ -20,7 +55,6 @@ export function RejectIncapacityModal({ isOpen, onClose }: RejectIncapacityModal
       aria-modal="true"
       aria-labelledby="reject-modal-title"
     >
-      {/* Cierre por clic en backdrop opcional según diseño */}
       <div
         className="w-full max-w-[520px] overflow-hidden rounded-2xl bg-white shadow-xl"
         style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.12)' }}
@@ -32,7 +66,8 @@ export function RejectIncapacityModal({ isOpen, onClose }: RejectIncapacityModal
           <button
             type="button"
             onClick={onClose}
-            className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+            disabled={isSubmitting}
+            className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 disabled:opacity-50"
             aria-label="Cerrar"
           >
             <X className="h-5 w-5" />
@@ -49,57 +84,63 @@ export function RejectIncapacityModal({ isOpen, onClose }: RejectIncapacityModal
 
           <div className="flex flex-col gap-2">
             <p className="text-[13px] font-semibold text-slate-700">
-              Selecciona el motivo de rechazo:
+              Motivo (elige uno o escribe):
             </p>
-            <RadioOption
-              label="Documento ilegible o deteriorado"
-              selected={false}
-              onSelect={() => undefined}
-            />
-            <RadioOption
-              label="Datos no coinciden con el documento"
-              selected
-              highlighted
-              onSelect={() => undefined}
-            />
-            <RadioOption
-              label="Incapacidad ya vencida"
-              selected={false}
-              onSelect={() => undefined}
-            />
+            {PRESETS.map((label) => (
+              <RadioOption
+                key={label}
+                label={label}
+                selected={preset === label}
+                highlighted={preset === label}
+                onSelect={() => setPreset(label)}
+              />
+            ))}
           </div>
 
           <div className="flex flex-col gap-1.5 pb-1">
             <label htmlFor="reject-notes" className="text-[13px] font-medium text-slate-700">
-              Comentario adicional (opcional):
+              Detalle del motivo <span className="text-red-600">*</span>
             </label>
             <textarea
               id="reject-notes"
-              rows={3}
-              readOnly
-              placeholder="Escribe el motivo detallado..."
-              className="resize-none rounded-lg border border-slate-300 bg-gray-50 px-3 py-3 text-[13px] text-slate-800 placeholder:text-slate-400"
+              rows={4}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              disabled={isSubmitting}
+              placeholder="Describe el motivo detallado del rechazo…"
+              className="resize-none rounded-lg border border-slate-300 bg-white px-3 py-3 text-[13px] text-slate-800 placeholder:text-slate-400 disabled:bg-slate-50"
             />
-            {/* Enlazar a estado o formulario cuando exista API de rechazo */}
           </div>
+
+          {mergedError ? (
+            <p className="text-[13px] text-red-600" role="alert">
+              {mergedError}
+            </p>
+          ) : null}
         </div>
 
         <div className="flex justify-end gap-3 px-6 pb-6 pt-4">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            disabled={isSubmitting}
+            className="rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
           >
             Cancelar
           </button>
           <button
             type="button"
-            className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-red-700"
+            onClick={() => void handleConfirm()}
+            disabled={!canSubmit}
+            className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <Ban className="h-4 w-4" aria-hidden />
+            {isSubmitting ? (
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+            ) : (
+              <Ban className="h-4 w-4" aria-hidden />
+            )}
             Confirmar rechazo
           </button>
-          {/* onClick: llamada API y estados loading / error */}
         </div>
       </div>
     </div>

@@ -40,6 +40,11 @@ describe('RrhhIncapacidadesPanel', () => {
       '/portal/radicar-incapacidad',
     )
     await waitFor(() => expect(screen.getByText('IN0123456789ABCDEF0')).toBeInTheDocument())
+    const revisar = screen.getByRole('link', { name: /^revisar$/i })
+    expect(revisar).toHaveAttribute(
+      'href',
+      `/incapacidad/revision-ia?id=${encodeURIComponent(sampleItem.id)}`,
+    )
   })
 
   it('muestra el nombre del colaborador si viene en datos_extraidos', async () => {
