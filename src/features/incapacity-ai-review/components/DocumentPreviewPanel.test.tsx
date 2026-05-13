@@ -65,7 +65,7 @@ describe('DocumentPreviewPanel', () => {
     expect(screen.getByText(/no hay archivo adjunto/i)).toBeInTheDocument()
   })
 
-  it('PDF con URL muestra iframe', () => {
+  it('PDF con URL muestra iframe y enlace a nueva pestaña', () => {
     render(
       <DocumentPreviewPanel
         archivoTipo="pdf"
@@ -78,6 +78,10 @@ describe('DocumentPreviewPanel', () => {
       />,
     )
     expect(screen.getByTitle('Vista previa del PDF')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /abrir pdf en nueva pestaña/i })).toHaveAttribute(
+      'href',
+      'blob:http://localhost/x',
+    )
   })
 
   it('imagen con URL muestra img', () => {
