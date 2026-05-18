@@ -96,7 +96,7 @@ describe('DashboardPage', () => {
       </MemoryRouter>,
     )
     await waitFor(() => {
-      expect(screen.getByRole('status')).toHaveTextContent(/confirmada correctamente/i)
+      expect(screen.getByRole('status')).toHaveTextContent(/confirmada.*transcrita/i)
     })
   })
 })

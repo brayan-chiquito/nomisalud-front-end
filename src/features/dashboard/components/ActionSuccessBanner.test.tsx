@@ -9,7 +9,7 @@ describe('ActionSuccessBanner', () => {
     const user = userEvent.setup()
     render(<ActionSuccessBanner kind="confirmada" onDismiss={onDismiss} />)
 
-    expect(screen.getByRole('status')).toHaveTextContent(/confirmada correctamente/i)
+    expect(screen.getByRole('status')).toHaveTextContent(/confirmada.*transcrita/i)
     await user.click(screen.getByRole('button', { name: /cerrar aviso/i }))
     expect(onDismiss).toHaveBeenCalled()
   })
