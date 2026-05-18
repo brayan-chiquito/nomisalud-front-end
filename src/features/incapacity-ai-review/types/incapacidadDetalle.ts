@@ -1,4 +1,19 @@
 /**
+ * Registro de `historial_estados` en detalle (ver docs/README.md).
+ */
+export type HistorialEstadoRecord = Readonly<{
+  id?: string
+  estado_anterior?: string | null
+  estado_nuevo?: string
+  /** Alias tolerado si el backend envía solo `estado` */
+  estado?: string
+  timestamp: string
+  user_id?: string | null
+  usuario_nombre?: string | null
+  observacion?: string | null
+}>
+
+/**
  * Respuesta de `GET /incapacidades/{id}` (ver docs/README.md).
  * `datos_extraidos` es JSON flexible según extracción IA.
  */
@@ -14,9 +29,12 @@ export type IncapacidadDetalle = Readonly<{
   estado: string
   archivo_tipo: string
   fecha_recepcion?: string
+  updated_at?: string
   colaborador_nombre?: string | null
   colaborador_email?: string | null
   archivo_url?: string | null
+  documentacion_faltante?: string[] | null
+  historial_estados?: HistorialEstadoRecord[] | null
   extraccion_ia: ExtraccionIaDetalle | null
 }>
 
