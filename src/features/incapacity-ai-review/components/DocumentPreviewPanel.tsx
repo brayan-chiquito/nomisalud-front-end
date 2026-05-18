@@ -62,20 +62,31 @@ function previewBody(
   }
 
   if (kind === 'pdf') {
+    // No usar `sandbox` en el iframe con `blob:`: Edge (y otros Chromium) pueden bloquear
+    // el visor PDF integrado y mostrar "bloqueó esta página". El blob proviene de nuestra propia petición autenticada.
     return (
-      <div
-        className="h-full min-h-[480px] w-full overflow-auto"
-        style={{
-          transform: `scale(${zoomPercent / 100})`,
-          transformOrigin: 'top center',
-        }}
-      >
-        <iframe
-          title="Vista previa del PDF"
-          src={objectUrl}
-          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-downloads"
-          className="h-[720px] w-full min-w-[320px] rounded border border-slate-200 bg-slate-100"
-        />
+      <div className="flex h-full min-h-[480px] w-full flex-col gap-3">
+        <div
+          className="min-h-0 flex-1 overflow-auto"
+          style={{
+            transform: `scale(${zoomPercent / 100})`,
+            transformOrigin: 'top center',
+          }}
+        >
+          <iframe
+            title="Vista previa del PDF"
+            src={objectUrl}
+            className="h-[720px] w-full min-w-[320px] rounded border border-slate-200 bg-slate-100"
+          />
+        </div>
+        <a
+          href={objectUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0 text-center text-sm font-medium text-blue-600 underline decoration-blue-600/40 underline-offset-2 hover:text-blue-700"
+        >
+          Abrir PDF en nueva pestaña
+        </a>
       </div>
     )
   }

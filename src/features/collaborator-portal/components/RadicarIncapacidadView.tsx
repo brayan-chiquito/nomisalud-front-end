@@ -9,6 +9,7 @@ import {
   validateIncapacityFile,
 } from '@/features/incapacidades/utils/validateIncapacityFile'
 import { uploadIncapacityFile } from '@/features/incapacidades/services/uploadIncapacity.service'
+import { resolveIncapacidadIdAfterUpload } from '@/features/incapacidades/services/resolveIncapacidadIdAfterUpload.service'
 import { useAuth } from '@/features/auth/context/AuthContext'
 
 const MAX_MB = INCAPACITY_MAX_BYTES / (1024 * 1024)
@@ -62,7 +63,16 @@ export function RadicarIncapacidadView() {
         // RRHH/admin: pasar colaboradorId cuando la UI permita elegir colaborador
       })
       setUploadProgress(100)
-      navigate('/incapacidad/revision-ia', { state: { uploadResponse: data, fileName: file.name } })
+      const incapacidadId = await resolveIncapacidadIdAfterUpload(data)
+      const state = { uploadResponse: data, fileName: file.name }
+      if (incapacidadId) {
+        navigate(`/incapacidad/revision-ia?id=${encodeURIComponent(incapacidadId)}`, { state })
+      } else {
+        setServerError(
+          'El documento se cargó, pero no se pudo abrir la revisión automáticamente. Abre tu trámite desde Mi trámite en unos segundos.',
+        )
+        navigate('/portal/mi-tramite', { state })
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Error al subir el archivo.'
       setServerError(msg)

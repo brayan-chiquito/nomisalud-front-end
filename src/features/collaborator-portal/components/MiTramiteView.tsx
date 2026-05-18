@@ -1,14 +1,45 @@
 import { Link } from 'react-router-dom'
-import {
-  AlertCircle,
-  Timer,
-  CheckCircle2,
-  Circle,
-  RefreshCw,
-  FileText,
-  CirclePlus,
-} from 'lucide-react'
+import { AlertCircle, Timer, FileText, CirclePlus } from 'lucide-react'
 import { CollaboratorHeader } from './CollaboratorHeader'
+import { StatusTimeline, type StatusTimelineRecord } from './StatusTimeline'
+
+const HISTORIAL_MOCK: readonly StatusTimelineRecord[] = [
+  {
+    id: 'h3',
+    estadoLabel: 'En verificación',
+    phase: 'current',
+    usuarioNombre: 'Verificador RRHH',
+    occurredAtIso: '2025-04-10T15:15:00-05:00',
+  },
+  {
+    id: 'h2',
+    estadoLabel: 'Procesando IA',
+    phase: 'completed',
+    usuarioNombre: 'Motor de extracción',
+    occurredAtIso: '2025-04-10T09:35:00-05:00',
+  },
+  {
+    id: 'h1',
+    estadoLabel: 'Recibida',
+    phase: 'completed',
+    usuarioNombre: 'Sistema',
+    occurredAtIso: '2025-04-10T09:30:00-05:00',
+  },
+  {
+    id: 'h4',
+    estadoLabel: 'Transcrita',
+    phase: 'pending',
+    usuarioNombre: '—',
+    occurredAtIso: '2025-04-10T16:00:00-05:00',
+  },
+  {
+    id: 'h5',
+    estadoLabel: 'Pagada',
+    phase: 'pending',
+    usuarioNombre: '—',
+    occurredAtIso: '2025-04-18T12:00:00-05:00',
+  },
+]
 
 /**
  * Vista "Mi trámite" — incapacidad activa, alerta de documentación, línea de tiempo.
@@ -95,52 +126,7 @@ export function MiTramiteView() {
           </div>
         </section>
 
-        <section
-          className="w-full max-w-[680px] space-y-4 rounded-2xl bg-white p-6 shadow-md"
-          style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}
-        >
-          <h2 className="text-[15px] font-bold text-slate-800">Estado del trámite</h2>
-
-          <div className="flex gap-3.5 border-b border-slate-100 pb-4">
-            <CheckCircle2 className="h-7 w-7 shrink-0 text-emerald-500" aria-hidden />
-            <div className="space-y-0.5">
-              <p className="text-sm font-semibold text-emerald-600">Recibida</p>
-              <p className="text-xs text-slate-400">10/04/2025 · 09:30 hrs</p>
-            </div>
-          </div>
-
-          <div className="flex gap-3.5 border-b border-slate-100 pb-4">
-            <CheckCircle2 className="h-7 w-7 shrink-0 text-emerald-500" aria-hidden />
-            <div className="space-y-0.5">
-              <p className="text-sm font-semibold text-emerald-600">Procesando IA</p>
-              <p className="text-xs text-slate-400">10/04/2025 · 09:35 hrs</p>
-            </div>
-          </div>
-
-          <div className="flex gap-3.5 rounded-lg bg-sky-50 px-1 py-1 pb-4">
-            <RefreshCw className="h-7 w-7 shrink-0 text-blue-600" aria-hidden />
-            <div className="space-y-0.5">
-              <p className="text-sm font-bold text-blue-600">En Verificación</p>
-              <p className="text-xs text-blue-600">● En proceso · 10/04/2025 · 10:15 hrs</p>
-            </div>
-          </div>
-
-          <div className="flex gap-3.5 border-b border-slate-100 pb-4">
-            <Circle className="h-7 w-7 shrink-0 text-slate-300" aria-hidden />
-            <div className="space-y-0.5">
-              <p className="text-sm text-slate-400">Transcrita</p>
-              <p className="text-xs text-slate-300">Pendiente</p>
-            </div>
-          </div>
-
-          <div className="flex gap-3.5">
-            <Circle className="h-7 w-7 shrink-0 text-slate-300" aria-hidden />
-            <div className="space-y-0.5">
-              <p className="text-sm text-slate-400">Pagada</p>
-              <p className="text-xs text-slate-300">Pendiente</p>
-            </div>
-          </div>
-        </section>
+        <StatusTimeline entries={HISTORIAL_MOCK} />
 
         <Link
           to="/portal/radicar-incapacidad"

@@ -13,6 +13,7 @@ describe('MiTramiteView', () => {
       </MemoryRouter>,
     )
     expect(screen.getByText('Mi incapacidad activa')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /estado del trámite/i })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /radicar nueva incapacidad/i })).toHaveAttribute(
       'href',
       '/portal/radicar-incapacidad',
