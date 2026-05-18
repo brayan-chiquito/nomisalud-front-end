@@ -13,8 +13,10 @@ export type RrhhDashboardShellProps = Readonly<{
   children: ReactNode
 }>
 
-const navInactive = 'text-slate-400 hover:bg-slate-700/60 hover:text-white'
-const navActive = 'bg-blue-600 text-white'
+const navItemBase =
+  'flex h-10 w-full items-center gap-2.5 rounded-lg px-3 text-sm transition-colors duration-150'
+const navInactive = 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+const navActive = 'bg-primary/8 font-medium text-primary'
 
 export function RrhhDashboardShell({
   headerTitle,
@@ -33,74 +35,83 @@ export function RrhhDashboardShell({
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-100">
-      <aside className="flex w-[240px] shrink-0 flex-col bg-[#1E293B] px-4 py-6">
-        <div className="mb-5 flex items-center justify-center gap-2.5 pb-5">
-          <img src={logo} alt="" className="h-[30px] w-[30px] rounded-md object-contain" />
-          <span className="text-[15px] font-bold text-white">Nomisalud</span>
+    <div className="min-h-screen bg-gray-50/50">
+      <aside className="fixed inset-y-0 left-0 z-30 flex w-60 flex-col border-r border-gray-200 bg-white">
+        <div className="flex h-16 items-center gap-2.5 border-b border-gray-100 px-4">
+          <img src={logo} alt="" className="h-8 w-8 rounded-lg object-contain" />
+          <span className="text-sm font-semibold text-gray-900">Nomisalud</span>
         </div>
 
-        <nav className="flex flex-col gap-1">
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
           <NavLink
             to="/dashboard"
             end
             onClick={() => setActiveSection('inicio')}
-            className={cn(
-              'flex h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors',
-              activeSection === 'inicio' ? navActive : navInactive,
-            )}
+            className={cn(navItemBase, activeSection === 'inicio' ? navActive : navInactive)}
           >
-            <LayoutDashboard className="h-[18px] w-[18px] shrink-0" aria-hidden />
+            <LayoutDashboard className="h-4 w-4 shrink-0" aria-hidden />
             Inicio
           </NavLink>
           <button
             type="button"
             onClick={scrollToIncapacidades}
             className={cn(
-              'flex h-11 w-full items-center gap-3 rounded-lg px-3 text-left text-sm font-medium transition-colors',
+              navItemBase,
+              'text-left',
               activeSection === 'incapacidades' ? navActive : navInactive,
             )}
           >
-            <FileText className="h-[18px] w-[18px] shrink-0" aria-hidden />
+            <FileText className="h-4 w-4 shrink-0" aria-hidden />
             Incapacidades
           </button>
           <button
             type="button"
             disabled
             title="Próximamente"
-            className="flex h-11 cursor-not-allowed items-center gap-3 rounded-lg px-3 text-left text-sm font-medium text-slate-500 opacity-60"
+            className={cn(navItemBase, 'cursor-not-allowed text-gray-300 opacity-60')}
           >
-            <BarChart3 className="h-[18px] w-[18px] shrink-0" aria-hidden />
+            <BarChart3 className="h-4 w-4 shrink-0" aria-hidden />
             Reportes
           </button>
           <button
             type="button"
             disabled
             title="Próximamente"
-            className="flex h-11 cursor-not-allowed items-center gap-3 rounded-lg px-3 text-left text-sm font-medium text-slate-500 opacity-60"
+            className={cn(navItemBase, 'cursor-not-allowed text-gray-300 opacity-60')}
           >
-            <Users className="h-[18px] w-[18px] shrink-0" aria-hidden />
+            <Users className="h-4 w-4 shrink-0" aria-hidden />
             Usuarios
           </button>
+
+          <div className="pt-4 pb-2">
+            <p className="px-3 text-[10px] font-semibold tracking-widest text-gray-300 uppercase">
+              Administración
+            </p>
+          </div>
         </nav>
+
+        <div className="relative z-40 overflow-visible border-t border-gray-100 p-3">
+          <UserProfileMenu
+            userName={userName}
+            companyName={companyName}
+            avatarInitials={userInitials}
+            avatarClassName="bg-primary text-white"
+            menuPlacement="right"
+            showUserInfo
+          />
+        </div>
       </aside>
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-6">
-          <h1 className="text-lg font-semibold text-slate-900">{headerTitle}</h1>
-          <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-slate-500 sm:inline">{userName}</span>
-            <UserProfileMenu
-              userName={userName}
-              companyName={companyName}
-              avatarInitials={userInitials}
-              avatarClassName="bg-blue-600"
-            />
+      <main className="ml-60 min-h-screen">
+        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-gray-100 bg-white px-8">
+          <div>
+            <h1 className="text-base font-semibold text-gray-900">{headerTitle}</h1>
+            <p className="text-xs text-gray-400">Panel de recursos humanos</p>
           </div>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto bg-[#F1F5F9] p-6">{children}</div>
-      </div>
+        <div className="p-8">{children}</div>
+      </main>
     </div>
   )
 }

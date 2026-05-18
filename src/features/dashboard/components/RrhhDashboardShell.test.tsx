@@ -22,8 +22,8 @@ describe('RrhhDashboardShell', () => {
     renderShell(<div>Contenido</div>)
     expect(screen.getByRole('heading', { name: /dashboard rrhh/i })).toBeInTheDocument()
     expect(screen.getByText('Nomisalud')).toBeInTheDocument()
-    expect(screen.getByText('Ana')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /menú de perfil de ana/i })).toHaveTextContent('AG')
+    expect(screen.getByText('Recursos Humanos')).toBeInTheDocument()
     expect(screen.getByText('Contenido')).toBeInTheDocument()
   })
 

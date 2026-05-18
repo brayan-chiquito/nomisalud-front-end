@@ -10,10 +10,8 @@ import {
 } from 'lucide-react'
 import { useIncapacidadesList } from '@/features/incapacidades/hooks/useIncapacidadesList'
 import { INCAPACIDAD_ESTADOS_FILTRO } from '@/features/incapacidades/constants/estadosIncapacidad'
-import {
-  estadoBadgeClasses,
-  labelEstadoIncapacidad,
-} from '@/features/incapacidades/utils/estadoBadge'
+import { StatusBadge } from '@/components/ui/StatusBadge'
+import { buttonClassName } from '@/components/ui/buttonStyles'
 import {
   colaboradorNombreLegible,
   colaboradorTooltipLista,
@@ -31,7 +29,7 @@ const TIPO_OPTIONS = [
 ] as const
 
 const selectFrame =
-  'flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-white py-2 pl-3 pr-2 text-[13px] text-slate-700 shadow-sm hover:border-slate-300'
+  'flex cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-2 text-sm text-gray-700 shadow-sm transition-colors duration-150 hover:border-gray-300'
 
 const selectNative =
   'max-w-[160px] cursor-pointer border-0 bg-transparent text-[13px] text-slate-700 outline-none focus:ring-0'
@@ -84,20 +82,17 @@ export function RrhhIncapacidadesPanel() {
   return (
     <section
       id="panel-incapacidades"
-      className="flex min-h-[420px] flex-col overflow-hidden rounded-xl border border-slate-100/80 bg-white shadow-[0_1px_6px_rgba(0,0,0,0.06)]"
+      className="flex min-h-[420px] flex-col overflow-hidden rounded-card border border-gray-200/60 bg-white shadow-card"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-5 sm:px-6">
-        <h2 className="text-base font-semibold text-slate-900">Incapacidades</h2>
-        <Link
-          to="/portal/radicar-incapacidad"
-          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-[13px] font-medium text-white hover:bg-blue-700"
-        >
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-5 py-5 sm:px-6">
+        <h2 className="text-[22px] font-semibold tracking-tight text-gray-900">Incapacidades</h2>
+        <Link to="/portal/radicar-incapacidad" className={buttonClassName('primary', 'gap-2')}>
           <Plus className="h-4 w-4" aria-hidden />
           Nueva incapacidad
         </Link>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2.5 border-b border-slate-100 px-5 py-4 sm:px-6">
+      <div className="mb-0 flex flex-wrap items-center gap-2.5 border-b border-gray-100 bg-gray-50/50 px-5 py-4 sm:px-6">
         <label className={selectFrame}>
           <span className="shrink-0 text-slate-600">Estado:</span>
           <select
@@ -135,15 +130,15 @@ export function RrhhIncapacidadesPanel() {
           <ChevronDown className="h-3.5 w-3.5 shrink-0 text-slate-400" aria-hidden />
         </label>
 
-        <div className="flex min-w-[200px] flex-1 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm">
-          <Search className="h-3.5 w-3.5 shrink-0 text-slate-400" aria-hidden />
+        <div className="relative flex min-w-[200px] flex-1 items-center">
+          <Search className="absolute left-3 h-4 w-4 shrink-0 text-gray-400" aria-hidden />
           <input
             type="search"
             value={entidadInput}
             onChange={(e) => setEntidadInput(e.target.value)}
             disabled={loading}
             placeholder="Buscar colaborador..."
-            className="min-w-0 flex-1 border-0 bg-transparent text-[13px] text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-0"
+            className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pr-3 pl-9 text-sm transition-all duration-150 placeholder:text-gray-400 focus:border-primary/50 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:outline-none"
             title="Filtra por texto en el nombre de entidad (EPS/ARL) según datos extraídos por la API"
           />
         </div>
@@ -151,7 +146,7 @@ export function RrhhIncapacidadesPanel() {
 
       {error ? (
         <p
-          className="mx-5 my-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 sm:mx-6"
+          className="mx-5 my-3 rounded-lg border border-danger/20 bg-danger-light px-4 py-3 text-sm text-danger-text sm:mx-6"
           role="alert"
         >
           {error}
@@ -161,7 +156,7 @@ export function RrhhIncapacidadesPanel() {
       <div className="min-h-0 flex-1 overflow-x-auto">
         <div className="min-w-[960px]">
           <div
-            className="grid h-10 items-center gap-x-2 border-b border-slate-200 bg-slate-50 px-6 text-xs font-semibold uppercase tracking-wide text-slate-500"
+            className="grid h-11 items-center gap-x-2 border-b border-gray-100 bg-gray-50/80 px-5 text-[11px] font-semibold tracking-wider text-gray-400 uppercase"
             style={{
               gridTemplateColumns:
                 'minmax(0, 1fr) minmax(0, 1.35fr) minmax(0, 100px) minmax(0, 120px) minmax(0, 140px) minmax(0, 92px) minmax(0, 72px)',
@@ -178,7 +173,7 @@ export function RrhhIncapacidadesPanel() {
 
           {loading ? (
             <div className="flex flex-col items-center justify-center gap-2 py-16 text-slate-500">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-600" aria-hidden />
+              <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden />
               <span className="text-sm">Cargando…</span>
             </div>
           ) : items.length === 0 ? (
@@ -186,7 +181,7 @@ export function RrhhIncapacidadesPanel() {
               No hay trámites con los filtros seleccionados.
             </p>
           ) : (
-            items.map((row, i) => {
+            items.map((row) => {
               const nombreCol = colaboradorNombreLegible(row)
               const colaboradorTitulo = colaboradorTooltipLista(row)
               const entNombre = entidadNombreLegible(row)
@@ -199,19 +194,23 @@ export function RrhhIncapacidadesPanel() {
                 <div
                   key={row.id}
                   className={cn(
-                    'grid items-center gap-x-2 border-b border-slate-100 px-6 py-3.5 text-[13px]',
-                    i % 2 === 1 ? 'bg-[#FAFAFA]' : 'bg-white',
+                    'group grid h-14 items-center gap-x-2 border-b border-gray-50 px-5 text-sm transition-colors duration-100 hover:bg-gray-50/60',
+                    'bg-white',
                   )}
                   style={{
                     gridTemplateColumns:
                       'minmax(0, 1fr) minmax(0, 1.35fr) minmax(0, 100px) minmax(0, 120px) minmax(0, 140px) minmax(0, 92px) minmax(0, 72px)',
                   }}
                 >
-                  <span className="min-w-0 truncate font-medium text-blue-600" title={row.radicado}>
-                    {row.radicado}
+                  <span className="min-w-0 truncate" title={row.radicado}>
+                    <span className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs text-gray-600">
+                      {row.radicado}
+                    </span>
                   </span>
-                  <span className="min-w-0 truncate text-slate-900" title={colaboradorTitulo}>
-                    {nombreCol || 'Sin nombre'}
+                  <span className="min-w-0 truncate" title={colaboradorTitulo}>
+                    <span className="text-sm font-medium text-gray-900">
+                      {nombreCol || 'Sin nombre'}
+                    </span>
                   </span>
                   <span
                     className="min-w-0 truncate text-slate-500"
@@ -223,15 +222,7 @@ export function RrhhIncapacidadesPanel() {
                     {entidadTxt}
                   </span>
                   <span className="min-w-0">
-                    <span
-                      className={cn(
-                        'inline-flex max-w-full truncate rounded-full px-2.5 py-1 text-xs font-medium',
-                        estadoBadgeClasses(row.estado),
-                      )}
-                      title={labelEstadoIncapacidad(row.estado)}
-                    >
-                      {labelEstadoIncapacidad(row.estado)}
-                    </span>
+                    <StatusBadge estado={row.estado} />
                   </span>
                   <span className="min-w-0 truncate text-slate-500">
                     {formatFechaCorta(row.fecha_recepcion)}

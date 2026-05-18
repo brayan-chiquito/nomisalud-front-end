@@ -10,28 +10,30 @@ function KpiCard({
   value,
   label,
   icon: Icon,
-  iconWrapClass,
-  iconClass,
+  iconBg,
+  iconColor,
 }: Readonly<{
   value: number | null
   label: string
   icon: LucideIcon
-  iconWrapClass: string
-  iconClass: string
+  iconBg: string
+  iconColor: string
 }>) {
   return (
-    <div className="flex flex-1 flex-col gap-3 rounded-xl border border-slate-100/80 bg-white p-5 shadow-[0_1px_6px_rgba(0,0,0,0.06)]">
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-[32px] font-bold leading-none text-slate-900">
-          {value === null ? '—' : value}
-        </p>
-        <div
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] ${iconWrapClass}`}
-        >
-          <Icon className={`h-[22px] w-[22px] ${iconClass}`} aria-hidden />
+    <div className="rounded-card border border-gray-200/60 bg-white p-5 shadow-card">
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="mb-1 text-xs font-medium tracking-widest text-gray-400 uppercase">
+            {label}
+          </p>
+          <p className="text-3xl font-bold text-gray-900 tabular-nums">
+            {value === null ? '—' : value}
+          </p>
+        </div>
+        <div className={`rounded-lg p-2.5 ${iconBg}`}>
+          <Icon className={`h-4 w-4 ${iconColor}`} aria-hidden />
         </div>
       </div>
-      <p className="text-[13px] text-slate-500">{label}</p>
     </div>
   )
 }
@@ -58,34 +60,34 @@ export function RrhhDashboardKpis() {
   const show = (n: keyof IncapacidadKpis) => (loading || kpis === null ? null : kpis[n])
 
   return (
-    <div className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <KpiCard
         value={show('totalRecibidas')}
         label="Total recibidas"
         icon={Inbox}
-        iconWrapClass="bg-blue-100"
-        iconClass="text-blue-600"
+        iconBg="bg-primary/10"
+        iconColor="text-primary"
       />
       <KpiCard
         value={show('enVerificacion')}
         label="En verificación"
         icon={Search}
-        iconWrapClass="bg-amber-100"
-        iconClass="text-amber-500"
+        iconBg="bg-info-light"
+        iconColor="text-info"
       />
       <KpiCard
         value={show('transcribiendo')}
         label="Transcribiendo"
         icon={PencilLine}
-        iconWrapClass="bg-violet-100"
-        iconClass="text-violet-600"
+        iconBg="bg-warning-light"
+        iconColor="text-warning"
       />
       <KpiCard
         value={show('pagadas')}
         label="Pagadas"
         icon={CircleCheck}
-        iconWrapClass="bg-emerald-100"
-        iconClass="text-emerald-600"
+        iconBg="bg-success-light"
+        iconColor="text-success"
       />
     </div>
   )

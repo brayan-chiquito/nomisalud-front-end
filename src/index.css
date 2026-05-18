@@ -1,1 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
+
+@theme {
+  --color-primary: #185fa5;
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-600: #185fa5;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+
+  --color-success: #16a34a;
+  --color-success-light: #dcfce7;
+  --color-success-text: #166534;
+
+  --color-warning: #d97706;
+  --color-warning-light: #fef3c7;
+  --color-warning-text: #92400e;
+
+  --color-danger: #dc2626;
+  --color-danger-light: #fee2e2;
+  --color-danger-text: #991b1b;
+
+  --color-info: #7c3aed;
+  --color-info-light: #ede9fe;
+  --color-info-text: #5b21b6;
+
+  --color-neutral: #6b7280;
+  --color-neutral-light: #f3f4f6;
+  --color-neutral-text: #374151;
+
+  --font-sans: Inter, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  --radius-card: 0.75rem;
+  --radius-badge: 9999px;
+
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+  --shadow-card-hover: 0 4px 12px 0 rgb(0 0 0 / 0.08);
+
+  --animate-ping-slow: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  --animate-fade-in: fadeIn 0.2s ease-in-out;
+  --animate-slide-up: slideUp 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  0% {
+    transform: translateY(4px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    color: #111827;
+    background-color: #fafafa;
+  }
+}

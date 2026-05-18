@@ -38,7 +38,7 @@ export function MiTramiteView() {
     detail?.colaborador_nombre?.trim() || displayNameFromEmail(user?.email) || 'Colaborador'
 
   return (
-    <div className="flex min-h-screen flex-col bg-blue-50">
+    <div className="flex min-h-screen flex-col bg-gray-50/50">
       <CollaboratorHeader
         userName={headerName}
         companyName="Portal colaborador"
@@ -47,18 +47,20 @@ export function MiTramiteView() {
 
       {alertaDocumentacion ? <DocumentacionPendienteBanner data={alertaDocumentacion} /> : null}
 
-      {tramiteId ? (
-        <MiTramiteDetallePanel detail={detail} loading={loadingDetalle} error={errorDetalle} />
-      ) : (
-        <MisTramitesListPanel
-          items={data?.items ?? []}
-          loading={loading}
-          error={error}
-          page={page}
-          pages={data?.pages ?? 1}
-          onPageChange={setPage}
-        />
-      )}
+      <div className="mx-auto w-full max-w-2xl flex-1 space-y-5 py-8">
+        {tramiteId ? (
+          <MiTramiteDetallePanel detail={detail} loading={loadingDetalle} error={errorDetalle} />
+        ) : (
+          <MisTramitesListPanel
+            items={data?.items ?? []}
+            loading={loading}
+            error={error}
+            page={page}
+            pages={data?.pages ?? 1}
+            onPageChange={setPage}
+          />
+        )}
+      </div>
     </div>
   )
 }

@@ -5,6 +5,8 @@ import logo from '@/assets/logo.png'
 import type { LoginFormState } from '../types'
 import { loginService } from '../services/auth.service'
 import { useAuth } from '../context/AuthContext'
+import { buttonClassName, inputClassName, labelClassName } from '@/components/ui/buttonStyles'
+import { cn } from '@/utils/cn'
 
 export function LoginForm() {
   const navigate = useNavigate()
@@ -38,146 +40,175 @@ export function LoginForm() {
     setPassword('')
   }
 
+  const fieldBorder = isError
+    ? 'border-danger/50 focus:border-danger focus:ring-danger/20'
+    : isSuccess
+      ? 'border-success/50 focus:border-success focus:ring-success/20'
+      : 'border-gray-200 focus:border-primary/50 focus:ring-primary/20'
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
-      <div
-        className="w-full max-w-[400px] rounded-xl bg-white p-10"
-        style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.10)' }}
-      >
-        {/* Logo */}
-        <div className="mb-5 flex justify-center">
-          <img src={logo} alt="Nomisalud" className="h-[100px] w-[150px] object-contain" />
+    <div className="flex min-h-screen">
+      {/* Panel izquierdo — decorativo */}
+      <div className="relative hidden w-2/5 flex-col justify-between overflow-hidden bg-primary-600 p-12 lg:flex">
+        <div className="absolute inset-0 opacity-10" aria-hidden>
+          <div className="absolute top-20 left-10 h-64 w-64 rounded-full border border-white" />
+          <div className="absolute top-40 left-20 h-96 w-96 rounded-full border border-white" />
+          <div className="absolute -right-10 -bottom-10 h-72 w-72 rounded-full border border-white" />
         </div>
 
-        {/* Subtítulo */}
-        <p className="mb-5 text-center text-[13px] text-gray-500">Inicia sesión en tu cuenta</p>
-
-        {/* Alerta de error */}
-        {isError && (
-          <div className="mb-5 flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 p-3">
-            <CircleAlert size={18} className="mt-px shrink-0 text-red-600" />
-            <p className="text-[13px] text-red-600">
-              Correo o contraseña incorrectos. Por favor, intenta de nuevo.
-            </p>
-          </div>
-        )}
-
-        {/* Alerta de éxito */}
-        {isSuccess && (
-          <div className="mb-5 flex items-start gap-2.5 rounded-lg border border-green-200 bg-green-50 p-3">
-            <CircleCheck size={18} className="mt-px shrink-0 text-green-600" />
-            <p className="text-[13px] text-green-600">
-              ¡Inicio de sesión exitoso! Redirigiendo al sistema...
-            </p>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} noValidate>
-          {/* Campo de correo */}
-          <div className="mb-5 flex flex-col gap-1.5">
-            <label htmlFor="email" className="text-[13px] font-medium text-gray-700">
-              Correo electrónico
-            </label>
-            <div
-              className={`flex h-[46px] items-center gap-2 rounded-lg border px-3 transition-colors ${
-                isError
-                  ? 'border-red-600 bg-[#FFF5F5]'
-                  : 'border-gray-300 bg-gray-50 focus-within:border-blue-500 focus-within:bg-white'
-              }`}
-            >
-              <Mail size={16} className="shrink-0 text-gray-400" />
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value)
-                  if (isError) setFormState('idle')
-                }}
-                placeholder="correo@ejemplo.com"
-                disabled={isSuccess || isLoading}
-                autoComplete="email"
-                required
-                className="w-full bg-transparent text-[14px] text-gray-800 outline-none placeholder:text-gray-400 disabled:cursor-not-allowed disabled:opacity-60"
+        <div className="relative z-10">
+          <div className="mb-8 flex items-center gap-3">
+            <div className="rounded-xl bg-white/95 p-2.5 shadow-sm">
+              <img
+                src={logo}
+                alt=""
+                aria-hidden
+                className="h-10 w-auto max-w-[120px] object-contain"
               />
             </div>
           </div>
+          <h1 className="mb-3 text-3xl leading-tight font-bold text-white">
+            Gestión inteligente
+            <br />
+            de incapacidades
+          </h1>
+          <p className="text-sm leading-relaxed text-blue-100">
+            Centraliza, automatiza y rastrea el ciclo completo de incapacidades médicas de tu
+            empresa.
+          </p>
+        </div>
 
-          {/* Campo de contraseña */}
-          <div className="mb-3 flex flex-col gap-1.5">
-            <label htmlFor="password" className="text-[13px] font-medium text-gray-700">
-              Contraseña
-            </label>
-            <div
-              className={`flex h-[46px] items-center gap-2 rounded-lg border px-3 transition-colors ${
-                isError
-                  ? 'border-red-600 bg-[#FFF5F5]'
-                  : isSuccess
-                    ? 'border-green-600 bg-green-50'
-                    : 'border-gray-300 bg-gray-50 focus-within:border-blue-500 focus-within:bg-white'
-              }`}
-            >
-              <input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value)
-                  if (isError) setFormState('idle')
-                }}
-                placeholder="••••••••"
-                disabled={isSuccess || isLoading}
-                autoComplete="current-password"
-                required
-                className="w-full bg-transparent text-[14px] text-gray-800 outline-none placeholder:text-gray-400 disabled:cursor-not-allowed disabled:opacity-60"
-              />
+        <div className="relative z-10 grid grid-cols-2 gap-4">
+          <div className="rounded-xl bg-white/10 p-4">
+            <p className="text-2xl font-bold text-white">85%+</p>
+            <p className="mt-1 text-xs text-blue-100">Precisión de extracción IA</p>
+          </div>
+          <div className="rounded-xl bg-white/10 p-4">
+            <p className="text-2xl font-bold text-white">70%</p>
+            <p className="mt-1 text-xs text-blue-100">Reducción tiempo manual</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Panel derecho — formulario */}
+      <div className="flex flex-1 items-center justify-center bg-gray-50/50 p-8">
+        <div className="w-full max-w-sm animate-fade-in">
+          <div className="mb-6 flex justify-center">
+            <img src={logo} alt="Nomisalud" className="h-[100px] w-[150px] object-contain" />
+          </div>
+
+          <h2 className="mb-1 text-2xl font-semibold tracking-tight text-gray-900">Bienvenido</h2>
+          <p className="mb-8 text-sm text-gray-400">Inicia sesión en tu cuenta</p>
+
+          {isError ? (
+            <div className="mb-6 flex items-start gap-2 rounded-lg border border-danger/20 bg-danger-light p-3">
+              <CircleAlert size={18} className="mt-px shrink-0 text-danger" aria-hidden />
+              <p className="text-sm text-danger-text">
+                Correo o contraseña incorrectos. Por favor, intenta de nuevo.
+              </p>
+            </div>
+          ) : null}
+
+          {isSuccess ? (
+            <div className="mb-6 flex items-start gap-2 rounded-lg border border-success/20 bg-success-light p-3">
+              <CircleCheck size={18} className="mt-px shrink-0 text-success" aria-hidden />
+              <p className="text-sm text-success-text">
+                ¡Inicio de sesión exitoso! Redirigiendo al sistema...
+              </p>
+            </div>
+          ) : null}
+
+          <form onSubmit={handleSubmit} noValidate className="space-y-5">
+            <div>
+              <label htmlFor="email" className={labelClassName}>
+                Correo electrónico
+              </label>
+              <div className="relative">
+                <Mail
+                  size={16}
+                  className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-gray-400"
+                  aria-hidden
+                />
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value)
+                    if (isError) setFormState('idle')
+                  }}
+                  placeholder="correo@ejemplo.com"
+                  disabled={isSuccess || isLoading}
+                  autoComplete="email"
+                  required
+                  className={cn(inputClassName, 'pl-9', fieldBorder)}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="password" className={labelClassName}>
+                Contraseña
+              </label>
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                    if (isError) setFormState('idle')
+                  }}
+                  placeholder="••••••••"
+                  disabled={isSuccess || isLoading}
+                  autoComplete="current-password"
+                  required
+                  className={cn(inputClassName, 'pr-10', fieldBorder)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className={buttonClassName('icon', 'absolute top-1/2 right-1 -translate-y-1/2')}
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            <div className="text-center">
               <button
                 type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="shrink-0 text-gray-400 hover:text-gray-600 focus:outline-none"
-                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                className="text-xs text-primary hover:underline focus:outline-none"
               >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                ¿Olvidaste tu contraseña?
               </button>
             </div>
-          </div>
 
-          {/* Link olvidé mi contraseña */}
-          <div className="mb-5 text-right">
-            <button
-              type="button"
-              className="text-[12px] text-blue-600 hover:underline focus:outline-none"
-            >
-              ¿Olvidaste tu contraseña?
-            </button>
-          </div>
+            {isError ? (
+              <button
+                type="button"
+                onClick={handleRetry}
+                className={buttonClassName('danger', 'h-11 w-full')}
+              >
+                Intentar de nuevo
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={isLoading || isSuccess}
+                className={buttonClassName('primary', 'h-11 w-full')}
+              >
+                {isLoading ? <Loader2 size={18} className="animate-spin" aria-hidden /> : null}
+                {isSuccess ? '¡Bienvenido!' : isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+              </button>
+            )}
+          </form>
 
-          {/* Botón de acción */}
-          {isError ? (
-            <button
-              type="button"
-              onClick={handleRetry}
-              className="flex h-12 w-full items-center justify-center rounded-lg bg-red-600 text-[15px] font-semibold text-white transition-opacity hover:opacity-90 active:opacity-80"
-            >
-              Intentar de nuevo
-            </button>
-          ) : (
-            <button
-              type="submit"
-              disabled={isLoading || isSuccess}
-              className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-blue-600 text-[15px] font-semibold text-white transition-opacity hover:opacity-90 active:opacity-80 disabled:cursor-not-allowed disabled:opacity-70"
-              style={{ boxShadow: '0 2px 8px rgba(37,99,235,0.25)' }}
-            >
-              {isLoading && <Loader2 size={18} className="animate-spin" />}
-              {isSuccess ? '¡Bienvenido!' : isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
-            </button>
-          )}
-        </form>
-
-        {/* Copyright */}
-        <p className="mt-5 text-center text-[11px] text-gray-400">
-          © 2025 Nomisalud. Todos los derechos reservados.
-        </p>
+          <p className="mt-6 text-center text-[11px] text-gray-400">
+            © 2025 Nomisalud. Todos los derechos reservados.
+          </p>
+        </div>
       </div>
     </div>
   )

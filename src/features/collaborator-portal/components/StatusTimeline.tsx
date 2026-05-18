@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import { CheckCircle2, Circle, RefreshCw } from 'lucide-react'
 import { cn } from '@/utils/cn'
+import { Card } from '@/components/ui/Card'
 
 export type StatusTimelinePhase = 'completed' | 'current' | 'pending'
 
@@ -40,16 +40,6 @@ function sortChronological(entries: readonly StatusTimelineRecord[]): StatusTime
   )
 }
 
-function NodeIcon({ phase }: Readonly<{ phase: StatusTimelinePhase }>) {
-  if (phase === 'completed') {
-    return <CheckCircle2 className="h-7 w-7 shrink-0 text-emerald-500" aria-hidden />
-  }
-  if (phase === 'current') {
-    return <RefreshCw className="h-7 w-7 shrink-0 text-blue-600" aria-hidden />
-  }
-  return <Circle className="h-7 w-7 shrink-0 text-slate-300" aria-hidden />
-}
-
 /**
  * Línea de tiempo vertical del historial de estados de un trámite.
  */
@@ -57,62 +47,57 @@ export function StatusTimeline({ title = 'Estado del trámite', entries }: Statu
   const ordered = useMemo(() => sortChronological(entries), [entries])
 
   return (
-    <section
-      className="w-full max-w-[680px] space-y-4 rounded-2xl bg-white p-6 shadow-md"
-      style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}
-      aria-label={title}
-    >
-      <h2 className="text-[15px] font-bold text-slate-800">{title}</h2>
+    <Card className="p-5" aria-label={title}>
+      <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-400">
+        {title}
+      </h2>
 
-      <ol className="relative m-0 list-none space-y-0 p-0" role="list">
-        {ordered.map((entry, index) => {
-          const isLast = index === ordered.length - 1
-          const meta = formatHistorialTimestamp(entry.occurredAtIso)
-          const isCurrent = entry.phase === 'current'
-          const isPending = entry.phase === 'pending'
+      {ordered.length === 0 ? (
+        <p className="text-sm text-gray-400">Sin registros de historial aún.</p>
+      ) : (
+        <div className="relative">
+          <div className="absolute top-0 bottom-0 left-3.5 w-px bg-gray-100" aria-hidden />
+          <ol className="m-0 list-none space-y-4 p-0" role="list">
+            {ordered.map((entry) => {
+              const meta = formatHistorialTimestamp(entry.occurredAtIso)
+              const isCurrent = entry.phase === 'current'
+              const isPending = entry.phase === 'pending'
 
-          return (
-            <li
-              key={entry.id}
-              className={cn(
-                'relative flex gap-3.5 pb-4 pl-0',
-                !isLast && 'border-b border-slate-100',
-                isCurrent && 'rounded-lg bg-sky-50 px-1 py-1',
-              )}
-              role="listitem"
-            >
-              <div className="flex shrink-0 flex-col items-center pt-0.5">
-                <NodeIcon phase={entry.phase} />
-                {!isLast ? (
+              return (
+                <li key={entry.id} className="relative flex items-start gap-4 pl-9" role="listitem">
                   <span
-                    className="mt-1 min-h-[8px] w-px flex-1 bg-slate-200"
+                    className={cn(
+                      'absolute left-2 mt-0.5 h-3 w-3 rounded-full border-2 bg-white',
+                      entry.phase === 'completed' && 'border-success bg-success',
+                      isCurrent && 'border-primary',
+                      isPending && 'border-gray-200',
+                    )}
                     aria-hidden
-                    style={{ marginLeft: 0 }}
                   />
-                ) : null}
-              </div>
-              <div className="min-w-0 flex-1 space-y-1 pb-1 pt-0.5">
-                <p
-                  className={cn(
-                    'text-sm font-semibold',
-                    entry.phase === 'completed' && 'text-emerald-600',
-                    isCurrent && 'font-bold text-blue-600',
-                    isPending && 'text-slate-400',
-                  )}
-                >
-                  {entry.estadoLabel}
-                </p>
-                <p className={cn('text-xs', isPending ? 'text-slate-300' : 'text-slate-500')}>
-                  <span className="font-medium text-slate-600">{entry.usuarioNombre}</span>
-                  {' · '}
-                  <time dateTime={entry.occurredAtIso}>{meta}</time>
-                </p>
-                {isCurrent ? <p className="text-xs font-medium text-blue-600">En proceso</p> : null}
-              </div>
-            </li>
-          )
-        })}
-      </ol>
-    </section>
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className={cn(
+                        'text-sm font-medium text-gray-900',
+                        isPending && 'text-gray-400',
+                      )}
+                    >
+                      {entry.estadoLabel}
+                    </p>
+                    <p className="mt-0.5 text-xs text-gray-400">
+                      <span className="font-medium text-gray-600">{entry.usuarioNombre}</span>
+                      {' · '}
+                      <time dateTime={entry.occurredAtIso}>{meta}</time>
+                    </p>
+                    {isCurrent ? (
+                      <p className="mt-0.5 text-xs font-medium text-primary">En proceso</p>
+                    ) : null}
+                  </div>
+                </li>
+              )
+            })}
+          </ol>
+        </div>
+      )}
+    </Card>
   )
 }
