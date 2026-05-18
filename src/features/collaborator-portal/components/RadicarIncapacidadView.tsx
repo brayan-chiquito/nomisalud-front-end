@@ -12,7 +12,8 @@ import { uploadIncapacityFile } from '@/features/incapacidades/services/uploadIn
 import { resolveIncapacidadIdAfterUpload } from '@/features/incapacidades/services/resolveIncapacidadIdAfterUpload.service'
 import { useAuth } from '@/features/auth/context/AuthContext'
 import { UserProfileMenu } from '@/components/UserProfileMenu'
-
+import { Card } from '@/components/ui/Card'
+import { buttonClassName, labelClassName } from '@/components/ui/buttonStyles'
 const MAX_MB = INCAPACITY_MAX_BYTES / (1024 * 1024)
 
 /**
@@ -92,14 +93,14 @@ export function RadicarIncapacidadView() {
   const canSubmit = Boolean(file) && !isUploading
 
   return (
-    <div className="flex min-h-screen flex-col bg-blue-50">
-      <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6">
+    <div className="flex min-h-screen flex-col bg-gray-50/50">
+      <header className="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6">
         <div className="flex items-center gap-2.5">
-          <img src={logo} alt="Nomisalud" className="h-[30px] w-[30px] object-contain" />
-          <span className="text-[15px] font-bold text-slate-800">Nomisalud</span>
+          <img src={logo} alt="Nomisalud" className="h-8 w-8 object-contain" />
+          <span className="text-sm font-semibold text-gray-900">Nomisalud</span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="hidden text-sm text-slate-500 sm:inline">{headerName}</span>
+          <span className="hidden text-sm text-gray-400 sm:inline">{headerName}</span>
           <UserProfileMenu
             userName={headerName}
             companyName="Portal colaborador"
@@ -108,27 +109,26 @@ export function RadicarIncapacidadView() {
         </div>
       </header>
 
-      <main className="flex flex-1 flex-col items-center gap-5 px-8 py-8">
-        <div className="flex w-full max-w-[680px] items-center gap-3">
+      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-5 py-8">
+        <div className="flex items-center gap-3">
           <Link
             to="/portal/mi-tramite"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[13px] text-slate-500 hover:bg-slate-50"
+            className={buttonClassName('secondary', 'gap-1.5 py-1.5 text-[13px]')}
           >
             <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
             Volver
           </Link>
-          <h1 className="text-lg font-bold text-slate-800">Radicar nueva incapacidad</h1>
+          <h1 className="text-[22px] font-semibold tracking-tight text-gray-900">
+            Radicar nueva incapacidad
+          </h1>
         </div>
 
-        <section
-          className="w-full max-w-[680px] overflow-hidden rounded-2xl bg-white shadow-md"
-          style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}
-        >
-          <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
-            <h2 className="text-base font-semibold text-slate-800">
+        <Card className="overflow-hidden">
+          <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
+            <h2 className="text-base font-semibold text-gray-900">
               Sube el documento de incapacidad
             </h2>
-            <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
+            <span className="rounded-badge bg-primary-100 px-3 py-1 text-xs font-medium text-primary-800">
               Paso 1 de 2
             </span>
           </div>
@@ -144,7 +144,7 @@ export function RadicarIncapacidadView() {
               disabled={isUploading}
             />
 
-            <div className="h-px w-full bg-slate-100" />
+            <div className="h-px w-full bg-gray-100" />
 
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <FieldSelect label="Tipo de incapacidad" placeholder="Seleccionar tipo..." />
@@ -156,27 +156,24 @@ export function RadicarIncapacidadView() {
               <FieldDate label="Fecha de fin" placeholder="DD/MM/AAAA" />
             </div>
 
-            <div className="flex items-start gap-2 rounded-lg border border-sky-200 bg-sky-50 px-3.5 py-2.5">
-              <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-sky-600" aria-hidden />
-              <p className="text-xs text-sky-800">
+            <div className="flex items-start gap-2 rounded-lg border border-primary/20 bg-primary-50 px-3.5 py-2.5">
+              <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary-600" aria-hidden />
+              <p className="text-xs text-primary-800">
                 La IA extraerá automáticamente los datos del documento. Podrás revisar y corregir
                 antes de confirmar.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center justify-between border-t border-slate-50 px-6 pb-6 pt-4">
-            <Link
-              to="/portal/mi-tramite"
-              className="rounded-lg border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            >
+          <div className="flex items-center justify-between border-t border-gray-100 px-6 pb-6 pt-4">
+            <Link to="/portal/mi-tramite" className={buttonClassName('secondary')}>
               Cancelar
             </Link>
             <button
               type="button"
               onClick={() => void handleContinue()}
               disabled={!canSubmit}
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-7 py-3 text-sm font-semibold text-white hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-50"
+              className={buttonClassName('primary', 'gap-2 px-7 py-3')}
             >
               {isUploading ? (
                 <>
@@ -191,7 +188,7 @@ export function RadicarIncapacidadView() {
               )}
             </button>
           </div>
-        </section>
+        </Card>
       </main>
     </div>
   )
@@ -202,13 +199,13 @@ type FieldSelectProps = Readonly<{ label: string; placeholder: string }>
 function FieldSelect({ label, placeholder }: FieldSelectProps) {
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-xs font-medium text-slate-700">{label}</span>
+      <span className={labelClassName}>{label}</span>
       <button
         type="button"
-        className="flex h-[42px] items-center justify-between rounded-lg border border-slate-300 bg-gray-50 px-3 text-left text-[13px] text-slate-400"
+        className="flex h-11 items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-3 text-left text-[13px] text-gray-400"
       >
         {placeholder}
-        <ChevronDown className="h-3.5 w-3.5 text-slate-400" aria-hidden />
+        <ChevronDown className="h-3.5 w-3.5 text-gray-400" aria-hidden />
       </button>
     </div>
   )
@@ -219,10 +216,10 @@ type FieldDateProps = Readonly<{ label: string; placeholder: string }>
 function FieldDate({ label, placeholder }: FieldDateProps) {
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-xs font-medium text-slate-700">{label}</span>
-      <div className="flex h-[42px] items-center justify-between rounded-lg border border-slate-300 bg-gray-50 px-3 text-[13px] text-slate-400">
+      <span className={labelClassName}>{label}</span>
+      <div className="flex h-11 items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-3 text-[13px] text-gray-400">
         <span>{placeholder}</span>
-        <Calendar className="h-3.5 w-3.5 text-slate-400" aria-hidden />
+        <Calendar className="h-3.5 w-3.5 text-gray-400" aria-hidden />
       </div>
     </div>
   )

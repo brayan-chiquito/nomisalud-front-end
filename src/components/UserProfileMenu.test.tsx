@@ -35,4 +35,24 @@ describe('UserProfileMenu', () => {
     expect(mockLogout).toHaveBeenCalled()
     expect(mockNavigate).toHaveBeenCalledWith('/login')
   })
+
+  it('con menuPlacement right abre el menú hacia la derecha', async () => {
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter>
+        <UserProfileMenu
+          userName="Ana"
+          companyName="Recursos Humanos"
+          avatarInitials="AN"
+          menuPlacement="right"
+          showUserInfo
+        />
+      </MemoryRouter>,
+    )
+
+    await user.click(screen.getByRole('button', { name: /menú de perfil de ana/i }))
+    const menu = screen.getByRole('menu')
+    expect(menu).toHaveClass('left-full')
+    expect(menu).not.toHaveClass('top-full')
+  })
 })

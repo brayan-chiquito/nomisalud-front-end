@@ -1,12 +1,10 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, Calculator, Cpu, Loader2, Timer } from 'lucide-react'
+import { ArrowLeft, Calculator, Cpu, Loader2 } from 'lucide-react'
 import { useAuth } from '@/features/auth/context/AuthContext'
-import {
-  labelEstadoIncapacidad,
-  estadoBadgeClasses,
-} from '@/features/incapacidades/utils/estadoBadge'
-import { cn } from '@/utils/cn'
+import { StatusBadge } from '@/components/ui/StatusBadge'
+import { Card } from '@/components/ui/Card'
+import { buttonClassName, inputClassName, labelClassName } from '@/components/ui/buttonStyles'
 import { useIncapacidadAiReview } from '../hooks/useIncapacidadAiReview'
 import {
   calidadDocPercent,
@@ -121,17 +119,14 @@ export function IncapacityAiReviewView() {
 
   if (!incapacidadId) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-100 px-4">
-        <p className="text-center text-slate-700">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-gray-50/50 px-4">
+        <p className="text-center text-sm text-gray-700">
           Falta el identificador del trámite. Abre esta pantalla desde el listado (enlace{' '}
           <strong>Revisar</strong>) con el parámetro{' '}
-          <code className="rounded bg-slate-200 px-1">id</code>, o desde{' '}
+          <code className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs">id</code>, o desde{' '}
           <strong>Continuar al resumen</strong> tras radicar una incapacidad.
         </p>
-        <Link
-          to={backHref}
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-        >
+        <Link to={backHref} className={buttonClassName('primary')}>
           {puedeVerificar ? 'Ir al dashboard' : 'Ir a mi trámite'}
         </Link>
       </div>
@@ -140,8 +135,8 @@ export function IncapacityAiReviewView() {
 
   if (loadingDetail && !detail) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-slate-100 text-slate-600">
-        <Loader2 className="h-10 w-10 animate-spin text-blue-600" aria-hidden />
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-gray-50/50 text-gray-600">
+        <Loader2 className="h-10 w-10 animate-spin text-primary-600" aria-hidden />
         <p className="text-sm">Cargando trámite…</p>
       </div>
     )
@@ -149,14 +144,11 @@ export function IncapacityAiReviewView() {
 
   if (errorDetail) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-100 px-4">
-        <p className="max-w-md text-center text-red-700" role="alert">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-gray-50/50 px-4">
+        <p className="max-w-md text-center text-sm text-danger-text" role="alert">
           {errorDetail}
         </p>
-        <Link
-          to={backHref}
-          className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50"
-        >
+        <Link to={backHref} className={buttonClassName('secondary')}>
           Volver
         </Link>
       </div>
@@ -165,59 +157,50 @@ export function IncapacityAiReviewView() {
 
   if (!detail) return null
 
-  const estadoLabel = labelEstadoIncapacidad(detail.estado)
   const accionesRevisionDeshabilitadas =
     puedeVerificar === false || submitting || detail.extraccion_ia == null
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-100">
-      <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-6">
+    <div className="flex min-h-screen flex-col bg-gray-50/50">
+      <header className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-6">
         <div className="flex min-w-0 flex-1 items-center gap-4">
           <Link
             to={backHref}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+            className={buttonClassName('icon', 'h-9 w-9 shrink-0')}
             aria-label="Volver"
           >
             <ArrowLeft className="h-[18px] w-[18px]" />
           </Link>
           <div className="min-w-0 flex flex-col gap-0.5">
-            <span className="truncate text-base font-bold text-slate-800">{detail.radicado}</span>
-            <span className="text-xs text-slate-400">Revisión de documento de incapacidad</span>
+            <span className="truncate font-mono text-sm font-semibold text-gray-900">
+              {detail.radicado}
+            </span>
+            <span className="text-xs text-gray-400">Revisión de documento de incapacidad</span>
           </div>
-          <span
-            className={cn(
-              'ml-2 inline-flex max-w-[min(200px,40vw)] shrink-0 items-center gap-1.5 truncate rounded-full px-3.5 py-1.5 text-[13px] font-medium',
-              estadoBadgeClasses(detail.estado),
-            )}
-            title={estadoLabel}
-          >
-            <Timer className="h-3.5 w-3.5" aria-hidden />
-            {estadoLabel}
-          </span>
+          <StatusBadge estado={detail.estado} className="ml-2 shrink-0" />
         </div>
         <div className="flex shrink-0 items-center gap-3">
-          <span className="hidden text-sm text-slate-500 sm:inline">
+          <span className="hidden text-sm text-gray-400 sm:inline">
             {displayNameFromEmail(user?.email)}
           </span>
           <UserProfileMenu
             userName={displayNameFromEmail(user?.email)}
             companyName="Revisión de incapacidades"
             avatarInitials={initialsFromEmail(user?.email, user?.id)}
-            avatarClassName="bg-blue-600"
           />
         </div>
       </header>
 
       {submitError ? (
         <div
-          className="border-b border-red-200 bg-red-50 px-6 py-2 text-center text-sm text-red-800"
+          className="border-b border-danger/20 bg-danger-light px-6 py-2 text-center text-sm text-danger-text"
           role="alert"
         >
           {submitError}
         </div>
       ) : null}
 
-      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-5 p-5 lg:grid-cols-2 lg:h-[calc(100vh-8rem)]">
         <DocumentPreviewPanel
           archivoTipo={detail.archivo_tipo}
           objectUrl={archivoObjectUrl}
@@ -228,109 +211,116 @@ export function IncapacityAiReviewView() {
           onZoomOut={handleZoomOut}
         />
 
-        <section className="flex min-h-0 flex-1 flex-col gap-4 border-l border-slate-200 bg-white p-6 lg:max-w-[50%]">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
-            <h2 className="text-[15px] font-bold text-slate-800">Datos extraídos por IA</h2>
+        <Card className="flex min-h-0 flex-col overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-5 py-3">
+            <div>
+              <h2 className="text-sm font-semibold text-gray-900">Datos extraídos por IA</h2>
+              <p className="mt-0.5 text-[11px] text-gray-400">Revisados por IA</p>
+            </div>
             {confianza === null ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+              <span className="inline-flex items-center gap-1.5 rounded-badge bg-neutral-light px-2 py-1 text-[10px] font-medium text-neutral-text">
                 <Cpu className="h-3.5 w-3.5" aria-hidden />
                 Extracción IA
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
+              <span className="inline-flex items-center gap-1.5 rounded-badge bg-info-light px-2 py-1 text-[10px] font-medium text-info-text">
                 <Cpu className="h-3.5 w-3.5" aria-hidden />
                 Confianza: {confianza}%
               </span>
             )}
           </div>
 
-          {detail.extraccion_ia ? null : (
-            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-              Aún no hay extracción IA para este trámite. Cuando el proceso termine, los campos se
-              llenarán automáticamente.
-            </p>
-          )}
+          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-5">
+            {detail.extraccion_ia ? null : (
+              <p className="rounded-lg border border-warning/20 bg-warning-light px-3 py-2 text-sm text-warning-text">
+                Aún no hay extracción IA para este trámite. Cuando el proceso termine, los campos se
+                llenarán automáticamente.
+              </p>
+            )}
 
-          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1">
-            <FormInput
-              label="Nombre colaborador"
-              value={form.nombreColaborador}
-              onChange={(v) => setFormField('nombreColaborador', v)}
-              disabled={formDisabled}
-            />
-            <FormInput
-              label="Número de identificación"
-              value={form.documentoColaborador}
-              onChange={(v) => setFormField('documentoColaborador', v)}
-              disabled={formDisabled}
-            />
-            <FormInput
-              label="Tipo de incapacidad"
-              value={form.tipoIncapacidad}
-              onChange={(v) => setFormField('tipoIncapacidad', v)}
-              disabled={formDisabled}
-            />
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="flex flex-col gap-3">
               <FormInput
-                label="Fecha de inicio"
-                value={form.fechaInicio}
-                onChange={(v) => setFormField('fechaInicio', v)}
+                label="Nombre colaborador"
+                value={form.nombreColaborador}
+                onChange={(v) => setFormField('nombreColaborador', v)}
                 disabled={formDisabled}
               />
               <FormInput
-                label="Fecha de fin"
-                value={form.fechaFin}
-                onChange={(v) => setFormField('fechaFin', v)}
+                label="Número de identificación"
+                value={form.documentoColaborador}
+                onChange={(v) => setFormField('documentoColaborador', v)}
                 disabled={formDisabled}
               />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-slate-700">
-                Días de incapacidad (calculado si hay fechas)
-              </span>
-              <div className="flex h-[42px] items-center justify-between gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3">
-                <span className="text-[13px] font-semibold text-blue-600">{diasMostrar}</span>
-                <Calculator className="h-4 w-4 text-blue-600" aria-hidden />
+              <FormInput
+                label="Tipo de incapacidad"
+                value={form.tipoIncapacidad}
+                onChange={(v) => setFormField('tipoIncapacidad', v)}
+                disabled={formDisabled}
+              />
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <FormInput
+                  label="Fecha de inicio"
+                  value={form.fechaInicio}
+                  onChange={(v) => setFormField('fechaInicio', v)}
+                  disabled={formDisabled}
+                />
+                <FormInput
+                  label="Fecha de fin"
+                  value={form.fechaFin}
+                  onChange={(v) => setFormField('fechaFin', v)}
+                  disabled={formDisabled}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <span className={labelClassName}>
+                  Días de incapacidad (calculado si hay fechas)
+                </span>
+                <div className="flex h-11 items-center justify-between gap-2 rounded-lg border border-primary/20 bg-primary-50 px-3">
+                  <span className="text-sm font-semibold text-primary-600 tabular-nums">
+                    {diasMostrar}
+                  </span>
+                  <Calculator className="h-4 w-4 text-primary-600" aria-hidden />
+                </div>
+              </div>
+              <FormInput
+                label="Diagnóstico / descripción"
+                value={form.diagnostico}
+                onChange={(v) => setFormField('diagnostico', v)}
+                disabled={formDisabled}
+              />
+              <FormInput
+                label="Código CIE-10"
+                value={form.codigoCie10}
+                onChange={(v) => setFormField('codigoCie10', v)}
+                disabled={formDisabled}
+              />
+              <FormInput
+                label="Entidad (nombre)"
+                value={form.entidadNombre}
+                onChange={(v) => setFormField('entidadNombre', v)}
+                disabled={formDisabled}
+              />
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <FormInput
+                  label="Tipo entidad"
+                  value={form.entidadTipo}
+                  onChange={(v) => setFormField('entidadTipo', v)}
+                  disabled={formDisabled}
+                />
+                <FormInput
+                  label="NIT entidad"
+                  value={form.entidadNit}
+                  onChange={(v) => setFormField('entidadNit', v)}
+                  disabled={formDisabled}
+                />
               </div>
             </div>
-            <FormInput
-              label="Diagnóstico / descripción"
-              value={form.diagnostico}
-              onChange={(v) => setFormField('diagnostico', v)}
-              disabled={formDisabled}
-            />
-            <FormInput
-              label="Código CIE-10"
-              value={form.codigoCie10}
-              onChange={(v) => setFormField('codigoCie10', v)}
-              disabled={formDisabled}
-            />
-            <FormInput
-              label="Entidad (nombre)"
-              value={form.entidadNombre}
-              onChange={(v) => setFormField('entidadNombre', v)}
-              disabled={formDisabled}
-            />
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <FormInput
-                label="Tipo entidad"
-                value={form.entidadTipo}
-                onChange={(v) => setFormField('entidadTipo', v)}
-                disabled={formDisabled}
-              />
-              <FormInput
-                label="NIT entidad"
-                value={form.entidadNit}
-                onChange={(v) => setFormField('entidadNit', v)}
-                disabled={formDisabled}
-              />
-            </div>
           </div>
-        </section>
+        </Card>
       </div>
 
-      <footer className="flex min-h-[68px] shrink-0 flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-white px-6 py-3">
-        <p className="text-[13px] text-slate-500">
+      <footer className="flex min-h-[68px] shrink-0 flex-wrap items-center justify-between gap-3 border-t border-gray-200 bg-white px-6 py-3">
+        <p className="text-[13px] text-gray-500">
           {alertasCount > 0
             ? `${alertasCount} validación(es) marcada(s) por el motor IA — revisa con cuidado.`
             : 'Revisa los campos antes de confirmar.'}
@@ -344,7 +334,10 @@ export function IncapacityAiReviewView() {
               setRejectModalKey((k) => k + 1)
               setRejectModalOpen(true)
             }}
-            className="rounded-lg border border-red-600 bg-white px-[22px] py-[11px] text-sm font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
+            className={buttonClassName(
+              'secondary',
+              'border-danger text-danger hover:bg-danger-light px-[22px] py-[11px]',
+            )}
           >
             Rechazar con motivo
           </button>
@@ -354,7 +347,7 @@ export function IncapacityAiReviewView() {
             onClick={() => {
               handleConfirmar().catch(() => false)
             }}
-            className="rounded-lg bg-blue-600 px-[22px] py-[11px] text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
+            className={buttonClassName('primary', 'px-[22px] py-[11px]')}
           >
             {submitting ? 'Guardando…' : 'Confirmar datos'}
           </button>
@@ -383,13 +376,13 @@ type FormInputProps = Readonly<{
 function FormInput({ label, value, onChange, disabled }: FormInputProps) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-medium text-slate-700">{label}</label>
+      <label className={labelClassName}>{label}</label>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
-        className="h-[42px] w-full rounded-lg border border-slate-300 bg-white px-3 text-[13px] text-slate-800 outline-none ring-blue-500 focus:ring-2 disabled:cursor-not-allowed disabled:bg-slate-50"
+        className={inputClassName}
       />
     </div>
   )
