@@ -1,6 +1,8 @@
 import { http } from '@/services/http'
 import type {
   IncapacidadDetalle,
+  PatchIncapacidadEstadoPayload,
+  PatchIncapacidadEstadoResponse,
   VerificarIncapacidadPayload,
   VerificarIncapacidadResponse,
 } from '../types/incapacidadDetalle'
@@ -28,6 +30,20 @@ export async function verificarIncapacidad(
 ): Promise<VerificarIncapacidadResponse> {
   const { data } = await http.put<VerificarIncapacidadResponse>(
     `/incapacidades/${id}/verificar`,
+    payload,
+    { signal },
+  )
+  return data
+}
+
+/** Avanza el trámite en la máquina de estados (p. ej. `en_verificacion` → `transcrita`). */
+export async function patchIncapacidadEstado(
+  id: string,
+  payload: PatchIncapacidadEstadoPayload,
+  signal?: AbortSignal,
+): Promise<PatchIncapacidadEstadoResponse> {
+  const { data } = await http.patch<PatchIncapacidadEstadoResponse>(
+    `/incapacidades/${id}/estado`,
     payload,
     { signal },
   )

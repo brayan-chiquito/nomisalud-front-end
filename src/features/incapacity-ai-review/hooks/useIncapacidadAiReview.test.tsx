@@ -4,12 +4,14 @@ import { useIncapacidadAiReview } from './useIncapacidadAiReview'
 import {
   getIncapacidadDetalle,
   fetchIncapacidadArchivoBlob,
+  patchIncapacidadEstado,
   verificarIncapacidad,
 } from '../services/incapacidadReview.service'
 
 vi.mock('../services/incapacidadReview.service', () => ({
   getIncapacidadDetalle: vi.fn(),
   fetchIncapacidadArchivoBlob: vi.fn(),
+  patchIncapacidadEstado: vi.fn(),
   verificarIncapacidad: vi.fn(),
 }))
 
@@ -31,6 +33,7 @@ describe('useIncapacidadAiReview', () => {
     vi.mocked(getIncapacidadDetalle).mockReset()
     vi.mocked(fetchIncapacidadArchivoBlob).mockReset()
     vi.mocked(verificarIncapacidad).mockReset()
+    vi.mocked(patchIncapacidadEstado).mockReset()
   })
 
   afterEach(() => {
@@ -60,6 +63,12 @@ describe('useIncapacidadAiReview', () => {
       radicado: 'IN01',
       estado: 'en_verificacion',
     })
+    vi.mocked(patchIncapacidadEstado).mockResolvedValue({
+      id: 'u1',
+      radicado: 'IN01',
+      estado: 'transcrita',
+      estado_anterior: 'en_verificacion',
+    })
 
     const { result } = renderHook(() => useIncapacidadAiReview('u1'))
     await waitFor(() => expect(result.current.loadingDetail).toBe(false))
@@ -79,6 +88,10 @@ describe('useIncapacidadAiReview', () => {
         }),
       }),
     )
+    expect(patchIncapacidadEstado).toHaveBeenCalledWith('u1', {
+      estado: 'transcrita',
+      observacion: 'Datos confirmados en revisión IA',
+    })
   })
 
   it('rechazar envía motivo_rechazo', async () => {

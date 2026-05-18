@@ -132,6 +132,31 @@ describe('IncapacityAiReviewView', () => {
     renderAt('/incapacidad/revision-ia?id=x')
     fireEvent.click(screen.getByRole('button', { name: /confirmar datos/i }))
     await waitFor(() => expect(confirmar).toHaveBeenCalled())
-    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/dashboard'))
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/dashboard?success=confirmada'))
+  })
+
+  it('rechazar navega al dashboard con aviso de éxito', async () => {
+    const rechazar = vi.fn(async () => true)
+    mockUseIncapacidadAiReview.mockReturnValue(
+      baseHookReturn({
+        detail: {
+          id: 'x',
+          radicado: 'IN99',
+          estado: 'en_verificacion',
+          archivo_tipo: 'pdf',
+          extraccion_ia: { datos_extraidos: {} },
+        },
+        rechazar,
+      }),
+    )
+    renderAt('/incapacidad/revision-ia?id=x')
+    fireEvent.click(screen.getByRole('button', { name: /rechazar con motivo/i }))
+    fireEvent.click(screen.getByRole('button', { name: /documento ilegible/i }))
+    fireEvent.change(screen.getByLabelText(/detalle del motivo/i), {
+      target: { value: 'No coincide' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /confirmar rechazo/i }))
+    await waitFor(() => expect(rechazar).toHaveBeenCalled())
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/dashboard?success=rechazada'))
   })
 })

@@ -15,6 +15,8 @@ import {
   contarAlertasValidacion,
   formatDiasIncapacidadLabel,
 } from '../utils/reviewFormState'
+import { UserProfileMenu } from '@/components/UserProfileMenu'
+import type { ActionSuccessKind } from '@/features/dashboard/types/dashboardNavigation'
 import { DocumentPreviewPanel } from './DocumentPreviewPanel'
 import { RejectIncapacityModal } from './RejectIncapacityModal'
 
@@ -82,11 +84,31 @@ export function IncapacityAiReviewView() {
     [detail?.extraccion_ia?.validaciones],
   )
 
+  const navigateToDashboardWithSuccess = useCallback(
+    (actionSuccess: ActionSuccessKind) => {
+      navigate(`/dashboard?success=${actionSuccess}`)
+    },
+    [navigate],
+  )
+
   const handleConfirmar = useCallback(async () => {
     clearSubmitError()
     const ok = await confirmar()
-    if (ok) navigate(backHref)
-  }, [backHref, clearSubmitError, confirmar, navigate])
+    if (ok) navigateToDashboardWithSuccess('confirmada')
+  }, [clearSubmitError, confirmar, navigateToDashboardWithSuccess])
+
+  const handleRechazar = useCallback(
+    async (motivo: string) => {
+      clearSubmitError()
+      const ok = await rechazar(motivo)
+      if (ok) {
+        setRejectModalOpen(false)
+        navigateToDashboardWithSuccess('rechazada')
+      }
+      return ok
+    },
+    [clearSubmitError, navigateToDashboardWithSuccess, rechazar],
+  )
 
   const handleZoomIn = useCallback(() => {
     setZoomPercent((z) => Math.min(200, z + 25))
@@ -177,12 +199,12 @@ export function IncapacityAiReviewView() {
           <span className="hidden text-sm text-slate-500 sm:inline">
             {displayNameFromEmail(user?.email)}
           </span>
-          <div
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-[13px] font-semibold text-white"
-            aria-hidden
-          >
-            {initialsFromEmail(user?.email, user?.id)}
-          </div>
+          <UserProfileMenu
+            userName={displayNameFromEmail(user?.email)}
+            companyName="Revisión de incapacidades"
+            avatarInitials={initialsFromEmail(user?.email, user?.id)}
+            avatarClassName="bg-blue-600"
+          />
         </div>
       </header>
 
@@ -343,7 +365,7 @@ export function IncapacityAiReviewView() {
         key={rejectModalKey}
         isOpen={rejectModalOpen}
         onClose={() => setRejectModalOpen(false)}
-        onConfirm={rechazar}
+        onConfirm={handleRechazar}
         isSubmitting={submitting}
         error={submitError}
       />

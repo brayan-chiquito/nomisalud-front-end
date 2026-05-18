@@ -11,6 +11,7 @@ import {
 import { uploadIncapacityFile } from '@/features/incapacidades/services/uploadIncapacity.service'
 import { resolveIncapacidadIdAfterUpload } from '@/features/incapacidades/services/resolveIncapacidadIdAfterUpload.service'
 import { useAuth } from '@/features/auth/context/AuthContext'
+import { UserProfileMenu } from '@/components/UserProfileMenu'
 
 const MAX_MB = INCAPACITY_MAX_BYTES / (1024 * 1024)
 
@@ -28,6 +29,11 @@ export function RadicarIncapacidadView() {
   const [uploadProgress, setUploadProgress] = useState<number | null>(null)
   const [isUploading, setIsUploading] = useState(false)
 
+  const headerName =
+    user?.email
+      ?.split('@')[0]
+      ?.replaceAll('.', ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase()) ?? 'Colaborador'
   const headerInitials =
     user?.email?.slice(0, 2).toUpperCase() ?? user?.id?.slice(0, 2).toUpperCase() ?? 'NS'
 
@@ -93,13 +99,12 @@ export function RadicarIncapacidadView() {
           <span className="text-[15px] font-bold text-slate-800">Nomisalud</span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-slate-500">{user?.email ?? 'Usuario'}</span>
-          <div
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-600 text-[13px] font-semibold text-white"
-            aria-hidden
-          >
-            {headerInitials}
-          </div>
+          <span className="hidden text-sm text-slate-500 sm:inline">{headerName}</span>
+          <UserProfileMenu
+            userName={headerName}
+            companyName="Portal colaborador"
+            avatarInitials={headerInitials}
+          />
         </div>
       </header>
 

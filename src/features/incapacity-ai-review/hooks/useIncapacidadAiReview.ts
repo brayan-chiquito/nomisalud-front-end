@@ -3,6 +3,7 @@ import type { IncapacidadDetalle } from '../types/incapacidadDetalle'
 import {
   getIncapacidadDetalle,
   fetchIncapacidadArchivoBlob,
+  patchIncapacidadEstado,
   verificarIncapacidad,
 } from '../services/incapacidadReview.service'
 import {
@@ -149,7 +150,18 @@ export function useIncapacidadAiReview(incapacidadId: string | null): UseIncapac
     setSubmitting(true)
     setSubmitError(null)
     try {
-      await verificarIncapacidad(incapacidadId, { accion: 'confirmar', datos_extraidos: datos })
+      const verificado = await verificarIncapacidad(incapacidadId, {
+        accion: 'confirmar',
+        datos_extraidos: datos,
+      })
+      // PUT verificar con `confirmar` deja el trámite en `en_verificacion` (docs API).
+      // Para avanzar el flujo visible (listado/KPIs), se requiere PATCH → `transcrita`.
+      if (verificado.estado !== 'transcrita') {
+        await patchIncapacidadEstado(incapacidadId, {
+          estado: 'transcrita',
+          observacion: 'Datos confirmados en revisión IA',
+        })
+      }
       return true
     } catch (e) {
       setSubmitError(messageFromHttpError(e))
