@@ -94,4 +94,22 @@ describe('MiTramiteView', () => {
     expect(screen.getByRole('heading', { name: /estado del trámite/i })).toBeInTheDocument()
     expect(mockUseMisIncapacidades).toHaveBeenCalledWith(false)
   })
+
+  it('muestra nombre del colaborador desde el detalle en la cabecera', () => {
+    mockUseMiTramiteDetalle.mockReturnValue({
+      detail: {
+        id: 'a1',
+        radicado: 'IN-DET',
+        estado: 'recibida',
+        archivo_tipo: 'pdf',
+        colaborador_nombre: 'María López',
+        historial_estados: [],
+        extraccion_ia: null,
+      },
+      loading: false,
+      error: null,
+    })
+    renderAt('/portal/mi-tramite/a1')
+    expect(screen.getByText('María López')).toBeInTheDocument()
+  })
 })

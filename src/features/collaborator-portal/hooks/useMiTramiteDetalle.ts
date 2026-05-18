@@ -33,7 +33,9 @@ export function useMiTramiteDetalle(tramiteId: string | undefined): UseMiTramite
   useEffect(() => {
     if (!tramiteId) return
     const ac = new AbortController()
-    void load(tramiteId, ac.signal)
+    load(tramiteId, ac.signal).catch(() => {
+      /* errores gestionados dentro de load */
+    })
     return () => ac.abort()
   }, [tramiteId, load])
 

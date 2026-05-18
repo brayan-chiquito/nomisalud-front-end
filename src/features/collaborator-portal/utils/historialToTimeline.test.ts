@@ -41,4 +41,14 @@ describe('historialToTimelineRecords', () => {
     expect(records[0].phase).toBe('current')
     expect(records[0].estadoLabel).toBe('Procesando IA')
   })
+
+  it('usa alias estado y usuario por defecto', () => {
+    const records = historialToTimelineRecords(
+      [{ estado: 'recibida', timestamp: '2025-06-01T10:00:00.000Z' }],
+      'recibida',
+    )
+    expect(records[0].estadoLabel).toBe('Recibida')
+    expect(records[0].usuarioNombre).toBe('Sistema')
+    expect(records[0].id).toContain('2025-06-01')
+  })
 })

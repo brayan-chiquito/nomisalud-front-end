@@ -55,7 +55,9 @@ export function useMisIncapacidades(enabled = true): UseMisIncapacidadesResult {
   useEffect(() => {
     if (!enabled) return
     const ac = new AbortController()
-    void load(ac.signal)
+    load(ac.signal).catch(() => {
+      /* errores gestionados dentro de load */
+    })
     return () => ac.abort()
   }, [load, enabled, reloadToken])
 
