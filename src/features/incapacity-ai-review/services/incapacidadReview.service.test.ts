@@ -3,6 +3,7 @@ import {
   getIncapacidadDetalle,
   fetchIncapacidadArchivoBlob,
   patchIncapacidadEstado,
+  registrarDocumentacionFaltante,
   verificarIncapacidad,
 } from './incapacidadReview.service'
 
@@ -62,6 +63,28 @@ describe('incapacidadReview.service', () => {
         accion: 'confirmar',
         datos_extraidos: { colaborador: { nombre_completo: 'Ana' } },
       },
+      { signal: undefined },
+    )
+  })
+
+  it('registrarDocumentacionFaltante envía PUT con lista de documentos', async () => {
+    vi.mocked(http.put).mockResolvedValueOnce({
+      data: {
+        id: 'u1',
+        radicado: 'IN1',
+        estado: 'doc_incompleta',
+        estado_anterior: 'en_verificacion',
+        documentacion_faltante: ['Certificado médico'],
+      },
+    })
+    const res = await registrarDocumentacionFaltante('u1', {
+      documentos: ['Certificado médico'],
+      observacion: 'Pendiente',
+    })
+    expect(res.estado).toBe('doc_incompleta')
+    expect(http.put).toHaveBeenCalledWith(
+      '/incapacidades/u1/documentacion-faltante',
+      { documentos: ['Certificado médico'], observacion: 'Pendiente' },
       { signal: undefined },
     )
   })

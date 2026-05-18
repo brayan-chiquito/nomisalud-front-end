@@ -4,6 +4,7 @@ import {
   getIncapacidadDetalle,
   fetchIncapacidadArchivoBlob,
   patchIncapacidadEstado,
+  registrarDocumentacionFaltante,
   verificarIncapacidad,
 } from '../services/incapacidadReview.service'
 import {
@@ -30,6 +31,7 @@ export type UseIncapacidadAiReviewResult = Readonly<{
   setFormField: <K extends keyof ReviewFormFields>(key: K, value: ReviewFormFields[K]) => void
   confirmar: () => Promise<boolean>
   rechazar: (motivo: string) => Promise<boolean>
+  solicitarDocumentacion: (documentos: readonly string[], observacion?: string) => Promise<boolean>
   submitting: boolean
   submitError: string | null
   clearSubmitError: () => void
@@ -201,6 +203,32 @@ export function useIncapacidadAiReview(incapacidadId: string | null): UseIncapac
     [incapacidadId, detail?.extraccion_ia],
   )
 
+  const solicitarDocumentacion = useCallback(
+    async (documentos: readonly string[], observacion?: string): Promise<boolean> => {
+      if (!incapacidadId) return false
+      const normalized = documentos.map((d) => d.trim()).filter(Boolean)
+      if (normalized.length === 0) {
+        setSubmitError('Indica al menos un documento faltante.')
+        return false
+      }
+      setSubmitting(true)
+      setSubmitError(null)
+      try {
+        await registrarDocumentacionFaltante(incapacidadId, {
+          documentos: normalized,
+          observacion: observacion?.trim() || undefined,
+        })
+        return true
+      } catch (e) {
+        setSubmitError(messageFromHttpError(e))
+        return false
+      } finally {
+        setSubmitting(false)
+      }
+    },
+    [incapacidadId],
+  )
+
   return {
     detail,
     loadingDetail,
@@ -212,6 +240,7 @@ export function useIncapacidadAiReview(incapacidadId: string | null): UseIncapac
     setFormField,
     confirmar,
     rechazar,
+    solicitarDocumentacion,
     submitting,
     submitError,
     clearSubmitError,

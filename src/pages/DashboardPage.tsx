@@ -20,7 +20,9 @@ function initialsFromEmail(email: string | undefined, id: string | undefined): s
 }
 
 function parseSuccessParam(raw: string | null): ActionSuccessKind | null {
-  if (raw === 'confirmada' || raw === 'rechazada') return raw
+  if (raw === 'confirmada' || raw === 'rechazada' || raw === 'documentacion_solicitada') {
+    return raw
+  }
   return null
 }
 

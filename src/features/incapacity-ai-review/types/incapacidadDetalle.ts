@@ -68,3 +68,17 @@ export type PatchIncapacidadEstadoResponse = Readonly<{
   estado: string
   estado_anterior: string
 }>
+
+/** Cuerpo de `PUT /incapacidades/{id}/documentacion-faltante` (ver docs/README.md). */
+export type DocumentacionFaltantePayload = Readonly<{
+  documentos: string[]
+  observacion?: string
+}>
+
+export type DocumentacionFaltanteResponse = Readonly<{
+  id: string
+  radicado: string
+  estado: string
+  estado_anterior: string
+  documentacion_faltante: string[]
+}>
