@@ -5,6 +5,7 @@ import {
   getIncapacidadDetalle,
   fetchIncapacidadArchivoBlob,
   patchIncapacidadEstado,
+  registrarDocumentacionFaltante,
   verificarIncapacidad,
 } from '../services/incapacidadReview.service'
 
@@ -12,6 +13,7 @@ vi.mock('../services/incapacidadReview.service', () => ({
   getIncapacidadDetalle: vi.fn(),
   fetchIncapacidadArchivoBlob: vi.fn(),
   patchIncapacidadEstado: vi.fn(),
+  registrarDocumentacionFaltante: vi.fn(),
   verificarIncapacidad: vi.fn(),
 }))
 
@@ -111,6 +113,30 @@ describe('useIncapacidadAiReview', () => {
     expect(verificarIncapacidad).toHaveBeenCalledWith('u1', {
       accion: 'rechazar',
       motivo_rechazo: 'No coincide el documento',
+    })
+  })
+
+  it('solicitarDocumentacion envía PUT documentacion-faltante', async () => {
+    vi.mocked(getIncapacidadDetalle).mockResolvedValue(detalleBase)
+    vi.mocked(fetchIncapacidadArchivoBlob).mockResolvedValue(new Blob(['x']))
+    vi.mocked(registrarDocumentacionFaltante).mockResolvedValue({
+      id: 'u1',
+      radicado: 'IN01',
+      estado: 'doc_incompleta',
+      estado_anterior: 'en_verificacion',
+      documentacion_faltante: ['Historia clínica'],
+    })
+
+    const { result } = renderHook(() => useIncapacidadAiReview('u1'))
+    await waitFor(() => expect(result.current.loadingDetail).toBe(false))
+
+    const ok = await act(async () =>
+      result.current.solicitarDocumentacion(['Historia clínica'], 'Pendiente'),
+    )
+    expect(ok).toBe(true)
+    expect(registrarDocumentacionFaltante).toHaveBeenCalledWith('u1', {
+      documentos: ['Historia clínica'],
+      observacion: 'Pendiente',
     })
   })
 })

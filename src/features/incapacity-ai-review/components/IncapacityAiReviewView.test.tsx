@@ -53,6 +53,7 @@ function baseHookReturn(
     setFormField: vi.fn(),
     confirmar: vi.fn(async () => true),
     rechazar: vi.fn(async () => true),
+    solicitarDocumentacion: vi.fn(async () => true),
     submitting: false,
     submitError: null,
     clearSubmitError: vi.fn(),
@@ -158,5 +159,34 @@ describe('IncapacityAiReviewView', () => {
     fireEvent.click(screen.getByRole('button', { name: /confirmar rechazo/i }))
     await waitFor(() => expect(rechazar).toHaveBeenCalled())
     await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/dashboard?success=rechazada'))
+  })
+
+  it('solicitar documentación navega al dashboard con aviso de doc incompleta', async () => {
+    const solicitarDocumentacion = vi.fn(async () => true)
+    mockUseIncapacidadAiReview.mockReturnValue(
+      baseHookReturn({
+        detail: {
+          id: 'x',
+          radicado: 'IN99',
+          estado: 'en_verificacion',
+          archivo_tipo: 'pdf',
+          extraccion_ia: { datos_extraidos: {} },
+        },
+        solicitarDocumentacion,
+      }),
+    )
+    renderAt('/incapacidad/revision-ia?id=x')
+    fireEvent.click(screen.getByRole('button', { name: /rechazar con motivo/i }))
+    fireEvent.click(screen.getByRole('button', { name: /documentación faltante/i }))
+    fireEvent.change(screen.getByLabelText(/documento faltante 1/i), {
+      target: { value: 'Historia clínica' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /solicitar documentación/i }))
+    await waitFor(() =>
+      expect(solicitarDocumentacion).toHaveBeenCalledWith(['Historia clínica'], undefined),
+    )
+    await waitFor(() =>
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard?success=documentacion_solicitada'),
+    )
   })
 })

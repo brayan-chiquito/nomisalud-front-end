@@ -9,4 +9,8 @@ describe('messageForActionSuccess', () => {
   it('devuelve mensaje para rechazo', () => {
     expect(messageForActionSuccess('rechazada')).toMatch(/rechazada correctamente/i)
   })
+
+  it('devuelve mensaje para documentación solicitada', () => {
+    expect(messageForActionSuccess('documentacion_solicitada')).toMatch(/doc\. incompleta/i)
+  })
 })

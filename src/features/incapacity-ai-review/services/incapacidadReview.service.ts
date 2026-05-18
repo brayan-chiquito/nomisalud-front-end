@@ -1,5 +1,7 @@
 import { http } from '@/services/http'
 import type {
+  DocumentacionFaltantePayload,
+  DocumentacionFaltanteResponse,
   IncapacidadDetalle,
   PatchIncapacidadEstadoPayload,
   PatchIncapacidadEstadoResponse,
@@ -30,6 +32,20 @@ export async function verificarIncapacidad(
 ): Promise<VerificarIncapacidadResponse> {
   const { data } = await http.put<VerificarIncapacidadResponse>(
     `/incapacidades/${id}/verificar`,
+    payload,
+    { signal },
+  )
+  return data
+}
+
+/** Registra documentos pendientes y pasa a `doc_incompleta` (RRHH). */
+export async function registrarDocumentacionFaltante(
+  id: string,
+  payload: DocumentacionFaltantePayload,
+  signal?: AbortSignal,
+): Promise<DocumentacionFaltanteResponse> {
+  const { data } = await http.put<DocumentacionFaltanteResponse>(
+    `/incapacidades/${id}/documentacion-faltante`,
     payload,
     { signal },
   )

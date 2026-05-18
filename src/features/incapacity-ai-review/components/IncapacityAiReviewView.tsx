@@ -16,7 +16,7 @@ import {
 import { UserProfileMenu } from '@/components/UserProfileMenu'
 import type { ActionSuccessKind } from '@/features/dashboard/types/dashboardNavigation'
 import { DocumentPreviewPanel } from './DocumentPreviewPanel'
-import { RejectIncapacityModal } from './RejectIncapacityModal'
+import { RejectIncapacityModal, type RejectModalSubmit } from './RejectIncapacityModal'
 
 function displayNameFromEmail(email: string | undefined): string {
   if (!email) return 'Usuario'
@@ -50,6 +50,7 @@ export function IncapacityAiReviewView() {
     setFormField,
     confirmar,
     rechazar,
+    solicitarDocumentacion,
     submitting,
     submitError,
     clearSubmitError,
@@ -95,17 +96,25 @@ export function IncapacityAiReviewView() {
     if (ok) navigateToDashboardWithSuccess('confirmada')
   }, [clearSubmitError, confirmar, navigateToDashboardWithSuccess])
 
-  const handleRechazar = useCallback(
-    async (motivo: string) => {
+  const handleRejectModalConfirm = useCallback(
+    async (payload: RejectModalSubmit) => {
       clearSubmitError()
-      const ok = await rechazar(motivo)
+      if (payload.type === 'rechazar') {
+        const ok = await rechazar(payload.motivo)
+        if (ok) {
+          setRejectModalOpen(false)
+          navigateToDashboardWithSuccess('rechazada')
+        }
+        return ok
+      }
+      const ok = await solicitarDocumentacion(payload.documentos, payload.observacion)
       if (ok) {
         setRejectModalOpen(false)
-        navigateToDashboardWithSuccess('rechazada')
+        navigateToDashboardWithSuccess('documentacion_solicitada')
       }
       return ok
     },
-    [clearSubmitError, navigateToDashboardWithSuccess, rechazar],
+    [clearSubmitError, navigateToDashboardWithSuccess, rechazar, solicitarDocumentacion],
   )
 
   const handleZoomIn = useCallback(() => {
@@ -358,7 +367,7 @@ export function IncapacityAiReviewView() {
         key={rejectModalKey}
         isOpen={rejectModalOpen}
         onClose={() => setRejectModalOpen(false)}
-        onConfirm={handleRechazar}
+        onConfirm={handleRejectModalConfirm}
         isSubmitting={submitting}
         error={submitError}
       />
