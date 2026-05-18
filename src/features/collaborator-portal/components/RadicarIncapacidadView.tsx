@@ -66,7 +66,7 @@ export function RadicarIncapacidadView() {
       const incapacidadId = await resolveIncapacidadIdAfterUpload(data)
       const state = { uploadResponse: data, fileName: file.name }
       if (incapacidadId) {
-        navigate(`/incapacidad/revision-ia?id=${encodeURIComponent(incapacidadId)}`, { state })
+        navigate(`/portal/mi-tramite/${encodeURIComponent(incapacidadId)}`, { state })
       } else {
         setServerError(
           'El documento se cargó, pero no se pudo abrir la revisión automáticamente. Abre tu trámite desde Mi trámite en unos segundos.',

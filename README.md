@@ -72,12 +72,13 @@ Rutas definidas en `src/router/index.tsx`. Las marcadas como **protegidas** requ
 | `/` | Pública | Inicio de sesión |
 | `/login` | Pública | Inicio de sesión (alias) |
 | `/dashboard` | Protegida | Dashboard RRHH: layout con sidebar, KPIs por estado, tabla de incapacidades (`GET /incapacidades`) con filtros estado/tipo/búsqueda y paginación |
-| `/portal/mi-tramite` | Protegida | Portal colaborador: seguimiento del trámite |
+| `/portal/mi-tramite` | Protegida | Portal colaborador: lista de trámites (`GET /incapacidades/mias`) |
+| `/portal/mi-tramite/:tramiteId` | Protegida | Detalle del trámite (`GET /incapacidades/{id}`) con `StatusTimeline` desde `historial_estados` |
 | `/portal/radicar-incapacidad` | Protegida | Portal colaborador: radicar incapacidad (carga de archivo) |
 | `/incapacidad/revision-ia` | Protegida | Revisión side-by-side: `?id={uuid}`; consume `extraccion_ia.datos_extraidos` según contrato en `docs/README.md` (§ detalle `GET /incapacidades/{id}`): `colaborador`, `incapacidad` (`dias`/`total_dias`, `origen`, `codigo_cie10`, `diagnostico`, `diagnostico_principal`, objeto `diagnostico` anidado), `entidad`; `PUT …/verificar` con enriquecimiento alineado al backend |
 | `*` (cualquier otra) | Pública | Página 404 |
 
-> Desde el **dashboard**, el enlace **Revisar** en cada fila abre `/incapacidad/revision-ia?id={id}`. Tras un upload también puedes navegar allí si conoces el `id` del trámite (por ejemplo desde el listado).
+> Desde el **dashboard**, el enlace **Revisar** abre `/incapacidad/revision-ia?id={id}`. Tras radicar, el colaborador va a `/portal/mi-tramite/{id}`; desde el detalle puede abrir la revisión del documento.
 
 ## Scripts disponibles
 

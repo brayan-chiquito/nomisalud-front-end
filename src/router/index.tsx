@@ -33,6 +33,14 @@ export const router = createBrowserRouter([
     ),
   },
   {
+    path: '/portal/mi-tramite/:tramiteId',
+    element: (
+      <ProtectedRoute>
+        <CollaboratorMiTramitePage />
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: '/portal/radicar-incapacidad',
     element: (
       <ProtectedRoute>
