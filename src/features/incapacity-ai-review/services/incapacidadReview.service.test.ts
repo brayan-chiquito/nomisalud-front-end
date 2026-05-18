@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
   getIncapacidadDetalle,
   fetchIncapacidadArchivoBlob,
+  patchIncapacidadEstado,
   verificarIncapacidad,
 } from './incapacidadReview.service'
 
@@ -9,6 +10,7 @@ vi.mock('@/services/http', () => ({
   http: {
     get: vi.fn(),
     put: vi.fn(),
+    patch: vi.fn(),
   },
 }))
 
@@ -18,6 +20,7 @@ describe('incapacidadReview.service', () => {
   beforeEach(() => {
     vi.mocked(http.get).mockReset()
     vi.mocked(http.put).mockReset()
+    vi.mocked(http.patch).mockReset()
   })
 
   it('getIncapacidadDetalle solicita GET /incapacidades/:id', async () => {
@@ -59,6 +62,27 @@ describe('incapacidadReview.service', () => {
         accion: 'confirmar',
         datos_extraidos: { colaborador: { nombre_completo: 'Ana' } },
       },
+      { signal: undefined },
+    )
+  })
+
+  it('patchIncapacidadEstado envía PATCH con estado y observación', async () => {
+    vi.mocked(http.patch).mockResolvedValueOnce({
+      data: {
+        id: 'u1',
+        radicado: 'IN1',
+        estado: 'transcrita',
+        estado_anterior: 'en_verificacion',
+      },
+    })
+    const res = await patchIncapacidadEstado('u1', {
+      estado: 'transcrita',
+      observacion: 'OK',
+    })
+    expect(res.estado).toBe('transcrita')
+    expect(http.patch).toHaveBeenCalledWith(
+      '/incapacidades/u1/estado',
+      { estado: 'transcrita', observacion: 'OK' },
       { signal: undefined },
     )
   })

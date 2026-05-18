@@ -66,18 +66,4 @@ describe('MiTramiteDetallePanel', () => {
       '/incapacidad/revision-ia?id=t1',
     )
   })
-
-  it('muestra alerta de documentación pendiente', () => {
-    renderPanel({
-      detail: {
-        ...detalleCompleto,
-        estado: 'doc_incompleta',
-        documentacion_faltante: ['Fórmula médica', 'Historia clínica'],
-      },
-      loading: false,
-      error: null,
-    })
-    expect(screen.getByText(/documentación pendiente/i)).toBeInTheDocument()
-    expect(screen.getByText('Fórmula médica')).toBeInTheDocument()
-  })
 })

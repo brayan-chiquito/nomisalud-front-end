@@ -2,12 +2,14 @@ import { useState, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 import { LayoutDashboard, FileText, BarChart3, Users } from 'lucide-react'
 import logo from '@/assets/logo.png'
+import { UserProfileMenu } from '@/components/UserProfileMenu'
 import { cn } from '@/utils/cn'
 
 export type RrhhDashboardShellProps = Readonly<{
   headerTitle: string
   userName: string
   userInitials: string
+  companyName?: string
   children: ReactNode
 }>
 
@@ -18,6 +20,7 @@ export function RrhhDashboardShell({
   headerTitle,
   userName,
   userInitials,
+  companyName = 'Recursos Humanos',
   children,
 }: RrhhDashboardShellProps) {
   const [activeSection, setActiveSection] = useState<'inicio' | 'incapacidades'>('inicio')
@@ -86,13 +89,13 @@ export function RrhhDashboardShell({
         <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-6">
           <h1 className="text-lg font-semibold text-slate-900">{headerTitle}</h1>
           <div className="flex items-center gap-3">
-            <span className="text-sm text-slate-500">{userName}</span>
-            <div
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-[13px] font-semibold text-white"
-              aria-hidden
-            >
-              {userInitials}
-            </div>
+            <span className="hidden text-sm text-slate-500 sm:inline">{userName}</span>
+            <UserProfileMenu
+              userName={userName}
+              companyName={companyName}
+              avatarInitials={userInitials}
+              avatarClassName="bg-blue-600"
+            />
           </div>
         </header>
 

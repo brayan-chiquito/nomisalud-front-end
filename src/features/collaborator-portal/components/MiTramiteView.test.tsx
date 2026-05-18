@@ -17,6 +17,13 @@ vi.mock('../hooks/useMiTramiteDetalle', () => ({
   useMiTramiteDetalle: (id: string | undefined) => mockUseMiTramiteDetalle(id),
 }))
 
+const mockUseDocumentacionPendienteAlert = vi.fn()
+
+vi.mock('../hooks/useDocumentacionPendienteAlert', () => ({
+  useDocumentacionPendienteAlert: (...args: unknown[]) =>
+    mockUseDocumentacionPendienteAlert(...args),
+}))
+
 function renderAt(path: string) {
   return render(
     <AuthProvider>
@@ -34,6 +41,8 @@ describe('MiTramiteView', () => {
   beforeEach(() => {
     mockUseMisIncapacidades.mockReset()
     mockUseMiTramiteDetalle.mockReset()
+    mockUseDocumentacionPendienteAlert.mockReset()
+    mockUseDocumentacionPendienteAlert.mockReturnValue({ data: null, loading: false })
     mockUseMisIncapacidades.mockReturnValue({
       data: { items: [], total: 0, pages: 1 },
       loading: false,
@@ -111,5 +120,20 @@ describe('MiTramiteView', () => {
     })
     renderAt('/portal/mi-tramite/a1')
     expect(screen.getByText('María López')).toBeInTheDocument()
+  })
+
+  it('muestra el banner de documentación pendiente cuando el hook lo indica', () => {
+    mockUseDocumentacionPendienteAlert.mockReturnValue({
+      data: {
+        documentos: ['Fórmula médica'],
+        diasHabilesRestantes: 2,
+        plazoMaximoDiasHabiles: null,
+        fechaVencimientoIso: null,
+      },
+      loading: false,
+    })
+    renderAt('/portal/mi-tramite')
+    expect(screen.getByRole('alert')).toHaveTextContent(/documentación pendiente/i)
+    expect(screen.getByText('Fórmula médica')).toBeInTheDocument()
   })
 })

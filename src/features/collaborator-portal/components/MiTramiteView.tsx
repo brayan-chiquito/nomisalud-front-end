@@ -5,6 +5,8 @@ import { MisTramitesListPanel } from './MisTramitesListPanel'
 import { MiTramiteDetallePanel } from './MiTramiteDetallePanel'
 import { useMisIncapacidades } from '../hooks/useMisIncapacidades'
 import { useMiTramiteDetalle } from '../hooks/useMiTramiteDetalle'
+import { useDocumentacionPendienteAlert } from '../hooks/useDocumentacionPendienteAlert'
+import { DocumentacionPendienteBanner } from './DocumentacionPendienteBanner'
 
 function displayNameFromEmail(email: string | undefined): string {
   if (!email) return 'Colaborador'
@@ -26,6 +28,11 @@ export function MiTramiteView() {
   const { user } = useAuth()
   const { data, loading, error, page, setPage } = useMisIncapacidades(!tramiteId)
   const { detail, loading: loadingDetalle, error: errorDetalle } = useMiTramiteDetalle(tramiteId)
+  const { data: alertaDocumentacion } = useDocumentacionPendienteAlert(
+    detail,
+    data?.items ?? [],
+    true,
+  )
 
   const headerName =
     detail?.colaborador_nombre?.trim() || displayNameFromEmail(user?.email) || 'Colaborador'
@@ -37,6 +44,8 @@ export function MiTramiteView() {
         companyName="Portal colaborador"
         avatarInitials={initialsFromEmail(user?.email, user?.id)}
       />
+
+      {alertaDocumentacion ? <DocumentacionPendienteBanner data={alertaDocumentacion} /> : null}
 
       {tramiteId ? (
         <MiTramiteDetallePanel detail={detail} loading={loadingDetalle} error={errorDetalle} />

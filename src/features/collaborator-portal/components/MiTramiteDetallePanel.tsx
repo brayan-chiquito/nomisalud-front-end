@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { AlertCircle, ArrowLeft, FileText, Loader2, Timer } from 'lucide-react'
+import { ArrowLeft, FileText, Loader2, Timer } from 'lucide-react'
 import {
   estadoBadgeClasses,
   labelEstadoIncapacidad,
@@ -25,11 +25,6 @@ export function MiTramiteDetallePanel({ detail, loading, error }: MiTramiteDetal
   }, [detail])
 
   const display = useMemo(() => (detail ? tramiteDetalleToDisplay(detail) : null), [detail])
-
-  const docPendiente =
-    detail?.estado === 'doc_incompleta' &&
-    Array.isArray(detail.documentacion_faltante) &&
-    detail.documentacion_faltante.length > 0
 
   if (loading && !detail) {
     return (
@@ -62,28 +57,6 @@ export function MiTramiteDetallePanel({ detail, loading, error }: MiTramiteDetal
 
   return (
     <>
-      {docPendiente ? (
-        <div className="flex items-start gap-3 border-b border-amber-300 bg-amber-50 px-6 py-3.5">
-          <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" aria-hidden />
-          <div className="min-w-0 flex-1 space-y-1">
-            <p className="text-[13px] font-semibold text-amber-900">
-              Documentación pendiente — Requiere atención antes de continuar
-            </p>
-            <ul className="list-inside list-disc text-xs text-slate-600">
-              {detail.documentacion_faltante?.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </div>
-          <Link
-            to="/portal/radicar-incapacidad"
-            className="shrink-0 rounded-lg border border-amber-600 bg-white px-4 py-2 text-[13px] font-semibold text-amber-700 hover:bg-amber-50"
-          >
-            Cargar documentos
-          </Link>
-        </div>
-      ) : null}
-
       <main className="flex flex-1 flex-col items-center gap-5 p-6">
         <div className="flex w-full max-w-[680px] items-center gap-3">
           <Link

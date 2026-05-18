@@ -88,4 +88,15 @@ describe('DashboardPage', () => {
     )
     expect(screen.getByText('NS')).toBeInTheDocument()
   })
+
+  it('muestra banner de éxito tras confirmar o rechazar desde revisión', async () => {
+    render(
+      <MemoryRouter initialEntries={['/dashboard?success=confirmada']}>
+        <DashboardPage />
+      </MemoryRouter>,
+    )
+    await waitFor(() => {
+      expect(screen.getByRole('status')).toHaveTextContent(/confirmada.*transcrita/i)
+    })
+  })
 })

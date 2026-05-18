@@ -34,6 +34,12 @@ export type IncapacidadDetalle = Readonly<{
   colaborador_email?: string | null
   archivo_url?: string | null
   documentacion_faltante?: string[] | null
+  /** Días hábiles restantes para entregar documentación (si la API los expone). */
+  dias_habiles_restantes?: number | null
+  /** Plazo máximo en días hábiles (si la API lo expone). */
+  plazo_maximo_dias_habiles?: number | null
+  /** Fecha límite ISO para completar documentación. */
+  fecha_vencimiento_documentacion?: string | null
   historial_estados?: HistorialEstadoRecord[] | null
   extraccion_ia: ExtraccionIaDetalle | null
 }>
@@ -48,4 +54,17 @@ export type VerificarIncapacidadResponse = Readonly<{
   id: string
   radicado: string
   estado: string
+}>
+
+/** Cuerpo de `PATCH /incapacidades/{id}/estado` (ver docs/README.md). */
+export type PatchIncapacidadEstadoPayload = Readonly<{
+  estado: string
+  observacion?: string
+}>
+
+export type PatchIncapacidadEstadoResponse = Readonly<{
+  id: string
+  radicado: string
+  estado: string
+  estado_anterior: string
 }>

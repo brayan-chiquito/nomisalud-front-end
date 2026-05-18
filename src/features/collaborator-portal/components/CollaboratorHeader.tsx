@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { LayoutDashboard } from 'lucide-react'
 import logo from '@/assets/logo.png'
+import { UserProfileMenu } from '@/components/UserProfileMenu'
 
 export type CollaboratorHeaderProps = Readonly<{
   userName: string
@@ -36,17 +37,15 @@ export function CollaboratorHeader({
         ) : null}
       </div>
       <div className="flex items-center gap-3">
-        <div className="flex flex-col items-end gap-0.5">
+        <div className="hidden flex-col items-end gap-0.5 sm:flex">
           <span className="text-sm font-semibold text-slate-800">{userName}</span>
           <span className="text-xs text-slate-500">{companyName}</span>
         </div>
-        <div
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-600 text-[13px] font-semibold text-white"
-          aria-hidden
-        >
-          {avatarInitials}
-        </div>
-        {/* Menú de usuario (cerrar sesión, preferencias) cuando exista diseño */}
+        <UserProfileMenu
+          userName={userName}
+          companyName={companyName}
+          avatarInitials={avatarInitials}
+        />
       </div>
     </header>
   )
