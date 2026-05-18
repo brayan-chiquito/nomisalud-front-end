@@ -72,6 +72,7 @@ describe('MiTramiteView', () => {
     renderAt('/portal/mi-tramite')
     expect(screen.getByRole('heading', { name: /mis trámites/i })).toBeInTheDocument()
     expect(screen.getByText('IN-LIST')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /dashboard/i })).toHaveAttribute('href', '/dashboard')
     expect(mockUseMisIncapacidades).toHaveBeenCalledWith(true)
   })
 
