@@ -1,8 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { DashboardPage } from './DashboardPage'
 import { useAuth } from '@/features/auth/context/AuthContext'
+
+const mockNavigate = vi.fn()
+
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  }
+})
 
 vi.mock('@/features/auth/context/AuthContext', () => ({
   useAuth: vi.fn(),
@@ -23,6 +33,7 @@ import { listIncapacidades } from '@/features/incapacidades/services/listIncapac
 
 describe('DashboardPage', () => {
   beforeEach(() => {
+    mockNavigate.mockClear()
     mockUseAuth.mockReturnValue({
       user: { id: 'u1', email: 'ana.garcia@nomisalud.com', role: 'admin' },
       isAuthenticated: true,
@@ -98,5 +109,31 @@ describe('DashboardPage', () => {
     await waitFor(() => {
       expect(screen.getByRole('status')).toHaveTextContent(/confirmada.*transcrita/i)
     })
+  })
+
+  it('redirige colaborador al portal de mi trámite', () => {
+    mockUseAuth.mockReturnValue({
+      user: { id: 'c1', email: 'col@nomisalud.com', role: 'colaborador' },
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+    })
+    render(
+      <MemoryRouter>
+        <DashboardPage />
+      </MemoryRouter>,
+    )
+    expect(mockNavigate).toHaveBeenCalledWith('/portal/mi-tramite', { replace: true })
+  })
+
+  it('permite cerrar el banner de éxito', async () => {
+    render(
+      <MemoryRouter initialEntries={['/dashboard?success=rechazada']}>
+        <DashboardPage />
+      </MemoryRouter>,
+    )
+    await waitFor(() => expect(screen.getByRole('status')).toBeInTheDocument())
+    fireEvent.click(screen.getByRole('button', { name: /cerrar aviso/i }))
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 })

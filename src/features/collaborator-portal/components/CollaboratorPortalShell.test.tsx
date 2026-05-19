@@ -33,6 +33,20 @@ describe('CollaboratorPortalShell', () => {
     expect(screen.getByText('Contenido')).toBeInTheDocument()
   })
 
+  it('marca activa la ruta de radicar', () => {
+    localStorage.setItem('access_token', makeToken('colaborador'))
+    render(
+      <AuthProvider>
+        <MemoryRouter initialEntries={['/portal/radicar-incapacidad']}>
+          <CollaboratorPortalShell headerTitle="Radicar" userName="Ana" userInitials="AN">
+            <p>Contenido</p>
+          </CollaboratorPortalShell>
+        </MemoryRouter>
+      </AuthProvider>,
+    )
+    expect(screen.getByRole('link', { name: /radicar incapacidad/i })).toHaveClass('text-primary')
+  })
+
   it('muestra enlace al panel RRHH para admin', () => {
     localStorage.setItem('access_token', makeToken('admin'))
     render(

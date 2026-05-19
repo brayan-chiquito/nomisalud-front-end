@@ -20,13 +20,10 @@ vi.mock('../hooks/useIncapacidadAiReview', () => ({
   useIncapacidadAiReview: (id: string | null) => mockUseIncapacidadAiReview(id),
 }))
 
+const mockUseAuth = vi.fn()
+
 vi.mock('@/features/auth/context/AuthContext', () => ({
-  useAuth: () => ({
-    user: { id: '1', email: 'rrhh@nomisalud.com', role: 'admin' },
-    isAuthenticated: true,
-    login: vi.fn(),
-    logout: vi.fn(),
-  }),
+  useAuth: () => mockUseAuth(),
 }))
 
 function renderAt(path: string) {
@@ -73,6 +70,12 @@ describe('IncapacityAiReviewView', () => {
   beforeEach(() => {
     mockNavigate.mockReset()
     mockUseIncapacidadAiReview.mockReset()
+    mockUseAuth.mockReturnValue({
+      user: { id: '1', email: 'rrhh@nomisalud.com', role: 'admin' },
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+    })
   })
 
   it('sin id en la URL indica cómo acceder y enlaza al dashboard', () => {
@@ -167,6 +170,125 @@ describe('IncapacityAiReviewView', () => {
     fireEvent.click(screen.getByRole('button', { name: /confirmar rechazo/i }))
     await waitFor(() => expect(rechazar).toHaveBeenCalled())
     await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/dashboard?success=rechazada'))
+  })
+
+  it('colaborador ve enlace a mi trámite cuando falta id', () => {
+    mockUseAuth.mockReturnValue({
+      user: { id: '2', email: 'col@nomisalud.com', role: 'colaborador' },
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+    })
+    mockUseIncapacidadAiReview.mockReturnValue(baseHookReturn())
+    renderAt('/incapacidad/revision-ia')
+    expect(screen.getByRole('link', { name: /ir a mi trámite/i })).toHaveAttribute(
+      'href',
+      '/portal/mi-tramite',
+    )
+  })
+
+  it('bloquea confirmar si hay inconsistencias sin override', () => {
+    mockUseIncapacidadAiReview.mockReturnValue(
+      baseHookReturn({
+        detail: {
+          id: 'x',
+          radicado: 'IN-INC',
+          estado: 'inconsistencia_detectada',
+          archivo_tipo: 'pdf',
+          extraccion_ia: { datos_extraidos: {}, calidad_doc: 0.92 },
+        },
+        inconsistencias: [{ tipo: 'Fechas', descripcion: 'Fin anterior al inicio' }],
+        overrideRegistrado: false,
+      }),
+    )
+    renderAt('/incapacidad/revision-ia?id=x')
+    expect(screen.getByRole('button', { name: /confirmar datos/i })).toBeDisabled()
+    expect(screen.getByText(/registra la excepción/i)).toBeInTheDocument()
+    expect(screen.getByText(/inconsistencias detectadas/i)).toBeInTheDocument()
+    expect(screen.getByText(/confianza: 92%/i)).toBeInTheDocument()
+  })
+
+  it('registra override desde el banner', async () => {
+    const registrarOverride = vi.fn(async () => true)
+    const clearOverrideError = vi.fn()
+    mockUseIncapacidadAiReview.mockReturnValue(
+      baseHookReturn({
+        detail: {
+          id: 'x',
+          radicado: 'IN-INC',
+          estado: 'inconsistencia_detectada',
+          archivo_tipo: 'pdf',
+          extraccion_ia: { datos_extraidos: {} },
+        },
+        inconsistencias: [{ tipo: 'Fechas', descripcion: 'Conflicto' }],
+        overrideJustificacion: 'Justificación válida de prueba',
+        registrarOverride,
+        clearOverrideError,
+      }),
+    )
+    renderAt('/incapacidad/revision-ia?id=x')
+    fireEvent.click(screen.getByRole('button', { name: /registrar excepción/i }))
+    await waitFor(() => expect(clearOverrideError).toHaveBeenCalled())
+    await waitFor(() => expect(registrarOverride).toHaveBeenCalled())
+  })
+
+  it('muestra aviso si no hay extracción IA', () => {
+    mockUseIncapacidadAiReview.mockReturnValue(
+      baseHookReturn({
+        detail: {
+          id: 'x',
+          radicado: 'IN-SIN',
+          estado: 'recibida',
+          archivo_tipo: 'pdf',
+          extraccion_ia: null,
+        },
+      }),
+    )
+    renderAt('/incapacidad/revision-ia?id=x')
+    expect(screen.getByText(/aún no hay extracción ia/i)).toBeInTheDocument()
+  })
+
+  it('permite editar campos del formulario', () => {
+    const setFormField = vi.fn()
+    mockUseIncapacidadAiReview.mockReturnValue(
+      baseHookReturn({
+        detail: {
+          id: 'x',
+          radicado: 'IN99',
+          estado: 'en_verificacion',
+          archivo_tipo: 'pdf',
+          extraccion_ia: {
+            datos_extraidos: {},
+            validaciones: [{ nivel: 'warning', tipo: 'fechas', mensaje: 'Revisar' }],
+          },
+        },
+        form: { ...emptyReviewForm(), nombreColaborador: 'Ana' },
+        setFormField,
+      }),
+    )
+    renderAt('/incapacidad/revision-ia?id=x')
+    fireEvent.change(screen.getByDisplayValue('Ana'), {
+      target: { value: 'Ana López' },
+    })
+    expect(setFormField).toHaveBeenCalledWith('nombreColaborador', 'Ana López')
+    expect(screen.getByText(/validación\(es\) marcada/i)).toBeInTheDocument()
+  })
+
+  it('muestra error de envío del hook', () => {
+    mockUseIncapacidadAiReview.mockReturnValue(
+      baseHookReturn({
+        detail: {
+          id: 'x',
+          radicado: 'IN99',
+          estado: 'en_verificacion',
+          archivo_tipo: 'pdf',
+          extraccion_ia: { datos_extraidos: {} },
+        },
+        submitError: 'Error al guardar',
+      }),
+    )
+    renderAt('/incapacidad/revision-ia?id=x')
+    expect(screen.getByRole('alert')).toHaveTextContent('Error al guardar')
   })
 
   it('solicitar documentación navega al dashboard con aviso de doc incompleta', async () => {
