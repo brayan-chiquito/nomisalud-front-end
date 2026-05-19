@@ -20,7 +20,7 @@ vi.mock('../services/incapacidadReview.service', () => ({
 const detalleBase = {
   id: 'u1',
   radicado: 'IN01',
-  estado: 'en_verificacion',
+  estado: 'inconsistencia_detectada',
   archivo_tipo: 'pdf',
   extraccion_ia: {
     datos_extraidos: {
@@ -30,7 +30,6 @@ const detalleBase = {
     validaciones: [{ nivel: 'warning', tipo: 'Fechas', mensaje: 'Revisar rango' }],
   },
   inconsistencias: [{ tipo: 'fechas', descripcion: 'Revisar rango' }],
-  estado: 'inconsistencia_detectada',
 }
 
 describe('useIncapacidadAiReview', () => {
