@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { postLoginPathForRole } from '@/features/auth/utils/postLoginPath'
 import { useAuth } from '@/features/auth/context/AuthContext'
 import { ActionSuccessBanner } from '@/features/dashboard/components/ActionSuccessBanner'
 import { RrhhDashboardShell } from '@/features/dashboard/components/RrhhDashboardShell'
@@ -28,10 +29,19 @@ function parseSuccessParam(raw: string | null): ActionSuccessKind | null {
 
 export function DashboardPage() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const [actionSuccess, setActionSuccess] = useState<ActionSuccessKind | null>(() =>
     parseSuccessParam(searchParams.get('success')),
   )
+
+  useEffect(() => {
+    if (!user?.role) return
+    const destino = postLoginPathForRole(user.role)
+    if (destino !== '/dashboard') {
+      navigate(destino, { replace: true })
+    }
+  }, [user?.role, navigate])
 
   useEffect(() => {
     if (!searchParams.has('success')) return

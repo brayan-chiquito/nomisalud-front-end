@@ -27,7 +27,10 @@ const detalleBase = {
       colaborador: { nombre_completo: 'Ana López' },
       incapacidad: { tipo: 'eg' },
     },
+    validaciones: [{ nivel: 'warning', tipo: 'Fechas', mensaje: 'Revisar rango' }],
   },
+  inconsistencias: [{ tipo: 'fechas', descripcion: 'Revisar rango' }],
+  estado: 'inconsistencia_detectada',
 }
 
 describe('useIncapacidadAiReview', () => {
@@ -58,7 +61,15 @@ describe('useIncapacidadAiReview', () => {
   })
 
   it('confirmar envía datos_extraidos fusionados', async () => {
-    vi.mocked(getIncapacidadDetalle).mockResolvedValue(detalleBase)
+    vi.mocked(getIncapacidadDetalle).mockResolvedValue({
+      ...detalleBase,
+      estado: 'en_verificacion',
+      inconsistencias: [],
+      extraccion_ia: {
+        ...detalleBase.extraccion_ia,
+        validaciones: [],
+      },
+    })
     vi.mocked(fetchIncapacidadArchivoBlob).mockResolvedValue(new Blob(['x']))
     vi.mocked(verificarIncapacidad).mockResolvedValue({
       id: 'u1',
@@ -138,5 +149,53 @@ describe('useIncapacidadAiReview', () => {
       documentos: ['Historia clínica'],
       observacion: 'Pendiente',
     })
+  })
+
+  it('expone inconsistencias desde inconsistencias[] del detalle', async () => {
+    vi.mocked(getIncapacidadDetalle).mockResolvedValue(detalleBase)
+    vi.mocked(fetchIncapacidadArchivoBlob).mockResolvedValue(new Blob(['x']))
+
+    const { result } = renderHook(() => useIncapacidadAiReview('u1'))
+    await waitFor(() => expect(result.current.loadingDetail).toBe(false))
+
+    expect(result.current.inconsistencias).toEqual([
+      { tipo: 'fechas', descripcion: 'Revisar rango' },
+    ])
+  })
+
+  it('registrarOverride hace PATCH a en_verificacion con observación', async () => {
+    vi.mocked(getIncapacidadDetalle).mockResolvedValue(detalleBase)
+    vi.mocked(fetchIncapacidadArchivoBlob).mockResolvedValue(new Blob(['x']))
+    vi.mocked(patchIncapacidadEstado).mockResolvedValue({
+      id: 'u1',
+      radicado: 'IN01',
+      estado: 'en_verificacion',
+      estado_anterior: 'inconsistencia_detectada',
+    })
+
+    const { result } = renderHook(() => useIncapacidadAiReview('u1'))
+    await waitFor(() => expect(result.current.loadingDetail).toBe(false))
+
+    act(() => result.current.setOverrideJustificacion('Aprobado con excepción documentada'))
+    const ok = await act(async () => result.current.registrarOverride())
+    expect(ok).toBe(true)
+    expect(patchIncapacidadEstado).toHaveBeenCalledWith('u1', {
+      estado: 'en_verificacion',
+      observacion: 'Aprobado con excepción documentada',
+    })
+    expect(result.current.overrideRegistrado).toBe(true)
+    expect(result.current.detail?.estado).toBe('en_verificacion')
+  })
+
+  it('confirmar bloquea si hay inconsistencias sin override', async () => {
+    vi.mocked(getIncapacidadDetalle).mockResolvedValue(detalleBase)
+    vi.mocked(fetchIncapacidadArchivoBlob).mockResolvedValue(new Blob(['x']))
+
+    const { result } = renderHook(() => useIncapacidadAiReview('u1'))
+    await waitFor(() => expect(result.current.loadingDetail).toBe(false))
+
+    const ok = await act(async () => result.current.confirmar())
+    expect(ok).toBe(false)
+    expect(verificarIncapacidad).not.toHaveBeenCalled()
   })
 })

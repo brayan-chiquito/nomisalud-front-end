@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom'
 import { useAuth } from '@/features/auth/context/AuthContext'
-import { CollaboratorHeader } from './CollaboratorHeader'
+import { CollaboratorPortalShell } from './CollaboratorPortalShell'
 import { MisTramitesListPanel } from './MisTramitesListPanel'
 import { MiTramiteDetallePanel } from './MiTramiteDetallePanel'
 import { useMisIncapacidades } from '../hooks/useMisIncapacidades'
@@ -34,20 +34,18 @@ export function MiTramiteView() {
     true,
   )
 
-  const headerName =
+  const profileName =
     detail?.colaborador_nombre?.trim() || displayNameFromEmail(user?.email) || 'Colaborador'
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50/50">
-      <CollaboratorHeader
-        userName={headerName}
-        companyName="Portal colaborador"
-        avatarInitials={initialsFromEmail(user?.email, user?.id)}
-      />
-
+    <CollaboratorPortalShell
+      headerTitle={tramiteId ? 'Detalle del trámite' : 'Mi trámite'}
+      userName={profileName}
+      userInitials={initialsFromEmail(user?.email, user?.id)}
+    >
       {alertaDocumentacion ? <DocumentacionPendienteBanner data={alertaDocumentacion} /> : null}
 
-      <div className="mx-auto w-full max-w-2xl flex-1 space-y-5 py-8">
+      <div className="mx-auto w-full max-w-2xl space-y-5">
         {tramiteId ? (
           <MiTramiteDetallePanel detail={detail} loading={loadingDetalle} error={errorDetalle} />
         ) : (
@@ -61,6 +59,6 @@ export function MiTramiteView() {
           />
         )}
       </div>
-    </div>
+    </CollaboratorPortalShell>
   )
 }

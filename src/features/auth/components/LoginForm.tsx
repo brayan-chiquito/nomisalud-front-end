@@ -5,6 +5,7 @@ import logo from '@/assets/logo.png'
 import type { LoginFormState } from '../types'
 import { loginService } from '../services/auth.service'
 import { useAuth } from '../context/AuthContext'
+import { getPostLoginPathFromToken } from '../utils/postLoginPath'
 import { buttonClassName, inputClassName, labelClassName } from '@/components/ui/buttonStyles'
 import { cn } from '@/utils/cn'
 
@@ -29,7 +30,7 @@ export function LoginForm() {
       const response = await loginService({ email, password })
       login(response.access_token)
       setFormState('success')
-      setTimeout(() => navigate('/dashboard'), 1500)
+      setTimeout(() => navigate(getPostLoginPathFromToken(response.access_token)), 1500)
     } catch {
       setFormState('error')
     }

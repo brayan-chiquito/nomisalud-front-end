@@ -5,6 +5,7 @@ const BADGE_BY_ESTADO: Readonly<Record<string, string>> = {
   recibida: 'bg-gray-100 text-gray-600',
   procesando_ia: 'bg-info-light text-info-text',
   en_verificacion: 'bg-primary-100 text-primary-800',
+  inconsistencia_detectada: 'bg-warning-light text-warning-text',
   doc_incompleta: 'bg-warning-light text-warning-text',
   transcrita: 'bg-neutral-light text-neutral-text',
   cobrada: 'bg-primary-50 text-primary-700',
