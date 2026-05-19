@@ -16,6 +16,7 @@ import {
 import { UserProfileMenu } from '@/components/UserProfileMenu'
 import type { ActionSuccessKind } from '@/features/dashboard/types/dashboardNavigation'
 import { DocumentPreviewPanel } from './DocumentPreviewPanel'
+import { InconsistenciasReviewBanner } from './InconsistenciasReviewBanner'
 import { RejectIncapacityModal, type RejectModalSubmit } from './RejectIncapacityModal'
 
 function displayNameFromEmail(email: string | undefined): string {
@@ -51,6 +52,14 @@ export function IncapacityAiReviewView() {
     confirmar,
     rechazar,
     solicitarDocumentacion,
+    inconsistencias,
+    overrideJustificacion,
+    setOverrideJustificacion,
+    overrideRegistrado,
+    registrarOverride,
+    submittingOverride,
+    overrideError,
+    clearOverrideError,
     submitting,
     submitError,
     clearSubmitError,
@@ -166,8 +175,13 @@ export function IncapacityAiReviewView() {
 
   if (!detail) return null
 
+  const requiereOverridePendiente =
+    detail.estado === 'inconsistencia_detectada' &&
+    inconsistencias.length > 0 &&
+    !overrideRegistrado
   const accionesRevisionDeshabilitadas =
     puedeVerificar === false || submitting || detail.extraccion_ia == null
+  const confirmarDeshabilitado = accionesRevisionDeshabilitadas || requiereOverridePendiente
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50/50">
@@ -208,6 +222,20 @@ export function IncapacityAiReviewView() {
           {submitError}
         </div>
       ) : null}
+
+      <InconsistenciasReviewBanner
+        items={inconsistencias}
+        justificacion={overrideJustificacion}
+        onJustificacionChange={setOverrideJustificacion}
+        onRegistrarOverride={() => {
+          clearOverrideError()
+          registrarOverride().catch(() => false)
+        }}
+        overrideRegistrado={overrideRegistrado}
+        submitting={submittingOverride}
+        error={overrideError}
+        disabled={!puedeVerificar}
+      />
 
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-5 p-5 lg:grid-cols-2 lg:h-[calc(100vh-8rem)]">
         <DocumentPreviewPanel
@@ -330,9 +358,11 @@ export function IncapacityAiReviewView() {
 
       <footer className="flex min-h-[68px] shrink-0 flex-wrap items-center justify-between gap-3 border-t border-gray-200 bg-white px-6 py-3">
         <p className="text-[13px] text-gray-500">
-          {alertasCount > 0
-            ? `${alertasCount} validación(es) marcada(s) por el motor IA — revisa con cuidado.`
-            : 'Revisa los campos antes de confirmar.'}
+          {requiereOverridePendiente
+            ? 'Registra la excepción con justificación para habilitar la confirmación.'
+            : alertasCount > 0
+              ? `${alertasCount} validación(es) marcada(s) por el motor IA — revisa con cuidado.`
+              : 'Revisa los campos antes de confirmar.'}
           {puedeVerificar ? null : ' Solo personal RRHH puede confirmar o rechazar.'}
         </p>
         <div className="flex items-center gap-3">
@@ -352,7 +382,7 @@ export function IncapacityAiReviewView() {
           </button>
           <button
             type="button"
-            disabled={accionesRevisionDeshabilitadas}
+            disabled={confirmarDeshabilitado}
             onClick={() => {
               handleConfirmar().catch(() => false)
             }}

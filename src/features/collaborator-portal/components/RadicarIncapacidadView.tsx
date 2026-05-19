@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, ChevronDown, Calendar, Info, ArrowRight, Loader2 } from 'lucide-react'
-import logo from '@/assets/logo.png'
+import { ChevronDown, Calendar, Info, ArrowRight, Loader2 } from 'lucide-react'
 import { FileDropzone } from '@/components/ui/FileDropzone'
 import {
   INCAPACITY_FILE_ACCEPT,
@@ -11,7 +10,7 @@ import {
 import { uploadIncapacityFile } from '@/features/incapacidades/services/uploadIncapacity.service'
 import { resolveIncapacidadIdAfterUpload } from '@/features/incapacidades/services/resolveIncapacidadIdAfterUpload.service'
 import { useAuth } from '@/features/auth/context/AuthContext'
-import { UserProfileMenu } from '@/components/UserProfileMenu'
+import { CollaboratorPortalShell } from './CollaboratorPortalShell'
 import { Card } from '@/components/ui/Card'
 import { buttonClassName, labelClassName } from '@/components/ui/buttonStyles'
 const MAX_MB = INCAPACITY_MAX_BYTES / (1024 * 1024)
@@ -93,36 +92,12 @@ export function RadicarIncapacidadView() {
   const canSubmit = Boolean(file) && !isUploading
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50/50">
-      <header className="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6">
-        <div className="flex items-center gap-2.5">
-          <img src={logo} alt="Nomisalud" className="h-8 w-8 object-contain" />
-          <span className="text-sm font-semibold text-gray-900">Nomisalud</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="hidden text-sm text-gray-400 sm:inline">{headerName}</span>
-          <UserProfileMenu
-            userName={headerName}
-            companyName="Portal colaborador"
-            avatarInitials={headerInitials}
-          />
-        </div>
-      </header>
-
-      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-5 py-8">
-        <div className="flex items-center gap-3">
-          <Link
-            to="/portal/mi-tramite"
-            className={buttonClassName('secondary', 'gap-1.5 py-1.5 text-[13px]')}
-          >
-            <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
-            Volver
-          </Link>
-          <h1 className="text-[22px] font-semibold tracking-tight text-gray-900">
-            Radicar nueva incapacidad
-          </h1>
-        </div>
-
+    <CollaboratorPortalShell
+      headerTitle="Radicar nueva incapacidad"
+      userName={headerName}
+      userInitials={headerInitials}
+    >
+      <div className="mx-auto w-full max-w-2xl">
         <Card className="overflow-hidden">
           <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
             <h2 className="text-base font-semibold text-gray-900">
@@ -189,8 +164,8 @@ export function RadicarIncapacidadView() {
             </button>
           </div>
         </Card>
-      </main>
-    </div>
+      </div>
+    </CollaboratorPortalShell>
   )
 }
 

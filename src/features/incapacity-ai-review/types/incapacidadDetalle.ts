@@ -17,6 +17,13 @@ export type HistorialEstadoRecord = Readonly<{
  * Respuesta de `GET /incapacidades/{id}` (ver docs/README.md).
  * `datos_extraidos` es JSON flexible según extracción IA.
  */
+export type InconsistenciaRecord = Readonly<{
+  id?: string
+  tipo: string
+  descripcion: string
+  created_at?: string
+}>
+
 export type ExtraccionIaDetalle = Readonly<{
   datos_extraidos?: Record<string, unknown> | null
   calidad_doc?: number | string | null
@@ -41,6 +48,8 @@ export type IncapacidadDetalle = Readonly<{
   /** Fecha límite ISO para completar documentación. */
   fecha_vencimiento_documentacion?: string | null
   historial_estados?: HistorialEstadoRecord[] | null
+  /** Hallazgos IA persistidos (tabla `inconsistencias`; ver docs/README.md). */
+  inconsistencias?: InconsistenciaRecord[] | null
   extraccion_ia: ExtraccionIaDetalle | null
 }>
 

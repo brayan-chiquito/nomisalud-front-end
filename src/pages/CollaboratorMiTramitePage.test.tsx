@@ -45,6 +45,10 @@ describe('CollaboratorMiTramitePage', () => {
       </AuthProvider>,
     )
     expect(screen.getByRole('heading', { name: /mis trámites/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /dashboard/i })).toHaveAttribute('href', '/dashboard')
+    expect(screen.getByRole('navigation', { name: /portal colaborador/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /radicar incapacidad/i })).toHaveAttribute(
+      'href',
+      '/portal/radicar-incapacidad',
+    )
   })
 })

@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, FileText, BarChart3, Users } from 'lucide-react'
+import { LayoutDashboard, FileText, BarChart3, Users, UserCircle } from 'lucide-react'
 import logo from '@/assets/logo.png'
 import { UserProfileMenu } from '@/components/UserProfileMenu'
 import { cn } from '@/utils/cn'
@@ -82,6 +82,19 @@ export function RrhhDashboardShell({
             <Users className="h-4 w-4 shrink-0" aria-hidden />
             Usuarios
           </button>
+
+          <div className="pt-4 pb-2">
+            <p className="px-3 text-[10px] font-semibold tracking-widest text-gray-300 uppercase">
+              Colaborador
+            </p>
+          </div>
+          <NavLink
+            to="/portal/mi-tramite"
+            className={({ isActive }) => cn(navItemBase, isActive ? navActive : navInactive)}
+          >
+            <UserCircle className="h-4 w-4 shrink-0" aria-hidden />
+            Portal colaborador
+          </NavLink>
 
           <div className="pt-4 pb-2">
             <p className="px-3 text-[10px] font-semibold tracking-widest text-gray-300 uppercase">

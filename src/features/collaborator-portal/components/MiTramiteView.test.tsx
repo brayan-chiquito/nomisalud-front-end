@@ -31,6 +31,8 @@ function renderAt(path: string) {
         <Routes>
           <Route path="/portal/mi-tramite" element={<MiTramiteView />} />
           <Route path="/portal/mi-tramite/:tramiteId" element={<MiTramiteView />} />
+          <Route path="/portal/radicar-incapacidad" element={<div />} />
+          <Route path="/dashboard" element={<div />} />
         </Routes>
       </MemoryRouter>
     </AuthProvider>,
@@ -81,7 +83,16 @@ describe('MiTramiteView', () => {
     renderAt('/portal/mi-tramite')
     expect(screen.getByRole('heading', { name: /mis trámites/i })).toBeInTheDocument()
     expect(screen.getByText('IN-LIST')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /dashboard/i })).toHaveAttribute('href', '/dashboard')
+    expect(screen.getByRole('navigation', { name: /portal colaborador/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /mi trámite/i })).toHaveAttribute(
+      'href',
+      '/portal/mi-tramite',
+    )
+    expect(screen.getByRole('link', { name: /radicar incapacidad/i })).toHaveAttribute(
+      'href',
+      '/portal/radicar-incapacidad',
+    )
+    expect(screen.queryByRole('link', { name: /panel rrhh/i })).not.toBeInTheDocument()
     expect(mockUseMisIncapacidades).toHaveBeenCalledWith(true)
   })
 

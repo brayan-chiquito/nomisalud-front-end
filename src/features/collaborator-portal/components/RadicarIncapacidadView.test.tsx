@@ -15,8 +15,12 @@ describe('RadicarIncapacidadView', () => {
         </MemoryRouter>
       </AuthProvider>,
     )
-    expect(screen.getByText('Radicar nueva incapacidad')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /volver/i })).toHaveAttribute(
+    expect(screen.getByRole('heading', { name: /radicar nueva incapacidad/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /mi trámite/i })).toHaveAttribute(
+      'href',
+      '/portal/mi-tramite',
+    )
+    expect(screen.getByRole('link', { name: /cancelar/i })).toHaveAttribute(
       'href',
       '/portal/mi-tramite',
     )

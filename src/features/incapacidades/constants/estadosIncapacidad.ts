@@ -6,6 +6,7 @@ export const INCAPACIDAD_ESTADOS_FILTRO = [
   { value: 'recibida', label: 'Recibida' },
   { value: 'procesando_ia', label: 'Procesando IA' },
   { value: 'en_verificacion', label: 'En verificación' },
+  { value: 'inconsistencia_detectada', label: 'Inconsistencia detectada' },
   { value: 'doc_incompleta', label: 'Doc. incompleta' },
   { value: 'transcrita', label: 'Transcrita' },
   { value: 'cobrada', label: 'Cobrada' },

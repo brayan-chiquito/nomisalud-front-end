@@ -20,14 +20,16 @@ vi.mock('../services/incapacidadReview.service', () => ({
 const detalleBase = {
   id: 'u1',
   radicado: 'IN01',
-  estado: 'en_verificacion',
+  estado: 'inconsistencia_detectada',
   archivo_tipo: 'pdf',
   extraccion_ia: {
     datos_extraidos: {
       colaborador: { nombre_completo: 'Ana López' },
       incapacidad: { tipo: 'eg' },
     },
+    validaciones: [{ nivel: 'warning', tipo: 'Fechas', mensaje: 'Revisar rango' }],
   },
+  inconsistencias: [{ tipo: 'fechas', descripcion: 'Revisar rango' }],
 }
 
 describe('useIncapacidadAiReview', () => {
@@ -58,7 +60,15 @@ describe('useIncapacidadAiReview', () => {
   })
 
   it('confirmar envía datos_extraidos fusionados', async () => {
-    vi.mocked(getIncapacidadDetalle).mockResolvedValue(detalleBase)
+    vi.mocked(getIncapacidadDetalle).mockResolvedValue({
+      ...detalleBase,
+      estado: 'en_verificacion',
+      inconsistencias: [],
+      extraccion_ia: {
+        ...detalleBase.extraccion_ia,
+        validaciones: [],
+      },
+    })
     vi.mocked(fetchIncapacidadArchivoBlob).mockResolvedValue(new Blob(['x']))
     vi.mocked(verificarIncapacidad).mockResolvedValue({
       id: 'u1',
@@ -138,5 +148,208 @@ describe('useIncapacidadAiReview', () => {
       documentos: ['Historia clínica'],
       observacion: 'Pendiente',
     })
+  })
+
+  it('expone inconsistencias desde inconsistencias[] del detalle', async () => {
+    vi.mocked(getIncapacidadDetalle).mockResolvedValue(detalleBase)
+    vi.mocked(fetchIncapacidadArchivoBlob).mockResolvedValue(new Blob(['x']))
+
+    const { result } = renderHook(() => useIncapacidadAiReview('u1'))
+    await waitFor(() => expect(result.current.loadingDetail).toBe(false))
+
+    expect(result.current.inconsistencias).toEqual([
+      { tipo: 'fechas', descripcion: 'Revisar rango' },
+    ])
+  })
+
+  it('registrarOverride hace PATCH a en_verificacion con observación', async () => {
+    vi.mocked(getIncapacidadDetalle).mockResolvedValue(detalleBase)
+    vi.mocked(fetchIncapacidadArchivoBlob).mockResolvedValue(new Blob(['x']))
+    vi.mocked(patchIncapacidadEstado).mockResolvedValue({
+      id: 'u1',
+      radicado: 'IN01',
+      estado: 'en_verificacion',
+      estado_anterior: 'inconsistencia_detectada',
+    })
+
+    const { result } = renderHook(() => useIncapacidadAiReview('u1'))
+    await waitFor(() => expect(result.current.loadingDetail).toBe(false))
+
+    act(() => result.current.setOverrideJustificacion('Aprobado con excepción documentada'))
+    const ok = await act(async () => result.current.registrarOverride())
+    expect(ok).toBe(true)
+    expect(patchIncapacidadEstado).toHaveBeenCalledWith('u1', {
+      estado: 'en_verificacion',
+      observacion: 'Aprobado con excepción documentada',
+    })
+    expect(result.current.overrideRegistrado).toBe(true)
+    expect(result.current.detail?.estado).toBe('en_verificacion')
+  })
+
+  it('sin incapacidadId no consulta el detalle', () => {
+    renderHook(() => useIncapacidadAiReview(null))
+    expect(getIncapacidadDetalle).not.toHaveBeenCalled()
+  })
+
+  it('no descarga archivo si el tipo no es visualizable', async () => {
+    vi.mocked(getIncapacidadDetalle).mockResolvedValue({
+      ...detalleBase,
+      archivo_tipo: 'docx',
+    })
+    renderHook(() => useIncapacidadAiReview('u1'))
+    await waitFor(() => expect(vi.mocked(getIncapacidadDetalle)).toHaveBeenCalled())
+    expect(fetchIncapacidadArchivoBlob).not.toHaveBeenCalled()
+  })
+
+  it('registrarOverride exige justificación mínima', async () => {
+    vi.mocked(getIncapacidadDetalle).mockResolvedValue(detalleBase)
+    vi.mocked(fetchIncapacidadArchivoBlob).mockResolvedValue(new Blob(['x']))
+
+    const { result } = renderHook(() => useIncapacidadAiReview('u1'))
+    await waitFor(() => expect(result.current.loadingDetail).toBe(false))
+
+    act(() => result.current.setOverrideJustificacion('corta'))
+    const ok = await act(async () => result.current.registrarOverride())
+    expect(ok).toBe(false)
+    expect(result.current.overrideError).toMatch(/10 caracteres/i)
+    expect(patchIncapacidadEstado).not.toHaveBeenCalled()
+  })
+
+  it('registrarOverride rechaza si el estado no es inconsistencia_detectada', async () => {
+    vi.mocked(getIncapacidadDetalle).mockResolvedValue({
+      ...detalleBase,
+      estado: 'en_verificacion',
+    })
+    vi.mocked(fetchIncapacidadArchivoBlob).mockResolvedValue(new Blob(['x']))
+
+    const { result } = renderHook(() => useIncapacidadAiReview('u1'))
+    await waitFor(() => expect(result.current.loadingDetail).toBe(false))
+
+    act(() => result.current.setOverrideJustificacion('Justificación válida de prueba'))
+    const ok = await act(async () => result.current.registrarOverride())
+    expect(ok).toBe(false)
+    expect(result.current.overrideError).toMatch(/inconsistencia detectada/i)
+  })
+
+  it('registrarOverride propaga error HTTP', async () => {
+    vi.mocked(getIncapacidadDetalle).mockResolvedValue(detalleBase)
+    vi.mocked(fetchIncapacidadArchivoBlob).mockResolvedValue(new Blob(['x']))
+    vi.mocked(patchIncapacidadEstado).mockRejectedValue(new Error('fallo red'))
+
+    const { result } = renderHook(() => useIncapacidadAiReview('u1'))
+    await waitFor(() => expect(result.current.loadingDetail).toBe(false))
+
+    act(() => result.current.setOverrideJustificacion('Justificación válida de prueba'))
+    const ok = await act(async () => result.current.registrarOverride())
+    expect(ok).toBe(false)
+    expect(result.current.overrideError).toBe('fallo red')
+  })
+
+  it('confirmar no hace PATCH extra si verificar ya dejó transcrita', async () => {
+    vi.mocked(getIncapacidadDetalle).mockResolvedValue({
+      ...detalleBase,
+      estado: 'en_verificacion',
+      inconsistencias: [],
+      extraccion_ia: {
+        ...detalleBase.extraccion_ia,
+        validaciones: [],
+      },
+    })
+    vi.mocked(fetchIncapacidadArchivoBlob).mockResolvedValue(new Blob(['x']))
+    vi.mocked(verificarIncapacidad).mockResolvedValue({
+      id: 'u1',
+      radicado: 'IN01',
+      estado: 'transcrita',
+    })
+
+    const { result } = renderHook(() => useIncapacidadAiReview('u1'))
+    await waitFor(() => expect(result.current.loadingDetail).toBe(false))
+
+    const ok = await act(async () => result.current.confirmar())
+    expect(ok).toBe(true)
+    expect(patchIncapacidadEstado).not.toHaveBeenCalled()
+  })
+
+  it('rechazar exige motivo no vacío', async () => {
+    vi.mocked(getIncapacidadDetalle).mockResolvedValue(detalleBase)
+    vi.mocked(fetchIncapacidadArchivoBlob).mockResolvedValue(new Blob(['x']))
+
+    const { result } = renderHook(() => useIncapacidadAiReview('u1'))
+    await waitFor(() => expect(result.current.loadingDetail).toBe(false))
+
+    const ok = await act(async () => result.current.rechazar('   '))
+    expect(ok).toBe(false)
+    expect(result.current.submitError).toMatch(/motivo/i)
+  })
+
+  it('solicitarDocumentacion exige al menos un documento', async () => {
+    vi.mocked(getIncapacidadDetalle).mockResolvedValue(detalleBase)
+    vi.mocked(fetchIncapacidadArchivoBlob).mockResolvedValue(new Blob(['x']))
+
+    const { result } = renderHook(() => useIncapacidadAiReview('u1'))
+    await waitFor(() => expect(result.current.loadingDetail).toBe(false))
+
+    const ok = await act(async () => result.current.solicitarDocumentacion(['  ']))
+    expect(ok).toBe(false)
+    expect(result.current.submitError).toMatch(/documento faltante/i)
+  })
+
+  it('confirmar sin extracción IA devuelve error', async () => {
+    vi.mocked(getIncapacidadDetalle).mockResolvedValue({
+      ...detalleBase,
+      estado: 'en_verificacion',
+      inconsistencias: [],
+      extraccion_ia: null,
+    })
+    vi.mocked(fetchIncapacidadArchivoBlob).mockResolvedValue(new Blob(['x']))
+
+    const { result } = renderHook(() => useIncapacidadAiReview('u1'))
+    await waitFor(() => expect(result.current.loadingDetail).toBe(false))
+
+    const ok = await act(async () => result.current.confirmar())
+    expect(ok).toBe(false)
+    expect(result.current.submitError).toMatch(/extracción/i)
+  })
+
+  it('confirmar propaga error HTTP', async () => {
+    vi.mocked(getIncapacidadDetalle).mockResolvedValue({
+      ...detalleBase,
+      estado: 'en_verificacion',
+      inconsistencias: [],
+    })
+    vi.mocked(fetchIncapacidadArchivoBlob).mockResolvedValue(new Blob(['x']))
+    vi.mocked(verificarIncapacidad).mockRejectedValue(new Error('timeout'))
+
+    const { result } = renderHook(() => useIncapacidadAiReview('u1'))
+    await waitFor(() => expect(result.current.loadingDetail).toBe(false))
+
+    const ok = await act(async () => result.current.confirmar())
+    expect(ok).toBe(false)
+    expect(result.current.submitError).toBe('timeout')
+  })
+
+  it('solicitarDocumentacion propaga error HTTP', async () => {
+    vi.mocked(getIncapacidadDetalle).mockResolvedValue(detalleBase)
+    vi.mocked(fetchIncapacidadArchivoBlob).mockResolvedValue(new Blob(['x']))
+    vi.mocked(registrarDocumentacionFaltante).mockRejectedValue(new Error('conflicto'))
+
+    const { result } = renderHook(() => useIncapacidadAiReview('u1'))
+    await waitFor(() => expect(result.current.loadingDetail).toBe(false))
+
+    const ok = await act(async () => result.current.solicitarDocumentacion(['Doc'], 'obs'))
+    expect(ok).toBe(false)
+    expect(result.current.submitError).toBe('conflicto')
+  })
+
+  it('confirmar bloquea si hay inconsistencias sin override', async () => {
+    vi.mocked(getIncapacidadDetalle).mockResolvedValue(detalleBase)
+    vi.mocked(fetchIncapacidadArchivoBlob).mockResolvedValue(new Blob(['x']))
+
+    const { result } = renderHook(() => useIncapacidadAiReview('u1'))
+    await waitFor(() => expect(result.current.loadingDetail).toBe(false))
+
+    const ok = await act(async () => result.current.confirmar())
+    expect(ok).toBe(false)
+    expect(verificarIncapacidad).not.toHaveBeenCalled()
   })
 })
