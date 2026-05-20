@@ -6,6 +6,7 @@ export type ListIncapacidadesParams = Readonly<{
   estado?: string
   tipo?: string
   entidad?: string
+  urgencia?: string
   signal?: AbortSignal
 }>
 
@@ -16,6 +17,7 @@ function buildQuery(
   if (params.estado?.trim()) q.estado = params.estado.trim()
   if (params.tipo?.trim()) q.tipo = params.tipo.trim()
   if (params.entidad?.trim()) q.entidad = params.entidad.trim()
+  if (params.urgencia?.trim()) q.urgencia = params.urgencia.trim().toLowerCase()
   return q
 }
 

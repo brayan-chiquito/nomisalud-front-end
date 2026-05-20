@@ -1,3 +1,5 @@
+import type { UrgenciaNivel } from './urgencia'
+
 /**
  * Ítem de `GET /incapacidades` (ver `docs/README.md`).
  * `datos_extraidos` opcional conserva compatibilidad con respuestas antiguas.
@@ -22,6 +24,8 @@ export type IncapacidadListItem = Readonly<{
   entidad_nit?: string | null
   entidad_ciudad?: string | null
   incapacidad_tipo_extraido?: string | null
+  /** Semáforo calculado por plazos de entidad (SCRUM-176/177). */
+  urgencia?: UrgenciaNivel | string | null
   /** Respuesta legacy; preferir `colaborador_nombre` */
   nombre_colaborador?: string | null
   datos_extraidos?: DatosExtraidosListado | null

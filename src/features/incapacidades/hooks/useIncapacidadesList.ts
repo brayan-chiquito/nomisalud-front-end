@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import { listIncapacidades } from '../services/listIncapacidades.service'
 import type { IncapacidadesListResponse } from '../types/listIncapacidades'
+import type { UrgenciaNivel } from '../types/urgencia'
+import { ordenarPorUrgenciaDesc } from '../utils/urgencia'
 
 function messageFromLoadError(error: unknown): string {
   if (axios.isAxiosError(error)) {
@@ -28,6 +30,8 @@ export type UseIncapacidadesListResult = Readonly<{
   setTipo: (v: string) => void
   entidadInput: string
   setEntidadInput: (v: string) => void
+  urgencia: '' | UrgenciaNivel
+  setUrgencia: (v: '' | UrgenciaNivel) => void
 }>
 
 export function useIncapacidadesList(entidadDebounceMs = 350): UseIncapacidadesListResult {
@@ -36,6 +40,7 @@ export function useIncapacidadesList(entidadDebounceMs = 350): UseIncapacidadesL
   const [tipo, setTipoState] = useState('')
   const [entidadInput, setEntidadInput] = useState('')
   const [entidadDebounced, setEntidadDebounced] = useState('')
+  const [urgencia, setUrgenciaState] = useState<'' | UrgenciaNivel>('')
   const [data, setData] = useState<IncapacidadesListResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -70,6 +75,11 @@ export function useIncapacidadesList(entidadDebounceMs = 350): UseIncapacidadesL
     setPage(1)
   }, [])
 
+  const setUrgencia = useCallback((v: '' | UrgenciaNivel) => {
+    setUrgenciaState(v)
+    setPage(1)
+  }, [])
+
   const load = useCallback(
     async (signal: AbortSignal) => {
       setLoading(true)
@@ -80,9 +90,15 @@ export function useIncapacidadesList(entidadDebounceMs = 350): UseIncapacidadesL
           ...(estado ? { estado } : {}),
           ...(tipo ? { tipo } : {}),
           ...(entidadDebounced ? { entidad: entidadDebounced } : {}),
+          ...(urgencia ? { urgencia } : {}),
           signal,
         })
-        if (!signal.aborted) setData(res)
+        if (!signal.aborted) {
+          setData({
+            ...res,
+            items: ordenarPorUrgenciaDesc(res.items),
+          })
+        }
       } catch (e) {
         if (signal.aborted || axios.isCancel(e)) return
         setData(null)
@@ -91,7 +107,7 @@ export function useIncapacidadesList(entidadDebounceMs = 350): UseIncapacidadesL
         if (!signal.aborted) setLoading(false)
       }
     },
-    [page, estado, tipo, entidadDebounced],
+    [page, estado, tipo, entidadDebounced, urgencia],
   )
 
   useEffect(() => {
@@ -112,5 +128,7 @@ export function useIncapacidadesList(entidadDebounceMs = 350): UseIncapacidadesL
     setTipo,
     entidadInput,
     setEntidadInput,
+    urgencia,
+    setUrgencia,
   }
 }
