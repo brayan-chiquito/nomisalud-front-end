@@ -10,7 +10,9 @@ import {
 } from 'lucide-react'
 import { useIncapacidadesList } from '@/features/incapacidades/hooks/useIncapacidadesList'
 import { INCAPACIDAD_ESTADOS_FILTRO } from '@/features/incapacidades/constants/estadosIncapacidad'
+import { URGENCIA_FILTRO_OPTIONS } from '@/features/incapacidades/types/urgencia'
 import { StatusBadge } from '@/components/ui/StatusBadge'
+import { UrgenciaBadge } from '@/components/ui/UrgenciaBadge'
 import { buttonClassName } from '@/components/ui/buttonStyles'
 import {
   colaboradorNombreLegible,
@@ -33,6 +35,9 @@ const selectFrame =
 
 const selectNative =
   'max-w-[160px] cursor-pointer border-0 bg-transparent text-[13px] text-slate-700 outline-none focus:ring-0'
+
+const TABLE_GRID_COLUMNS =
+  'minmax(0, 1fr) minmax(0, 1.35fr) minmax(0, 88px) minmax(0, 112px) minmax(0, 100px) minmax(0, 132px) minmax(0, 88px) minmax(0, 72px)'
 
 function formatFechaCorta(iso: string): string {
   const d = new Date(iso)
@@ -62,6 +67,8 @@ export function RrhhIncapacidadesPanel() {
     setTipo,
     entidadInput,
     setEntidadInput,
+    urgencia,
+    setUrgencia,
   } = useIncapacidadesList()
 
   const total = data?.total ?? 0
@@ -75,6 +82,7 @@ export function RrhhIncapacidadesPanel() {
     ? (INCAPACIDAD_ESTADOS_FILTRO.find((e) => e.value === estado)?.label ?? estado)
     : 'Todos'
   const tipoLabel = TIPO_OPTIONS.find((t) => t.value === tipo)?.label ?? 'Todos'
+  const urgenciaLabel = URGENCIA_FILTRO_OPTIONS.find((u) => u.value === urgencia)?.label ?? 'Todas'
 
   const canPrev = page > 1 && !loading
   const canNext = totalPages > 0 && page < totalPages && !loading
@@ -105,6 +113,24 @@ export function RrhhIncapacidadesPanel() {
             <option value="">Todos</option>
             {INCAPACIDAD_ESTADOS_FILTRO.map(({ value, label }) => (
               <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="h-3.5 w-3.5 shrink-0 text-slate-400" aria-hidden />
+        </label>
+
+        <label className={selectFrame}>
+          <span className="shrink-0 text-slate-600">Urgencia:</span>
+          <select
+            value={urgencia}
+            onChange={(e) => setUrgencia(e.target.value as '' | 'verde' | 'amarillo' | 'rojo')}
+            disabled={loading}
+            className={selectNative}
+            aria-label={`Urgencia, actualmente ${urgenciaLabel}`}
+          >
+            {URGENCIA_FILTRO_OPTIONS.map(({ value, label }) => (
+              <option key={value || 'all'} value={value}>
                 {label}
               </option>
             ))}
@@ -154,18 +180,16 @@ export function RrhhIncapacidadesPanel() {
       ) : null}
 
       <div className="min-h-0 flex-1 overflow-x-auto">
-        <div className="min-w-[960px]">
+        <div className="min-w-[1060px]">
           <div
             className="grid h-11 items-center gap-x-2 border-b border-gray-100 bg-gray-50/80 px-5 text-[11px] font-semibold tracking-wider text-gray-400 uppercase"
-            style={{
-              gridTemplateColumns:
-                'minmax(0, 1fr) minmax(0, 1.35fr) minmax(0, 100px) minmax(0, 120px) minmax(0, 140px) minmax(0, 92px) minmax(0, 72px)',
-            }}
+            style={{ gridTemplateColumns: TABLE_GRID_COLUMNS }}
           >
             <span className="min-w-0">Radicado</span>
             <span className="min-w-0">Colaborador</span>
             <span className="min-w-0">Tipo</span>
             <span className="min-w-0">Entidad</span>
+            <span className="min-w-0">Urgencia</span>
             <span className="min-w-0">Estado</span>
             <span className="min-w-0">Fecha</span>
             <span className="min-w-0 text-center">Acciones</span>
@@ -197,10 +221,7 @@ export function RrhhIncapacidadesPanel() {
                     'group grid h-14 items-center gap-x-2 border-b border-gray-50 px-5 text-sm transition-colors duration-100 hover:bg-gray-50/60',
                     'bg-white',
                   )}
-                  style={{
-                    gridTemplateColumns:
-                      'minmax(0, 1fr) minmax(0, 1.35fr) minmax(0, 100px) minmax(0, 120px) minmax(0, 140px) minmax(0, 92px) minmax(0, 72px)',
-                  }}
+                  style={{ gridTemplateColumns: TABLE_GRID_COLUMNS }}
                 >
                   <span className="min-w-0 truncate" title={row.radicado}>
                     <span className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs text-gray-600">
@@ -220,6 +241,9 @@ export function RrhhIncapacidadesPanel() {
                   </span>
                   <span className="min-w-0 truncate text-slate-500" title={entidadTip}>
                     {entidadTxt}
+                  </span>
+                  <span className="min-w-0">
+                    <UrgenciaBadge urgencia={row.urgencia} />
                   </span>
                   <span className="min-w-0">
                     <StatusBadge estado={row.estado} />

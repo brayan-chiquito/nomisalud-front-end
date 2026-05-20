@@ -93,6 +93,31 @@ describe('RrhhIncapacidadesPanel', () => {
     expect(screen.getByTitle('Documento: JPG')).toHaveTextContent('JPG')
   })
 
+  it('muestra badge de urgencia y filtro por semáforo', async () => {
+    vi.mocked(listIncapacidades).mockResolvedValue({
+      items: [{ ...sampleItem, urgencia: 'rojo' }],
+      total: 1,
+      pages: 1,
+    })
+    render(
+      <MemoryRouter>
+        <RrhhIncapacidadesPanel />
+      </MemoryRouter>,
+    )
+    await waitFor(() => expect(screen.getByText('Urgente')).toBeInTheDocument())
+    expect(screen.getByLabelText(/urgencia, actualmente todas/i)).toBeInTheDocument()
+
+    vi.mocked(listIncapacidades).mockResolvedValue({ items: [], total: 0, pages: 0 })
+    fireEvent.change(screen.getByLabelText(/urgencia, actualmente/i), {
+      target: { value: 'rojo' },
+    })
+    await waitFor(() =>
+      expect(listIncapacidades).toHaveBeenLastCalledWith(
+        expect.objectContaining({ page: 1, urgencia: 'rojo' }),
+      ),
+    )
+  })
+
   it('cambia el filtro de estado y vuelve a la página 1', async () => {
     vi.mocked(listIncapacidades).mockResolvedValue({
       items: [sampleItem],

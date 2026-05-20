@@ -70,6 +70,45 @@ describe('useIncapacidadesList', () => {
     )
   })
 
+  it('envía filtro urgencia y ordena ítems con rojo primero', async () => {
+    vi.mocked(listIncapacidades).mockResolvedValue({
+      items: [
+        {
+          id: '1',
+          radicado: 'R1',
+          estado: 'recibida',
+          colaborador_id: 'c1',
+          archivo_tipo: 'pdf',
+          fecha_recepcion: '2026-01-01T00:00:00.000Z',
+          urgencia: 'verde',
+        },
+        {
+          id: '2',
+          radicado: 'R2',
+          estado: 'recibida',
+          colaborador_id: 'c1',
+          archivo_tipo: 'pdf',
+          fecha_recepcion: '2026-01-01T00:00:00.000Z',
+          urgencia: 'rojo',
+        },
+      ],
+      total: 2,
+      pages: 1,
+    })
+    const { result } = renderHook(() => useIncapacidadesList(0))
+
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.data?.items.map((i) => i.urgencia)).toEqual(['rojo', 'verde'])
+
+    act(() => result.current.setUrgencia('amarillo'))
+
+    await waitFor(() =>
+      expect(listIncapacidades).toHaveBeenLastCalledWith(
+        expect.objectContaining({ page: 1, urgencia: 'amarillo' }),
+      ),
+    )
+  })
+
   it('resetea la página a 1 cuando cambia la entidad debounced', async () => {
     vi.mocked(listIncapacidades).mockResolvedValue({
       items: [

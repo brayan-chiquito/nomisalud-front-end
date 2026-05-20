@@ -43,6 +43,17 @@ describe('listIncapacidades', () => {
     })
   })
 
+  it('incluye urgencia en minúsculas cuando viene informada', async () => {
+    vi.mocked(http.get).mockResolvedValue({
+      data: { items: [], total: 0, pages: 0 },
+    })
+    await listIncapacidades({ urgencia: 'ROJO' })
+    expect(http.get).toHaveBeenCalledWith('/incapacidades', {
+      params: { page: 1, urgencia: 'rojo' },
+      signal: undefined,
+    })
+  })
+
   it('recorta espacios en parámetros de texto', async () => {
     vi.mocked(http.get).mockResolvedValue({
       data: { items: [], total: 0, pages: 0 },
