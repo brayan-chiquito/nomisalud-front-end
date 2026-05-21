@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import axios from 'axios'
-import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
+import { Search } from 'lucide-react'
 import { listPagos } from '../services/pagos.service'
 import type { PagoListItem } from '../types/pago'
 import {
@@ -11,7 +11,7 @@ import {
 } from '../utils/pagoDisplay'
 import { Card } from '@/components/ui/Card'
 import { ListPanelBody } from '@/components/ui/ListPanelBody'
-import { cn } from '@/utils/cn'
+import { ListPaginationFooter } from '@/components/ui/ListPaginationFooter'
 import { messageFromLoadError } from '@/utils/messageFromLoadError'
 import { pageSizeFromResponse, paginationRange } from '@/utils/pagination'
 import { useAbortableEffect } from '@/hooks/useAbortableEffect'
@@ -76,9 +76,6 @@ export function PagosListPanel({ refreshToken = 0 }: PagosListPanelProps) {
 
   const pageSize = pageSizeFromResponse(total, pages, items.length)
   const { start, end } = paginationRange(total, page, pageSize)
-  const canPrev = page > 1 && !loading
-  const canNext = pages > 0 && page < pages && !loading
-
   return (
     <Card className="mt-6 overflow-hidden">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-5 py-4 sm:px-6">
@@ -154,40 +151,17 @@ export function PagosListPanel({ refreshToken = 0 }: PagosListPanelProps) {
         </div>
       </div>
 
-      <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 px-5 py-3 sm:px-6">
-        <p className="text-[13px] text-slate-500">
-          Mostrando {start} - {end} de {total}
-        </p>
-        <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            disabled={!canPrev}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            className={cn(
-              'rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700',
-              'disabled:cursor-not-allowed disabled:opacity-30',
-            )}
-            aria-label="Página anterior"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-          <span className="flex h-8 min-w-8 items-center justify-center rounded-md bg-primary px-2 text-[13px] font-semibold text-white">
-            {pages === 0 ? 0 : page}
-          </span>
-          <button
-            type="button"
-            disabled={!canNext}
-            onClick={() => setPage((p) => p + 1)}
-            className={cn(
-              'rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700',
-              'disabled:cursor-not-allowed disabled:opacity-30',
-            )}
-            aria-label="Página siguiente"
-          >
-            <ChevronRight className="h-5 w-5" />
-          </button>
-        </div>
-      </footer>
+      <ListPaginationFooter
+        start={start}
+        end={end}
+        total={total}
+        page={page}
+        totalPages={pages}
+        loading={loading}
+        onPrev={() => setPage((p) => Math.max(1, p - 1))}
+        onNext={() => setPage((p) => p + 1)}
+        pageBadgeClassName="bg-primary"
+      />
     </Card>
   )
 }
