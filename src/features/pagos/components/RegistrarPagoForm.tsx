@@ -1,55 +1,130 @@
-import { useCallback, useState } from 'react'
-import { Loader2 } from 'lucide-react'
-import { listIncapacidades } from '@/features/incapacidades/services/listIncapacidades.service'
-import { createPago } from '../services/pagos.service'
+import { useCallback, useEffect, useState } from 'react'
+import { Search, Loader2 } from 'lucide-react'
+import { useAuth } from '@/features/auth/context/AuthContext'
+import {
+  FINANCIAL_MODULE_ONLY_MESSAGE,
+  messageFromFinancialForbiddenError,
+  RADICADOS_DISPONIBLES_API_PATH,
+} from '@/features/auth/utils/financialModuleAccess'
+import { isContabilidadRole } from '@/features/auth/utils/roleAccess'
+import { createPago, listRadicadosDisponibles } from '../services/pagos.service'
 import { validatePagoFormFields } from '../utils/validatePagoForm'
 import { messageFromHttpError } from '@/features/incapacity-ai-review/utils/httpErrorMessage'
+import { messageFromLoadError } from '@/utils/messageFromLoadError'
 import { buttonClassName, inputClassName, labelClassName } from '@/components/ui/buttonStyles'
 import { Card } from '@/components/ui/Card'
 import { cn } from '@/utils/cn'
-import type { IncapacidadListItem } from '@/features/incapacidades/types/listIncapacidades'
+import type { RadicadoDisponible } from '../types/radicadoDisponible'
 import { useAbortableEffect } from '@/hooks/useAbortableEffect'
 import { CobradasCheckboxList } from './CobradasCheckboxList'
 import { cobradasListFrameClass } from '../utils/cobradasListStyles'
+import {
+  EMPTY_DISPONIBLES_CONTABILIDAD,
+  EMPTY_DISPONIBLES_RRHH,
+} from '../utils/radicadoDisponibleDisplay'
+import { ListPaginationFooter } from '@/components/ui/ListPaginationFooter'
+import { pageSizeFromResponse, paginationRange } from '@/utils/pagination'
+
+const LOAD_DISPONIBLES_ERROR = 'No se pudo cargar los radicados disponibles para liquidar.'
 
 export type RegistrarPagoFormProps = Readonly<{
   onRegistroExitoso?: () => void
 }>
 
 /**
- * Formulario para `POST /pagos`: entidad, referencia, monto y radicados en estado cobrada.
+ * Formulario para `POST /pagos`: radicados desde `GET /pagos/radicados-disponibles`.
  */
 export function RegistrarPagoForm({ onRegistroExitoso }: RegistrarPagoFormProps) {
+  const { user } = useAuth()
+  const isContabilidad = isContabilidadRole(user?.role)
+
   const [entidadOrigen, setEntidadOrigen] = useState('')
   const [referencia, setReferencia] = useState('')
   const [monto, setMonto] = useState('')
   const [selectedRadicados, setSelectedRadicados] = useState<ReadonlySet<string>>(new Set())
 
-  const [cobradas, setCobradas] = useState<IncapacidadListItem[]>([])
-  const [loadingCobradas, setLoadingCobradas] = useState(true)
+  const [disponibles, setDisponibles] = useState<RadicadoDisponible[]>([])
+  const [disponiblesPage, setDisponiblesPage] = useState(1)
+  const [disponiblesPages, setDisponiblesPages] = useState(0)
+  const [disponiblesTotal, setDisponiblesTotal] = useState(0)
+  const [entidadFiltro, setEntidadFiltro] = useState('')
+  const [entidadFiltroDebounced, setEntidadFiltroDebounced] = useState('')
+  const [loadingDisponibles, setLoadingDisponibles] = useState(true)
+  const [disponiblesError, setDisponiblesError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Readonly<Record<string, string>>>({})
 
-  const loadCobradas = useCallback(async (signal: AbortSignal) => {
-    setLoadingCobradas(true)
-    try {
-      const res = await listIncapacidades({ page: 1, estado: 'cobrada', signal })
-      if (!signal.aborted) setCobradas([...res.items])
-    } catch {
-      if (!signal.aborted) setCobradas([])
-    } finally {
-      if (!signal.aborted) setLoadingCobradas(false)
-    }
-  }, [])
+  useEffect(() => {
+    const t = globalThis.setTimeout(() => setEntidadFiltroDebounced(entidadFiltro.trim()), 350)
+    return () => globalThis.clearTimeout(t)
+  }, [entidadFiltro])
 
-  useAbortableEffect(loadCobradas, [loadCobradas])
+  useEffect(() => {
+    setDisponiblesPage(1)
+  }, [entidadFiltroDebounced])
 
-  const reloadCobradasAfterSubmit = useCallback(() => {
-    listIncapacidades({ page: 1, estado: 'cobrada' })
-      .then((res) => setCobradas([...res.items]))
-      .catch(() => setCobradas([]))
-  }, [])
+  const resolveLoadError = useCallback(
+    (err: unknown): string => {
+      const forbidden = messageFromFinancialForbiddenError(
+        err,
+        user?.role,
+        RADICADOS_DISPONIBLES_API_PATH,
+      )
+      if (forbidden) return forbidden
+      if (isContabilidad) return messageFromLoadError(err, FINANCIAL_MODULE_ONLY_MESSAGE)
+      return messageFromLoadError(err, LOAD_DISPONIBLES_ERROR)
+    },
+    [isContabilidad, user?.role],
+  )
+
+  const loadDisponibles = useCallback(
+    async (signal: AbortSignal) => {
+      setLoadingDisponibles(true)
+      setDisponiblesError(null)
+      try {
+        const res = await listRadicadosDisponibles({
+          page: disponiblesPage,
+          ...(entidadFiltroDebounced ? { entidad: entidadFiltroDebounced } : {}),
+          signal,
+        })
+        if (!signal.aborted) {
+          setDisponibles([...res.items])
+          setDisponiblesPages(res.pages)
+          setDisponiblesTotal(res.total)
+        }
+      } catch (err) {
+        if (!signal.aborted) {
+          setDisponibles([])
+          setDisponiblesPages(0)
+          setDisponiblesTotal(0)
+          setDisponiblesError(resolveLoadError(err))
+        }
+      } finally {
+        if (!signal.aborted) setLoadingDisponibles(false)
+      }
+    },
+    [disponiblesPage, entidadFiltroDebounced, resolveLoadError],
+  )
+
+  useAbortableEffect(loadDisponibles, [loadDisponibles])
+
+  const reloadDisponibles = useCallback(() => {
+    listRadicadosDisponibles({
+      page: disponiblesPage,
+      ...(entidadFiltroDebounced ? { entidad: entidadFiltroDebounced } : {}),
+    })
+      .then((res) => {
+        setDisponibles([...res.items])
+        setDisponiblesPages(res.pages)
+        setDisponiblesTotal(res.total)
+        setDisponiblesError(null)
+      })
+      .catch((err) => {
+        setDisponibles([])
+        setDisponiblesError(resolveLoadError(err))
+      })
+  }, [disponiblesPage, entidadFiltroDebounced, resolveLoadError])
 
   const toggleRadicado = useCallback((radicado: string) => {
     setSelectedRadicados((prev) => {
@@ -90,7 +165,7 @@ export function RegistrarPagoForm({ onRegistroExitoso }: RegistrarPagoFormProps)
       setSelectedRadicados(new Set())
       setFieldErrors({})
       onRegistroExitoso?.()
-      reloadCobradasAfterSubmit()
+      reloadDisponibles()
     } catch (err) {
       setError(messageFromHttpError(err))
     } finally {
@@ -98,13 +173,17 @@ export function RegistrarPagoForm({ onRegistroExitoso }: RegistrarPagoFormProps)
     }
   }
 
+  const emptyDisponibles = isContabilidad ? EMPTY_DISPONIBLES_CONTABILIDAD : EMPTY_DISPONIBLES_RRHH
+  const pageSize = pageSizeFromResponse(disponiblesTotal, disponiblesPages, disponibles.length)
+  const { start, end } = paginationRange(disponiblesTotal, disponiblesPage, pageSize)
+
   return (
     <Card className="overflow-hidden">
       <div className="border-b border-gray-100 px-5 py-4 sm:px-6">
         <h2 className="text-lg font-semibold text-gray-900">Registrar pago</h2>
         <p className="mt-0.5 text-sm text-gray-500">
-          Vincula uno o más radicados en estado <strong>cobrada</strong>. El sistema los pasará a{' '}
-          <strong>pagada</strong>.
+          Selecciona radicados en estado <strong>cobrada</strong> sin pago registrado. Tras guardar,
+          pasan a <strong>pagada</strong>.
         </p>
       </div>
 
@@ -185,18 +264,55 @@ export function RegistrarPagoForm({ onRegistroExitoso }: RegistrarPagoFormProps)
         </div>
 
         <fieldset className="flex flex-col gap-2 border-0 p-0">
-          <legend className={labelClassName}>
-            Incapacidades cubiertas (cobrada) <span className="text-danger">*</span>
-          </legend>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <legend className={labelClassName}>
+              Radicados disponibles <span className="text-danger">*</span>
+            </legend>
+            <div className="relative flex min-w-[180px] max-w-xs flex-1 items-center sm:flex-none">
+              <Search className="absolute left-3 h-4 w-4 shrink-0 text-gray-400" aria-hidden />
+              <input
+                type="search"
+                value={entidadFiltro}
+                onChange={(e) => setEntidadFiltro(e.target.value)}
+                disabled={loadingDisponibles || submitting}
+                placeholder="Filtrar por entidad…"
+                className="w-full rounded-lg border border-gray-200 bg-gray-50 py-1.5 pr-3 pl-9 text-sm placeholder:text-gray-400 focus:border-primary/50 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                aria-label="Filtrar radicados por entidad"
+              />
+            </div>
+          </div>
+
+          {disponiblesError ? (
+            <p className="rounded-lg border border-danger/20 bg-danger-light px-3 py-2 text-sm text-danger-text">
+              {disponiblesError}
+            </p>
+          ) : null}
+
           <div className={cobradasListFrameClass(Boolean(fieldErrors.radicados))}>
             <CobradasCheckboxList
-              loading={loadingCobradas}
-              cobradas={cobradas}
+              loading={loadingDisponibles}
+              items={disponibles}
               selectedRadicados={selectedRadicados}
               submitting={submitting}
+              emptyMessage={emptyDisponibles}
               onToggle={toggleRadicado}
             />
           </div>
+
+          {disponiblesPages > 1 ? (
+            <ListPaginationFooter
+              start={start}
+              end={end}
+              total={disponiblesTotal}
+              page={disponiblesPage}
+              totalPages={disponiblesPages}
+              loading={loadingDisponibles}
+              onPrev={() => setDisponiblesPage((p) => Math.max(1, p - 1))}
+              onNext={() => setDisponiblesPage((p) => p + 1)}
+              pageBadgeClassName="bg-primary"
+            />
+          ) : null}
+
           {fieldErrors.radicados ? (
             <p className="text-xs text-danger">{fieldErrors.radicados}</p>
           ) : null}
@@ -205,7 +321,7 @@ export function RegistrarPagoForm({ onRegistroExitoso }: RegistrarPagoFormProps)
         <div className="flex justify-end border-t border-gray-100 pt-4">
           <button
             type="submit"
-            disabled={submitting || loadingCobradas}
+            disabled={submitting || loadingDisponibles}
             className={buttonClassName('primary', 'min-w-[160px] gap-2')}
           >
             {submitting ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}

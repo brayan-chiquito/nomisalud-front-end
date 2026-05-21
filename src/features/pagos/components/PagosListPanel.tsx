@@ -122,7 +122,7 @@ export function PagosListPanel({ refreshToken = 0 }: PagosListPanelProps) {
           <ListPanelBody
             loading={loading}
             items={items}
-            emptyMessage="No hay pagos registrados aún."
+            emptyMessage="Aún no hay pagos registrados."
             renderItem={(row) => (
               <div
                 key={row.id}

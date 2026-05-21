@@ -10,6 +10,7 @@ import { CobroAnteEntidadRrhhPage } from '@/pages/CobroAnteEntidadRrhhPage'
 import { ConciliacionRrhhPage } from '@/pages/ConciliacionRrhhPage'
 import { RecepcionRadicarPage } from '@/pages/RecepcionRadicarPage'
 import { PlazosEntidadAdminPage } from '@/pages/PlazosEntidadAdminPage'
+import { AuditoriaRrhhPage } from '@/pages/AuditoriaRrhhPage'
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute'
 import {
   FINANZAS_HOME_PATH,
@@ -23,6 +24,8 @@ const ROLES_FINANZAS_RRHH = ['admin', 'auxiliar_rrhh', 'coordinador_rrhh'] as co
 const ROLES_RECEPCION_RADICAR = ['recepcion', 'auxiliar_rrhh', 'coordinador_rrhh', 'admin'] as const
 
 const ROLES_PLAZOS_NAV = ['admin', 'coordinador_rrhh'] as const
+
+const ROLES_AUDITORIA = ['admin', 'coordinador_rrhh'] as const
 
 /** Rutas de documentos/incapacidades prohibidas para contabilidad (SCRUM-201). */
 const FORBID_CONTABILIDAD = [ROLE_CONTABILIDAD] as const
@@ -73,6 +76,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute allowedRoles={[...ROLES_PLAZOS_NAV]}>
         <PlazosEntidadAdminPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/dashboard/auditoria',
+    element: (
+      <ProtectedRoute allowedRoles={[...ROLES_AUDITORIA]}>
+        <AuditoriaRrhhPage />
       </ProtectedRoute>
     ),
   },
