@@ -2,6 +2,7 @@
 export function postLoginPathForRole(role: string): string {
   const normalized = role.trim().toLowerCase()
   if (normalized === 'colaborador') return '/portal/mi-tramite'
+  if (normalized === 'recepcion') return '/recepcion/radicar'
   return '/dashboard'
 }
 

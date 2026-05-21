@@ -6,9 +6,14 @@ describe('postLoginPathForRole', () => {
     expect(postLoginPathForRole('colaborador')).toBe('/portal/mi-tramite')
   })
 
+  it('envía recepción al portal de radicación', () => {
+    expect(postLoginPathForRole('recepcion')).toBe('/recepcion/radicar')
+  })
+
   it('envía RRHH al dashboard', () => {
     expect(postLoginPathForRole('admin')).toBe('/dashboard')
     expect(postLoginPathForRole('auxiliar_rrhh')).toBe('/dashboard')
+    expect(postLoginPathForRole('coordinador_rrhh')).toBe('/dashboard')
   })
 })
 

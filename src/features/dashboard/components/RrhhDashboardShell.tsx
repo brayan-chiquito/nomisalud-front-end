@@ -9,7 +9,9 @@ import {
   CreditCard,
   CircleDollarSign,
   Scale,
+  Settings,
 } from 'lucide-react'
+import { useAuth } from '@/features/auth/context/AuthContext'
 import logo from '@/assets/logo.png'
 import { UserProfileMenu } from '@/components/UserProfileMenu'
 import { cn } from '@/utils/cn'
@@ -36,9 +38,11 @@ export function RrhhDashboardShell({
   companyName = 'Recursos Humanos',
   children,
 }: RrhhDashboardShellProps) {
+  const { user } = useAuth()
   const { pathname, hash } = useLocation()
   const enDashboard = pathname === '/dashboard'
   const enTablaIncapacidades = enDashboard && hash === INCAPACIDADES_HASH
+  const showPlazosNav = user?.role === 'admin' || user?.role === 'coordinador_rrhh'
 
   return (
     <div className="min-h-screen bg-gray-50/50">
@@ -125,6 +129,15 @@ export function RrhhDashboardShell({
             <CreditCard className="h-4 w-4 shrink-0" aria-hidden />
             Pagos
           </NavLink>
+          {showPlazosNav ? (
+            <NavLink
+              to="/admin/plazos-entidad"
+              className={({ isActive }) => cn(navItemBase, isActive ? navActive : navInactive)}
+            >
+              <Settings className="h-4 w-4 shrink-0" aria-hidden />
+              Plazos por entidad
+            </NavLink>
+          ) : null}
         </nav>
 
         <div className="relative z-40 overflow-visible border-t border-gray-100 p-3">
