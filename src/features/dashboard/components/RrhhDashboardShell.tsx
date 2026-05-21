@@ -8,6 +8,7 @@ import {
   UserCircle,
   CreditCard,
   CircleDollarSign,
+  Scale,
 } from 'lucide-react'
 import logo from '@/assets/logo.png'
 import { UserProfileMenu } from '@/components/UserProfileMenu'
@@ -72,6 +73,13 @@ export function RrhhDashboardShell({
             <FileText className="h-4 w-4 shrink-0" aria-hidden />
             Incapacidades
           </button>
+          <NavLink
+            to="/dashboard/conciliacion"
+            className={({ isActive }) => cn(navItemBase, isActive ? navActive : navInactive)}
+          >
+            <Scale className="h-4 w-4 shrink-0" aria-hidden />
+            Conciliación
+          </NavLink>
           <button
             type="button"
             disabled
