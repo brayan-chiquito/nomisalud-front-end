@@ -11,13 +11,21 @@ import { ConciliacionRrhhPage } from '@/pages/ConciliacionRrhhPage'
 import { RecepcionRadicarPage } from '@/pages/RecepcionRadicarPage'
 import { PlazosEntidadAdminPage } from '@/pages/PlazosEntidadAdminPage'
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute'
+import {
+  FINANZAS_HOME_PATH,
+  ROLE_CONTABILIDAD,
+  ROLES_MODULO_FINANZAS,
+} from '@/features/auth/utils/roleAccess'
 
-/** Roles RRHH/admin con acceso a pagos y conciliación (`docs/README.md`). */
+/** Roles RRHH/admin con cobro ante entidad (sin contabilidad). */
 const ROLES_FINANZAS_RRHH = ['admin', 'auxiliar_rrhh', 'coordinador_rrhh'] as const
 
 const ROLES_RECEPCION_RADICAR = ['recepcion', 'auxiliar_rrhh', 'coordinador_rrhh', 'admin'] as const
 
 const ROLES_PLAZOS_NAV = ['admin', 'coordinador_rrhh'] as const
+
+/** Rutas de documentos/incapacidades prohibidas para contabilidad (SCRUM-201). */
+const FORBID_CONTABILIDAD = [ROLE_CONTABILIDAD] as const
 
 export const router = createBrowserRouter([
   {
@@ -31,7 +39,7 @@ export const router = createBrowserRouter([
   {
     path: '/dashboard',
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute forbidRoles={FORBID_CONTABILIDAD} deniedRedirect={FINANZAS_HOME_PATH}>
         <DashboardPage />
       </ProtectedRoute>
     ),
@@ -47,7 +55,7 @@ export const router = createBrowserRouter([
   {
     path: '/dashboard/pagos',
     element: (
-      <ProtectedRoute allowedRoles={[...ROLES_FINANZAS_RRHH]}>
+      <ProtectedRoute allowedRoles={[...ROLES_MODULO_FINANZAS]}>
         <PagosRrhhPage />
       </ProtectedRoute>
     ),
@@ -71,7 +79,7 @@ export const router = createBrowserRouter([
   {
     path: '/dashboard/conciliacion',
     element: (
-      <ProtectedRoute allowedRoles={[...ROLES_FINANZAS_RRHH]}>
+      <ProtectedRoute allowedRoles={[...ROLES_MODULO_FINANZAS]}>
         <ConciliacionRrhhPage />
       </ProtectedRoute>
     ),
@@ -79,7 +87,7 @@ export const router = createBrowserRouter([
   {
     path: '/portal/mi-tramite',
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute forbidRoles={FORBID_CONTABILIDAD} deniedRedirect={FINANZAS_HOME_PATH}>
         <CollaboratorMiTramitePage />
       </ProtectedRoute>
     ),
@@ -87,7 +95,7 @@ export const router = createBrowserRouter([
   {
     path: '/portal/mi-tramite/:tramiteId',
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute forbidRoles={FORBID_CONTABILIDAD} deniedRedirect={FINANZAS_HOME_PATH}>
         <CollaboratorMiTramitePage />
       </ProtectedRoute>
     ),
@@ -95,7 +103,7 @@ export const router = createBrowserRouter([
   {
     path: '/portal/radicar-incapacidad',
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute forbidRoles={FORBID_CONTABILIDAD} deniedRedirect={FINANZAS_HOME_PATH}>
         <CollaboratorRadicarIncapacidadPage />
       </ProtectedRoute>
     ),
@@ -103,7 +111,7 @@ export const router = createBrowserRouter([
   {
     path: '/incapacidad/revision-ia',
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute forbidRoles={FORBID_CONTABILIDAD} deniedRedirect={FINANZAS_HOME_PATH}>
         <IncapacityAiReviewPage />
       </ProtectedRoute>
     ),

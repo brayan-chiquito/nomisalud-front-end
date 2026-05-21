@@ -68,6 +68,12 @@ describe('EntidadAutocompleteInput', () => {
     expect(screen.getByText(/buscando entidades/i)).toBeInTheDocument()
   })
 
+  it('muestra mensaje cuando no hay entidades', () => {
+    render(<EntidadAutocompleteInput value="xyz" onChange={vi.fn()} suggestions={[]} />)
+    fireEvent.focus(screen.getByLabelText('Filtrar por entidad'))
+    expect(screen.getByText(/no se encontraron entidades/i)).toBeInTheDocument()
+  })
+
   it('cierra el listado al perder foco', () => {
     render(<EntidadAutocompleteInput value="sis" onChange={vi.fn()} suggestions={['SIS']} />)
     const input = screen.getByLabelText('Filtrar por entidad')

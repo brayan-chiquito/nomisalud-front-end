@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { ProtectedRoute } from './ProtectedRoute'
+import { FINANZAS_HOME_PATH } from '../utils/roleAccess'
 import { useAuth } from '../context/AuthContext'
 import type { AuthContextValue } from '../context/AuthContext'
 import type { AuthUser } from '../types'
@@ -14,6 +15,11 @@ const mockUseAuth = vi.mocked(useAuth)
 
 const adminUser: AuthUser = { id: '1', email: 'admin@test.com', role: 'admin' }
 const colaboradorUser: AuthUser = { id: '2', email: 'colab@test.com', role: 'colaborador' }
+const contabilidadUser: AuthUser = {
+  id: '3',
+  email: 'contabilidad@nomisalud.com',
+  role: 'contabilidad',
+}
 
 function authValue(overrides: Partial<AuthContextValue>): AuthContextValue {
   return {
@@ -27,16 +33,30 @@ function authValue(overrides: Partial<AuthContextValue>): AuthContextValue {
 
 function renderProtectedRoute(
   children: React.ReactNode,
-  allowedRoles?: string[],
-  initialPath = '/ruta-protegida',
+  options: {
+    allowedRoles?: string[]
+    forbidRoles?: readonly string[]
+    deniedRedirect?: string
+    initialPath?: string
+  } = {},
 ) {
+  const { allowedRoles, forbidRoles, deniedRedirect, initialPath = '/ruta-protegida' } = options
   return render(
     <MemoryRouter initialEntries={[initialPath]}>
       <Routes>
         <Route path="/login" element={<div>Página de login</div>} />
+        <Route path={FINANZAS_HOME_PATH} element={<div>Inicio financiero</div>} />
         <Route
           path="/ruta-protegida"
-          element={<ProtectedRoute allowedRoles={allowedRoles}>{children}</ProtectedRoute>}
+          element={
+            <ProtectedRoute
+              allowedRoles={allowedRoles}
+              forbidRoles={forbidRoles}
+              deniedRedirect={deniedRedirect}
+            >
+              {children}
+            </ProtectedRoute>
+          }
         />
       </Routes>
     </MemoryRouter>,
@@ -71,7 +91,7 @@ describe('ProtectedRoute', () => {
     })
 
     it('renderiza los children cuando no se especifican allowedRoles', () => {
-      renderProtectedRoute(<div>Sin restricción de rol</div>, undefined)
+      renderProtectedRoute(<div>Sin restricción de rol</div>, {})
       expect(screen.getByText('Sin restricción de rol')).toBeInTheDocument()
     })
   })
@@ -79,25 +99,38 @@ describe('ProtectedRoute', () => {
   describe('restricción por roles', () => {
     it('renderiza los children cuando el rol del usuario está en allowedRoles', () => {
       mockUseAuth.mockReturnValue(authValue({ isAuthenticated: true, user: adminUser }))
-      renderProtectedRoute(<div>Solo admin</div>, ['admin', 'coordinador_rrhh'])
+      renderProtectedRoute(<div>Solo admin</div>, { allowedRoles: ['admin', 'coordinador_rrhh'] })
       expect(screen.getByText('Solo admin')).toBeInTheDocument()
     })
 
     it('redirige a /login cuando el rol no está en allowedRoles', () => {
       mockUseAuth.mockReturnValue(authValue({ isAuthenticated: true, user: colaboradorUser }))
-      renderProtectedRoute(<div>Solo admin</div>, ['admin'])
+      renderProtectedRoute(<div>Solo admin</div>, { allowedRoles: ['admin'] })
       expect(screen.getByText('Página de login')).toBeInTheDocument()
       expect(screen.queryByText('Solo admin')).not.toBeInTheDocument()
     })
 
+    it('redirige contabilidad al inicio financiero si el rol está prohibido', () => {
+      mockUseAuth.mockReturnValue(authValue({ isAuthenticated: true, user: contabilidadUser }))
+      renderProtectedRoute(<div>Dashboard RRHH</div>, {
+        forbidRoles: ['contabilidad'],
+        deniedRedirect: FINANZAS_HOME_PATH,
+      })
+      expect(screen.getByText('Inicio financiero')).toBeInTheDocument()
+      expect(screen.queryByText('Dashboard RRHH')).not.toBeInTheDocument()
+    })
+
+    it('redirige contabilidad al inicio financiero si no está en allowedRoles', () => {
+      mockUseAuth.mockReturnValue(authValue({ isAuthenticated: true, user: contabilidadUser }))
+      renderProtectedRoute(<div>Solo cobro</div>, { allowedRoles: ['admin', 'auxiliar_rrhh'] })
+      expect(screen.getByText('Inicio financiero')).toBeInTheDocument()
+    })
+
     it('renderiza children cuando allowedRoles tiene varios roles y el usuario tiene uno de ellos', () => {
       mockUseAuth.mockReturnValue(authValue({ isAuthenticated: true, user: colaboradorUser }))
-      renderProtectedRoute(<div>Acceso múltiple</div>, [
-        'colaborador',
-        'auxiliar_rrhh',
-        'coordinador_rrhh',
-        'admin',
-      ])
+      renderProtectedRoute(<div>Acceso múltiple</div>, {
+        allowedRoles: ['colaborador', 'auxiliar_rrhh', 'coordinador_rrhh', 'admin'],
+      })
       expect(screen.getByText('Acceso múltiple')).toBeInTheDocument()
     })
   })

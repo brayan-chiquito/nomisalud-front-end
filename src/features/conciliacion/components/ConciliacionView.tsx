@@ -28,7 +28,7 @@ export function ConciliacionView() {
   else if (canQuery) periodoLabel = `${labelMes(mes)} ${anio}`
 
   return (
-    <Card className="overflow-hidden">
+    <Card>
       <div className="border-b border-gray-100 px-5 py-5 sm:px-6">
         <h2 className="text-lg font-semibold text-gray-900">Conciliación</h2>
         <p className="mt-1 text-sm text-gray-500">

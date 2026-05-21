@@ -1,8 +1,11 @@
+import { FINANZAS_HOME_PATH, ROLE_CONTABILIDAD } from './roleAccess'
+
 /** Ruta tras login según rol (ver docs/README.md). */
 export function postLoginPathForRole(role: string): string {
   const normalized = role.trim().toLowerCase()
   if (normalized === 'colaborador') return '/portal/mi-tramite'
   if (normalized === 'recepcion') return '/recepcion/radicar'
+  if (normalized === ROLE_CONTABILIDAD) return FINANZAS_HOME_PATH
   return '/dashboard'
 }
 

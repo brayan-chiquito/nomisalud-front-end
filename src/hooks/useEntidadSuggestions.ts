@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { useAuth } from '@/features/auth/context/AuthContext'
+import { isContabilidadRole } from '@/features/auth/utils/roleAccess'
 import { fetchEntidadNombreSuggestions } from '@/features/incapacidades/services/entidadSuggestions.service'
 import { useAbortableEffect } from '@/hooks/useAbortableEffect'
 
@@ -11,6 +13,8 @@ export function useEntidadSuggestions(
   input: string,
   debounceMs = 300,
 ): UseEntidadSuggestionsResult {
+  const { user } = useAuth()
+  const sources = isContabilidadRole(user?.role) ? 'pagos' : 'all'
   const [debounced, setDebounced] = useState('')
   const [suggestions, setSuggestions] = useState<readonly string[]>([])
   const [loading, setLoading] = useState(false)
@@ -29,7 +33,7 @@ export function useEntidadSuggestions(
       }
       setLoading(true)
       try {
-        const names = await fetchEntidadNombreSuggestions(debounced, signal)
+        const names = await fetchEntidadNombreSuggestions(debounced, { signal, sources })
         if (!signal.aborted) setSuggestions(names)
       } catch {
         if (!signal.aborted) setSuggestions([])
@@ -37,7 +41,7 @@ export function useEntidadSuggestions(
         if (!signal.aborted) setLoading(false)
       }
     },
-    [debounced],
+    [debounced, sources],
   )
 
   return { suggestions, loading }

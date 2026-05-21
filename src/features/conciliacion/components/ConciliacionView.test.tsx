@@ -7,6 +7,10 @@ vi.mock('../hooks/useConciliacion', () => ({
   useConciliacion: vi.fn(),
 }))
 
+vi.mock('@/hooks/useEntidadSuggestions', () => ({
+  useEntidadSuggestions: () => ({ suggestions: ['SIS'], loading: false }),
+}))
+
 const mockHook = {
   mes: 5,
   setMes: vi.fn(),
