@@ -4,19 +4,18 @@ import { listIncapacidades } from '../services/listIncapacidades.service'
 import type { IncapacidadesListResponse } from '../types/listIncapacidades'
 import type { UrgenciaNivel } from '../types/urgencia'
 import { ordenarPorUrgenciaDesc } from '../utils/urgencia'
+import { messageFromLoadError } from '@/utils/messageFromLoadError'
+import { useAbortableEffect } from '@/hooks/useAbortableEffect'
 
-function messageFromLoadError(error: unknown): string {
-  if (axios.isAxiosError(error)) {
-    const d = error.response?.data
-    if (d && typeof d === 'object' && 'detail' in d) {
-      const detail = (d as { detail: unknown }).detail
-      if (typeof detail === 'string') return detail
-    }
-    if (error.message) return error.message
-  }
-  if (error instanceof Error) return error.message
-  return 'No se pudo cargar el listado. Intenta de nuevo.'
-}
+const LOAD_ERROR_FALLBACK = 'No se pudo cargar el listado. Intenta de nuevo.'
+
+export type UseIncapacidadesListOptions = Readonly<{
+  entidadDebounceMs?: number
+  /** Si se define, el listado siempre filtra por este estado (p. ej. `transcrita`). */
+  fixedEstado?: string
+  /** Expone `refetch()` para recargar sin cambiar filtros. */
+  refetchable?: boolean
+}>
 
 export type UseIncapacidadesListResult = Readonly<{
   data: IncapacidadesListResponse | null
@@ -32,11 +31,28 @@ export type UseIncapacidadesListResult = Readonly<{
   setEntidadInput: (v: string) => void
   urgencia: '' | UrgenciaNivel
   setUrgencia: (v: '' | UrgenciaNivel) => void
+  refetch?: () => void
 }>
 
-export function useIncapacidadesList(entidadDebounceMs = 350): UseIncapacidadesListResult {
+function normalizeOptions(
+  optionsOrDebounceMs: UseIncapacidadesListOptions | number = {},
+): UseIncapacidadesListOptions {
+  return typeof optionsOrDebounceMs === 'number'
+    ? { entidadDebounceMs: optionsOrDebounceMs }
+    : optionsOrDebounceMs
+}
+
+export function useIncapacidadesList(
+  optionsOrDebounceMs: UseIncapacidadesListOptions | number = {},
+): UseIncapacidadesListResult {
+  const {
+    entidadDebounceMs = 350,
+    fixedEstado,
+    refetchable = false,
+  } = normalizeOptions(optionsOrDebounceMs)
+
   const [page, setPage] = useState(1)
-  const [estado, setEstadoState] = useState('')
+  const [estado, setEstadoState] = useState(fixedEstado ?? '')
   const [tipo, setTipoState] = useState('')
   const [entidadInput, setEntidadInput] = useState('')
   const [entidadDebounced, setEntidadDebounced] = useState('')
@@ -44,6 +60,9 @@ export function useIncapacidadesList(entidadDebounceMs = 350): UseIncapacidadesL
   const [data, setData] = useState<IncapacidadesListResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [listVersion, setListVersion] = useState(0)
+
+  const estadoEfectivo = fixedEstado ?? estado
 
   const prevEntidad = useRef<string | undefined>(undefined)
   useEffect(() => {
@@ -65,10 +84,14 @@ export function useIncapacidadesList(entidadDebounceMs = 350): UseIncapacidadesL
     }
   }, [entidadDebounced])
 
-  const setEstado = useCallback((v: string) => {
-    setEstadoState(v)
-    setPage(1)
-  }, [])
+  const setEstado = useCallback(
+    (v: string) => {
+      if (fixedEstado) return
+      setEstadoState(v)
+      setPage(1)
+    },
+    [fixedEstado],
+  )
 
   const setTipo = useCallback((v: string) => {
     setTipoState(v)
@@ -80,6 +103,10 @@ export function useIncapacidadesList(entidadDebounceMs = 350): UseIncapacidadesL
     setPage(1)
   }, [])
 
+  const refetch = useCallback(() => {
+    setListVersion((n) => n + 1)
+  }, [])
+
   const load = useCallback(
     async (signal: AbortSignal) => {
       setLoading(true)
@@ -87,7 +114,7 @@ export function useIncapacidadesList(entidadDebounceMs = 350): UseIncapacidadesL
       try {
         const res = await listIncapacidades({
           page,
-          ...(estado ? { estado } : {}),
+          ...(estadoEfectivo ? { estado: estadoEfectivo } : {}),
           ...(tipo ? { tipo } : {}),
           ...(entidadDebounced ? { entidad: entidadDebounced } : {}),
           ...(urgencia ? { urgencia } : {}),
@@ -102,19 +129,16 @@ export function useIncapacidadesList(entidadDebounceMs = 350): UseIncapacidadesL
       } catch (e) {
         if (signal.aborted || axios.isCancel(e)) return
         setData(null)
-        setError(messageFromLoadError(e))
+        setError(messageFromLoadError(e, LOAD_ERROR_FALLBACK))
       } finally {
         if (!signal.aborted) setLoading(false)
       }
     },
-    [page, estado, tipo, entidadDebounced, urgencia],
+    [page, estadoEfectivo, tipo, entidadDebounced, urgencia],
   )
 
-  useEffect(() => {
-    const ac = new AbortController()
-    void load(ac.signal)
-    return () => ac.abort()
-  }, [load])
+  const effectDeps = refetchable ? [load, listVersion] : [load]
+  useAbortableEffect(load, effectDeps)
 
   return {
     data,
@@ -122,7 +146,7 @@ export function useIncapacidadesList(entidadDebounceMs = 350): UseIncapacidadesL
     error,
     page,
     setPage,
-    estado,
+    estado: estadoEfectivo,
     setEstado,
     tipo,
     setTipo,
@@ -130,5 +154,6 @@ export function useIncapacidadesList(entidadDebounceMs = 350): UseIncapacidadesL
     setEntidadInput,
     urgencia,
     setUrgencia,
+    ...(refetchable ? { refetch } : {}),
   }
 }

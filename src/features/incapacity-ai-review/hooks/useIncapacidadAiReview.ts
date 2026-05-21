@@ -49,6 +49,8 @@ export type UseIncapacidadAiReviewResult = Readonly<{
   submitting: boolean
   submitError: string | null
   clearSubmitError: () => void
+  /** Actualiza `estado` en detalle tras PATCH manual (p. ej. marcar cobrada). */
+  patchDetailEstado: (estado: string) => void
 }>
 
 export function useIncapacidadAiReview(incapacidadId: string | null): UseIncapacidadAiReviewResult {
@@ -226,7 +228,7 @@ export function useIncapacidadAiReview(incapacidadId: string | null): UseIncapac
         datos_extraidos: datos,
       })
       // PUT verificar con `confirmar` deja el trámite en `en_verificacion` (docs API).
-      // Para avanzar el flujo visible (listado/KPIs), se requiere PATCH → `transcrita`.
+      // Para avanzar el flujo visible (listado/KPIs), se requiere PATCH a `transcrita`.
       if (verificado.estado !== 'transcrita') {
         await patchIncapacidadEstado(incapacidadId, {
           estado: 'transcrita',
@@ -298,6 +300,10 @@ export function useIncapacidadAiReview(incapacidadId: string | null): UseIncapac
     [incapacidadId],
   )
 
+  const patchDetailEstado = useCallback((estado: string) => {
+    setDetail((prev) => (prev ? { ...prev, estado } : prev))
+  }, [])
+
   return {
     detail,
     loadingDetail,
@@ -321,5 +327,6 @@ export function useIncapacidadAiReview(incapacidadId: string | null): UseIncapac
     submitting,
     submitError,
     clearSubmitError,
+    patchDetailEstado,
   }
 }

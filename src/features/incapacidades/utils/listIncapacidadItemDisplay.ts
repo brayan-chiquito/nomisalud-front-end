@@ -53,3 +53,14 @@ export function entidadDetalleTooltip(row: IncapacidadListItem): string {
     .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
     .join(' · ')
 }
+
+/** Texto visible y `title` para columna entidad en listados RRHH. */
+export function entidadCeldaLista(
+  row: IncapacidadListItem,
+): Readonly<{ texto: string; title?: string }> {
+  const entNombre = entidadNombreLegible(row)
+  const texto = entNombre || '—'
+  const detalle = entidadDetalleTooltip(row)
+  const title = entNombre && detalle ? `${entNombre} · ${detalle}` : entNombre || undefined
+  return { texto, title }
+}

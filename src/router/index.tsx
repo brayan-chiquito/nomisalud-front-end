@@ -5,7 +5,12 @@ import { NotFoundPage } from '@/pages/NotFoundPage'
 import { CollaboratorMiTramitePage } from '@/pages/CollaboratorMiTramitePage'
 import { CollaboratorRadicarIncapacidadPage } from '@/pages/CollaboratorRadicarIncapacidadPage'
 import { IncapacityAiReviewPage } from '@/pages/IncapacityAiReviewPage'
+import { PagosRrhhPage } from '@/pages/PagosRrhhPage'
+import { CobroAnteEntidadRrhhPage } from '@/pages/CobroAnteEntidadRrhhPage'
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute'
+
+/** Roles que pueden registrar pagos y marcar cobrada (`docs/README.md`). */
+const ROLES_PAGOS_RRHH = ['admin', 'auxiliar_rrhh', 'coordinador_rrhh'] as const
 
 export const router = createBrowserRouter([
   {
@@ -21,6 +26,22 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <DashboardPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/dashboard/cobro-ante-entidad',
+    element: (
+      <ProtectedRoute allowedRoles={[...ROLES_PAGOS_RRHH]}>
+        <CobroAnteEntidadRrhhPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/dashboard/pagos',
+    element: (
+      <ProtectedRoute allowedRoles={[...ROLES_PAGOS_RRHH]}>
+        <PagosRrhhPage />
       </ProtectedRoute>
     ),
   },

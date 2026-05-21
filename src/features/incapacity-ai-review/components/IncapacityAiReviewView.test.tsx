@@ -62,6 +62,7 @@ function baseHookReturn(
     submitting: false,
     submitError: null,
     clearSubmitError: vi.fn(),
+    patchDetailEstado: vi.fn(),
     ...over,
   }
 }
