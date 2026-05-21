@@ -51,6 +51,14 @@ describe('RrhhDashboardShell', () => {
     )
   })
 
+  it('muestra enlace a conciliación', () => {
+    renderShell(<div />)
+    expect(screen.getByRole('link', { name: /conciliación/i })).toHaveAttribute(
+      'href',
+      '/dashboard/conciliacion',
+    )
+  })
+
   it('al pulsar Inicio marca la sección activa', () => {
     renderShell(<div />)
     fireEvent.click(screen.getByRole('link', { name: /^inicio$/i }))

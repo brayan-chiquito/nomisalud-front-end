@@ -7,10 +7,11 @@ import { CollaboratorRadicarIncapacidadPage } from '@/pages/CollaboratorRadicarI
 import { IncapacityAiReviewPage } from '@/pages/IncapacityAiReviewPage'
 import { PagosRrhhPage } from '@/pages/PagosRrhhPage'
 import { CobroAnteEntidadRrhhPage } from '@/pages/CobroAnteEntidadRrhhPage'
+import { ConciliacionRrhhPage } from '@/pages/ConciliacionRrhhPage'
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute'
 
-/** Roles que pueden registrar pagos y marcar cobrada (`docs/README.md`). */
-const ROLES_PAGOS_RRHH = ['admin', 'auxiliar_rrhh', 'coordinador_rrhh'] as const
+/** Roles RRHH/admin con acceso a pagos y conciliación (`docs/README.md`). */
+const ROLES_FINANZAS_RRHH = ['admin', 'auxiliar_rrhh', 'coordinador_rrhh'] as const
 
 export const router = createBrowserRouter([
   {
@@ -32,7 +33,7 @@ export const router = createBrowserRouter([
   {
     path: '/dashboard/cobro-ante-entidad',
     element: (
-      <ProtectedRoute allowedRoles={[...ROLES_PAGOS_RRHH]}>
+      <ProtectedRoute allowedRoles={[...ROLES_FINANZAS_RRHH]}>
         <CobroAnteEntidadRrhhPage />
       </ProtectedRoute>
     ),
@@ -40,8 +41,16 @@ export const router = createBrowserRouter([
   {
     path: '/dashboard/pagos',
     element: (
-      <ProtectedRoute allowedRoles={[...ROLES_PAGOS_RRHH]}>
+      <ProtectedRoute allowedRoles={[...ROLES_FINANZAS_RRHH]}>
         <PagosRrhhPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/dashboard/conciliacion',
+    element: (
+      <ProtectedRoute allowedRoles={[...ROLES_FINANZAS_RRHH]}>
+        <ConciliacionRrhhPage />
       </ProtectedRoute>
     ),
   },

@@ -74,6 +74,7 @@ Rutas definidas en `src/router/index.tsx`. Las marcadas como **protegidas** requ
 | `/dashboard` | Protegida | Dashboard RRHH: layout con sidebar, KPIs por estado, tabla de incapacidades (`GET /incapacidades`) con filtros estado/tipo/búsqueda y paginación |
 | `/dashboard/cobro-ante-entidad` | Protegida (admin, auxiliar_rrhh, coordinador_rrhh) | Marcar trámites **transcrita** → **cobrada** (`PATCH /incapacidades/{id}/estado`). Flujo manual hasta integración EPS; desbloquea el selector en Pagos |
 | `/dashboard/pagos` | Protegida (admin, auxiliar_rrhh, coordinador_rrhh) | Registrar pago (`POST /pagos`) y listar histórico; solo radicados en estado **cobrada** |
+| `/dashboard/conciliacion` | Protegida (admin, auxiliar_rrhh, coordinador_rrhh) | Conciliación por mes/año/entidad (`GET /conciliacion`) y exportación Excel (`GET /conciliacion/exportar`) |
 | `/portal/mi-tramite` | Protegida | Portal colaborador: lista de trámites (`GET /incapacidades/mias`) |
 | `/portal/mi-tramite/:tramiteId` | Protegida | Detalle del trámite (`GET /incapacidades/{id}`) con `StatusTimeline` desde `historial_estados` |
 | `/portal/radicar-incapacidad` | Protegida | Portal colaborador: radicar incapacidad (carga de archivo) |
