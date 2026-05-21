@@ -118,6 +118,34 @@ describe('RrhhIncapacidadesPanel', () => {
     )
   })
 
+  it('muestra badge de pago retrasado solo en cobrada y filtra retrasados', async () => {
+    vi.mocked(listIncapacidades).mockResolvedValue({
+      items: [
+        { ...sampleItem, estado: 'cobrada', pago_retrasado: true },
+        { ...sampleItem, id: '2', radicado: 'IN2', estado: 'pagada', pago_retrasado: true },
+      ],
+      total: 2,
+      pages: 1,
+    })
+    render(
+      <MemoryRouter>
+        <RrhhIncapacidadesPanel />
+      </MemoryRouter>,
+    )
+    await waitFor(() =>
+      expect(screen.getByTitle(/superó el plazo promedio de pago/i)).toBeInTheDocument(),
+    )
+    expect(screen.getAllByTitle(/superó el plazo promedio de pago/i)).toHaveLength(1)
+
+    vi.mocked(listIncapacidades).mockResolvedValue({ items: [], total: 0, pages: 0 })
+    fireEvent.click(screen.getByRole('button', { name: /pago retrasado/i }))
+    await waitFor(() =>
+      expect(listIncapacidades).toHaveBeenLastCalledWith(
+        expect.objectContaining({ page: 1, estado: 'cobrada', pagoRetrasado: true }),
+      ),
+    )
+  })
+
   it('cambia el filtro de estado y vuelve a la página 1', async () => {
     vi.mocked(listIncapacidades).mockResolvedValue({
       items: [sampleItem],

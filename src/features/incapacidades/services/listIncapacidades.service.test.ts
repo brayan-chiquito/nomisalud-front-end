@@ -54,6 +54,17 @@ describe('listIncapacidades', () => {
     })
   })
 
+  it('incluye pago_retrasado cuando el filtro está activo', async () => {
+    vi.mocked(http.get).mockResolvedValue({
+      data: { items: [], total: 0, pages: 0 },
+    })
+    await listIncapacidades({ estado: 'cobrada', pagoRetrasado: true })
+    expect(http.get).toHaveBeenCalledWith('/incapacidades', {
+      params: { page: 1, estado: 'cobrada', pago_retrasado: 'true' },
+      signal: undefined,
+    })
+  })
+
   it('recorta espacios en parámetros de texto', async () => {
     vi.mocked(http.get).mockResolvedValue({
       data: { items: [], total: 0, pages: 0 },

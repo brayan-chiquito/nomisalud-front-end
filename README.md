@@ -71,7 +71,7 @@ Rutas definidas en `src/router/index.tsx`. Las marcadas como **protegidas** requ
 |------|--------|-------------|
 | `/` | Pública | Inicio de sesión |
 | `/login` | Pública | Inicio de sesión (alias) |
-| `/dashboard` | Protegida | Dashboard RRHH: layout con sidebar, KPIs por estado, tabla de incapacidades (`GET /incapacidades`) con filtros estado/tipo/búsqueda y paginación |
+| `/dashboard` | Protegida | Dashboard RRHH: layout con sidebar, KPIs por estado, tabla de incapacidades (`GET /incapacidades`) con filtros estado/tipo/urgencia/pago retrasado y paginación; badge **Pago retrasado** cuando `pago_retrasado=true` |
 | `/dashboard/cobro-ante-entidad` | Protegida (admin, auxiliar_rrhh, coordinador_rrhh) | Marcar trámites **transcrita** → **cobrada** (`PATCH /incapacidades/{id}/estado`). Flujo manual hasta integración EPS; desbloquea el selector en Pagos |
 | `/dashboard/pagos` | Protegida (admin, auxiliar_rrhh, coordinador_rrhh) | Registrar pago (`POST /pagos`) y listar histórico; solo radicados en estado **cobrada** |
 | `/dashboard/conciliacion` | Protegida (admin, auxiliar_rrhh, coordinador_rrhh) | Conciliación por mes/año/entidad (`GET /conciliacion`) y exportación Excel (`GET /conciliacion/exportar`) |

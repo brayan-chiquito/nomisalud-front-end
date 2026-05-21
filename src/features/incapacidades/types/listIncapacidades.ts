@@ -26,6 +26,8 @@ export type IncapacidadListItem = Readonly<{
   incapacidad_tipo_extraido?: string | null
   /** Semáforo calculado por plazos de entidad (SCRUM-176/177). */
   urgencia?: UrgenciaNivel | string | null
+  /** `true` si superó `dias_promedio_pago` sin liquidar tras `cobrada` (SCRUM-193/194). */
+  pago_retrasado?: boolean
   /** Respuesta legacy; preferir `colaborador_nombre` */
   nombre_colaborador?: string | null
   datos_extraidos?: DatosExtraidosListado | null

@@ -70,6 +70,21 @@ describe('useIncapacidadesList', () => {
     )
   })
 
+  it('envía pagoRetrasado y fija estado cobrada al activar el filtro', async () => {
+    const { result } = renderHook(() => useIncapacidadesList(0))
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    act(() => result.current.setSoloPagoRetrasado(true))
+
+    await waitFor(() => {
+      expect(result.current.estado).toBe('cobrada')
+      expect(result.current.soloPagoRetrasado).toBe(true)
+      expect(listIncapacidades).toHaveBeenCalledWith(
+        expect.objectContaining({ page: 1, estado: 'cobrada', pagoRetrasado: true }),
+      )
+    })
+  })
+
   it('envía filtro urgencia y ordena ítems con rojo primero', async () => {
     vi.mocked(listIncapacidades).mockResolvedValue({
       items: [

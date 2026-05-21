@@ -7,6 +7,8 @@ export type ListIncapacidadesParams = Readonly<{
   tipo?: string
   entidad?: string
   urgencia?: string
+  /** `true` → solo trámites marcados por el job diario (SCRUM-194). */
+  pagoRetrasado?: boolean
   signal?: AbortSignal
 }>
 
@@ -18,6 +20,7 @@ function buildQuery(
   if (params.tipo?.trim()) q.tipo = params.tipo.trim()
   if (params.entidad?.trim()) q.entidad = params.entidad.trim()
   if (params.urgencia?.trim()) q.urgencia = params.urgencia.trim().toLowerCase()
+  if (params.pagoRetrasado === true) q.pago_retrasado = 'true'
   return q
 }
 

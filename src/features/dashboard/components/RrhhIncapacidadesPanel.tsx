@@ -11,6 +11,7 @@ import {
 import { useIncapacidadesList } from '@/features/incapacidades/hooks/useIncapacidadesList'
 import { INCAPACIDAD_ESTADOS_FILTRO } from '@/features/incapacidades/constants/estadosIncapacidad'
 import { URGENCIA_FILTRO_OPTIONS } from '@/features/incapacidades/types/urgencia'
+import { PagoRetrasadoBadge } from '@/components/ui/PagoRetrasadoBadge'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { UrgenciaBadge } from '@/components/ui/UrgenciaBadge'
 import { buttonClassName } from '@/components/ui/buttonStyles'
@@ -21,6 +22,7 @@ import {
   entidadNombreLegible,
   tipoArchivoLegible,
 } from '@/features/incapacidades/utils/listIncapacidadItemDisplay'
+import { debeMostrarPagoRetrasado } from '@/features/incapacidades/utils/pagoRetrasadoDisplay'
 import { cn } from '@/utils/cn'
 
 const TIPO_OPTIONS = [
@@ -69,6 +71,8 @@ export function RrhhIncapacidadesPanel() {
     setEntidadInput,
     urgencia,
     setUrgencia,
+    soloPagoRetrasado,
+    setSoloPagoRetrasado,
   } = useIncapacidadesList()
 
   const total = data?.total ?? 0
@@ -155,6 +159,21 @@ export function RrhhIncapacidadesPanel() {
           </select>
           <ChevronDown className="h-3.5 w-3.5 shrink-0 text-slate-400" aria-hidden />
         </label>
+
+        <button
+          type="button"
+          disabled={loading}
+          aria-pressed={soloPagoRetrasado}
+          onClick={() => setSoloPagoRetrasado(!soloPagoRetrasado)}
+          className={cn(
+            'flex h-[38px] shrink-0 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium transition-colors duration-150',
+            soloPagoRetrasado
+              ? 'border-warning/40 bg-warning-light text-warning-text'
+              : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50',
+          )}
+        >
+          Pago retrasado
+        </button>
 
         <div className="relative flex min-w-[200px] flex-1 items-center">
           <Search className="absolute left-3 h-4 w-4 shrink-0 text-gray-400" aria-hidden />
@@ -245,8 +264,9 @@ export function RrhhIncapacidadesPanel() {
                   <span className="min-w-0">
                     <UrgenciaBadge urgencia={row.urgencia} />
                   </span>
-                  <span className="min-w-0">
+                  <span className="flex min-w-0 flex-wrap items-center gap-1">
                     <StatusBadge estado={row.estado} />
+                    {debeMostrarPagoRetrasado(row) ? <PagoRetrasadoBadge /> : null}
                   </span>
                   <span className="min-w-0 truncate text-slate-500">
                     {formatFechaCorta(row.fecha_recepcion)}
