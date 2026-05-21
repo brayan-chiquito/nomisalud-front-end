@@ -63,5 +63,22 @@ describe('CoordinadorDashboardKpis', () => {
       expect(screen.getByText('4')).toBeInTheDocument()
     })
     expect(screen.queryByRole('link', { name: /configuración de plazos/i })).not.toBeInTheDocument()
+    expect(screen.getByText(/requiere rol administrador/i)).toBeInTheDocument()
+  })
+
+  it('muestra guiones si falla la carga de KPIs', async () => {
+    vi.mocked(fetchCoordinatorKpis).mockRejectedValue(new Error('error'))
+    vi.mocked(useAuth).mockReturnValue({
+      user: { id: '1', email: 'admin@test.com', role: 'admin' },
+      isAuthenticated: true,
+    } as ReturnType<typeof useAuth>)
+    render(
+      <MemoryRouter>
+        <CoordinadorDashboardKpis />
+      </MemoryRouter>,
+    )
+    await waitFor(() => {
+      expect(screen.getAllByText('—').length).toBeGreaterThan(0)
+    })
   })
 })

@@ -1,19 +1,32 @@
 import type { ReactNode } from 'react'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import { AuthProvider } from '@/features/auth/context/AuthContext'
+import { useAuth } from '@/features/auth/context/AuthContext'
 import { RrhhDashboardShell } from './RrhhDashboardShell'
 
-function renderShell(children: ReactNode) {
+vi.mock('@/features/auth/context/AuthContext', async () => {
+  const actual = await vi.importActual<typeof import('@/features/auth/context/AuthContext')>(
+    '@/features/auth/context/AuthContext',
+  )
+  return { ...actual, useAuth: vi.fn() }
+})
+
+const mockUseAuth = vi.mocked(useAuth)
+
+function renderShell(children: ReactNode, role = 'admin') {
+  mockUseAuth.mockReturnValue({
+    user: { id: 'u1', email: 'ana@nomisalud.com', role },
+    isAuthenticated: true,
+    login: vi.fn(),
+    logout: vi.fn(),
+  })
   return render(
-    <AuthProvider>
-      <MemoryRouter>
-        <RrhhDashboardShell headerTitle="Dashboard RRHH" userName="Ana" userInitials="AG">
-          {children}
-        </RrhhDashboardShell>
-      </MemoryRouter>
-    </AuthProvider>,
+    <MemoryRouter>
+      <RrhhDashboardShell headerTitle="Dashboard RRHH" userName="Ana" userInitials="AG">
+        {children}
+      </RrhhDashboardShell>
+    </MemoryRouter>,
   )
 }
 
@@ -65,5 +78,18 @@ describe('RrhhDashboardShell', () => {
       'href',
       '/dashboard#panel-incapacidades',
     )
+  })
+
+  it('muestra enlace a plazos por entidad para coordinador', () => {
+    renderShell(<div />, 'coordinador_rrhh')
+    expect(screen.getByRole('link', { name: /plazos por entidad/i })).toHaveAttribute(
+      'href',
+      '/admin/plazos-entidad',
+    )
+  })
+
+  it('oculta plazos por entidad para auxiliar', () => {
+    renderShell(<div />, 'auxiliar_rrhh')
+    expect(screen.queryByRole('link', { name: /plazos por entidad/i })).not.toBeInTheDocument()
   })
 })

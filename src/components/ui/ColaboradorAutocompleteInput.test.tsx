@@ -47,4 +47,50 @@ describe('ColaboradorAutocompleteInput', () => {
     expect(screen.getByText(/no se encontraron colaboradores/i)).toBeInTheDocument()
     expect(input).toHaveFocus()
   })
+
+  it('muestra estado de carga en el desplegable', async () => {
+    const user = userEvent.setup()
+    render(
+      <ColaboradorAutocompleteInput
+        value="ab"
+        onChange={vi.fn()}
+        suggestions={[]}
+        suggestionsLoading
+        onSelect={vi.fn()}
+      />,
+    )
+    await user.click(screen.getByLabelText(/buscar colaborador/i))
+    expect(screen.getByText(/buscando colaboradores/i)).toBeInTheDocument()
+  })
+
+  it('omite email en subtítulo si no viene', async () => {
+    const user = userEvent.setup()
+    const sinEmail = { ...item, email: '' }
+    render(
+      <ColaboradorAutocompleteInput
+        value="ped"
+        onChange={vi.fn()}
+        suggestions={[sinEmail]}
+        onSelect={vi.fn()}
+      />,
+    )
+    await user.click(screen.getByLabelText(/buscar colaborador/i))
+    expect(screen.getByText(/CC 999/)).toBeInTheDocument()
+    expect(screen.queryByText(/@/)).not.toBeInTheDocument()
+  })
+
+  it('actualiza el valor al escribir', async () => {
+    const onChange = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <ColaboradorAutocompleteInput
+        value=""
+        onChange={onChange}
+        suggestions={[]}
+        onSelect={vi.fn()}
+      />,
+    )
+    await user.type(screen.getByLabelText(/buscar colaborador/i), 'pe')
+    expect(onChange).toHaveBeenCalled()
+  })
 })

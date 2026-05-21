@@ -35,4 +35,11 @@ describe('useColaboradorBuscar', () => {
       expect.objectContaining({ q: 'juan', limit: 10 }),
     )
   })
+
+  it('vacía resultados si la consulta falla', async () => {
+    vi.mocked(buscarColaboradores).mockRejectedValue(new Error('falló'))
+    const { result } = renderHook(() => useColaboradorBuscar('juan', 20))
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.items).toEqual([])
+  })
 })
