@@ -15,7 +15,12 @@ export function PagosRrhhView() {
 
   return (
     <div className="flex flex-col">
-      {!isContabilidad ? (
+      {isContabilidad ? (
+        <p className="mb-4 text-sm text-gray-500">
+          Radicados en <strong className="font-medium text-gray-700">cobrada</strong> pendientes de
+          liquidación. El cobro ante la EPS lo gestiona RRHH; aquí registras el pago al colaborador.
+        </p>
+      ) : (
         <p className="mb-4 text-sm text-gray-500">
           Solo trámites en estado <strong className="font-medium text-gray-700">cobrada</strong> sin
           pago pueden liquidarse aquí. Si aún están en transcrita, márcalos en{' '}
@@ -26,11 +31,6 @@ export function PagosRrhhView() {
             Cobro ante entidad
           </Link>
           .
-        </p>
-      ) : (
-        <p className="mb-4 text-sm text-gray-500">
-          Radicados en <strong className="font-medium text-gray-700">cobrada</strong> pendientes de
-          liquidación. El cobro ante la EPS lo gestiona RRHH; aquí registras el pago al colaborador.
         </p>
       )}
       <RegistrarPagoForm onRegistroExitoso={() => setListRefresh((n) => n + 1)} />

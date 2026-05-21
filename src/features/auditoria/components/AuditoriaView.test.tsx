@@ -37,6 +37,15 @@ describe('AuditoriaView', () => {
     expect(screen.getByText(/50 registros por página/i)).toBeInTheDocument()
   })
 
+  it('muestra error de carga', () => {
+    vi.mocked(useAuditoriaAccesos).mockReturnValue({
+      ...mockHook,
+      error: 'No se pudo cargar el registro de auditoría.',
+    })
+    render(<AuditoriaView />)
+    expect(screen.getByRole('alert')).toHaveTextContent(/no se pudo cargar/i)
+  })
+
   it('muestra filas de la tabla', () => {
     vi.mocked(useAuditoriaAccesos).mockReturnValue({
       ...mockHook,

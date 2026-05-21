@@ -26,6 +26,57 @@ function paginationRange(page: number, pageSize: number, total: number) {
   return { start, end }
 }
 
+type AuditoriaTableBodyProps = Readonly<{
+  loading: boolean
+  items: readonly AuditoriaAccesoItem[]
+}>
+
+function AuditoriaTableBody({ loading, items }: AuditoriaTableBodyProps) {
+  if (loading && items.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-2 py-16 text-slate-500">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden />
+        <span className="text-sm">Cargando registros…</span>
+      </div>
+    )
+  }
+  if (items.length === 0) {
+    return (
+      <p className="py-12 text-center text-sm text-slate-500">
+        No hay registros con los filtros seleccionados.
+      </p>
+    )
+  }
+  return (
+    <div className={cn(loading && items.length > 0 && 'pointer-events-none opacity-60')}>
+      {items.map((row) => (
+        <div
+          key={row.id}
+          className="grid h-14 items-center gap-x-2 border-b border-gray-50 px-5 text-sm hover:bg-gray-50/60"
+          style={{ gridTemplateColumns: TABLE_GRID }}
+        >
+          <span
+            className="min-w-0 truncate font-medium text-gray-900"
+            title={usuarioAuditoriaTooltip(row)}
+          >
+            {usuarioAuditoriaLabel(row)}
+          </span>
+          <span className="min-w-0 truncate font-mono text-xs text-slate-600" title={row.accion}>
+            {row.accion}
+          </span>
+          <span className="min-w-0 truncate text-slate-500" title={row.recurso_id ?? undefined}>
+            {row.recurso_id ?? '—'}
+          </span>
+          <span className="min-w-0 truncate text-slate-500">{row.ip ?? '—'}</span>
+          <span className="min-w-0 truncate text-slate-500 tabular-nums">
+            {formatAuditoriaTimestamp(row.timestamp)}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export function AuditoriaTable({
   items,
   loading,
@@ -54,49 +105,7 @@ export function AuditoriaTable({
             <span>Fecha</span>
           </div>
 
-          {loading && items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-2 py-16 text-slate-500">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden />
-              <span className="text-sm">Cargando registros…</span>
-            </div>
-          ) : items.length === 0 ? (
-            <p className="py-12 text-center text-sm text-slate-500">
-              No hay registros con los filtros seleccionados.
-            </p>
-          ) : (
-            <div className={cn(loading && items.length > 0 && 'pointer-events-none opacity-60')}>
-              {items.map((row) => (
-                <div
-                  key={row.id}
-                  className="grid h-14 items-center gap-x-2 border-b border-gray-50 px-5 text-sm hover:bg-gray-50/60"
-                  style={{ gridTemplateColumns: TABLE_GRID }}
-                >
-                  <span
-                    className="min-w-0 truncate font-medium text-gray-900"
-                    title={usuarioAuditoriaTooltip(row)}
-                  >
-                    {usuarioAuditoriaLabel(row)}
-                  </span>
-                  <span
-                    className="min-w-0 truncate font-mono text-xs text-slate-600"
-                    title={row.accion}
-                  >
-                    {row.accion}
-                  </span>
-                  <span
-                    className="min-w-0 truncate text-slate-500"
-                    title={row.recurso_id ?? undefined}
-                  >
-                    {row.recurso_id ?? '—'}
-                  </span>
-                  <span className="min-w-0 truncate text-slate-500">{row.ip ?? '—'}</span>
-                  <span className="min-w-0 truncate text-slate-500 tabular-nums">
-                    {formatAuditoriaTimestamp(row.timestamp)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
+          <AuditoriaTableBody loading={loading} items={items} />
         </div>
       </div>
 

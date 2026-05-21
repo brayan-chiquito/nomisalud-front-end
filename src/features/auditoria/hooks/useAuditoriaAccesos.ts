@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import { AUDITORIA_PAGE_SIZE, listAuditoriaAccesos } from '../services/listAuditoriaAccesos.service'
 import type { AuditoriaAccesosListResponse } from '../types/auditoriaAcceso'
@@ -27,33 +27,22 @@ export type UseAuditoriaAccesosResult = Readonly<{
 
 export function useAuditoriaAccesos(): UseAuditoriaAccesosResult {
   const [page, setPage] = useState(1)
-  const [userId, setUserIdState] = useState('')
-  const [accion, setAccionState] = useState('')
-  const [fechaDesde, setFechaDesdeState] = useState('')
-  const [fechaHasta, setFechaHastaState] = useState('')
+  const [userId, setUserId] = useState('')
+  const [accion, setAccion] = useState('')
+  const [fechaDesde, setFechaDesde] = useState('')
+  const [fechaHasta, setFechaHasta] = useState('')
   const [data, setData] = useState<AuditoriaAccesosListResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const setUserId = useCallback((v: string) => {
-    setUserIdState(v)
+  const skipFilterPageReset = useRef(true)
+  useEffect(() => {
+    if (skipFilterPageReset.current) {
+      skipFilterPageReset.current = false
+      return
+    }
     setPage(1)
-  }, [])
-
-  const setAccion = useCallback((v: string) => {
-    setAccionState(v)
-    setPage(1)
-  }, [])
-
-  const setFechaDesde = useCallback((v: string) => {
-    setFechaDesdeState(v)
-    setPage(1)
-  }, [])
-
-  const setFechaHasta = useCallback((v: string) => {
-    setFechaHastaState(v)
-    setPage(1)
-  }, [])
+  }, [userId, accion, fechaDesde, fechaHasta])
 
   const load = useCallback(
     async (signal: AbortSignal) => {

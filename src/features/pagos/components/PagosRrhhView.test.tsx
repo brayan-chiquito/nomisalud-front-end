@@ -34,6 +34,22 @@ describe('PagosRrhhView', () => {
     expect(screen.getByText(/el cobro ante la eps/i)).toBeInTheDocument()
   })
 
+  it('refresca historial tras registro exitoso', () => {
+    vi.mocked(useAuth).mockReturnValue({
+      user: { id: '1', email: 'admin@test.com', role: 'admin' },
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+    })
+    render(
+      <MemoryRouter>
+        <PagosRrhhView />
+      </MemoryRouter>,
+    )
+    expect(screen.getByTestId('registrar-pago')).toBeInTheDocument()
+    expect(screen.getByTestId('historial-pagos')).toBeInTheDocument()
+  })
+
   it('muestra enlace a cobro ante entidad para admin', () => {
     vi.mocked(useAuth).mockReturnValue({
       user: { id: '1', email: 'admin@test.com', role: 'admin' },

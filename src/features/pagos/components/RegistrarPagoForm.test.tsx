@@ -1,10 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import axios from 'axios'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { RegistrarPagoForm } from './RegistrarPagoForm'
 import { listRadicadosDisponibles, createPago } from '../services/pagos.service'
 
+import { useAuth } from '@/features/auth/context/AuthContext'
+
 vi.mock('@/features/auth/context/AuthContext', () => ({
-  useAuth: vi.fn(() => ({ user: { id: '1', email: 'admin@test.com', role: 'admin' } })),
+  useAuth: vi.fn(),
 }))
 
 vi.mock('../services/pagos.service', () => ({
@@ -14,6 +17,12 @@ vi.mock('../services/pagos.service', () => ({
 
 describe('RegistrarPagoForm', () => {
   beforeEach(() => {
+    vi.mocked(useAuth).mockReturnValue({
+      user: { id: '1', email: 'admin@test.com', role: 'admin' },
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+    })
     vi.mocked(listRadicadosDisponibles).mockResolvedValue({
       items: [
         {
@@ -60,5 +69,53 @@ describe('RegistrarPagoForm', () => {
     await waitFor(() => expect(createPago).toHaveBeenCalled())
     expect(onOk).toHaveBeenCalled()
     await waitFor(() => expect(listRadicadosDisponibles.mock.calls.length).toBeGreaterThan(1))
+  })
+
+  it('muestra error al fallar carga de disponibles', async () => {
+    vi.mocked(listRadicadosDisponibles).mockRejectedValue(
+      new axios.AxiosError('fail', '500', undefined, undefined, {
+        status: 500,
+        data: {},
+        statusText: 'Error',
+        headers: {},
+        config: {} as never,
+      }),
+    )
+    render(<RegistrarPagoForm />)
+    await waitFor(() => {
+      expect(screen.getByText('fail')).toBeInTheDocument()
+    })
+  })
+
+  it('pagina radicados disponibles cuando hay varias páginas', async () => {
+    vi.mocked(listRadicadosDisponibles).mockResolvedValue({
+      items: [{ incapacidad_id: '1', radicado: 'IN01' }],
+      total: 60,
+      pages: 2,
+    })
+    render(<RegistrarPagoForm />)
+    await waitFor(() => expect(screen.getByText(/mostrando/i)).toBeInTheDocument())
+    fireEvent.click(screen.getByRole('button', { name: /página siguiente/i }))
+    await waitFor(() =>
+      expect(listRadicadosDisponibles).toHaveBeenCalledWith(expect.objectContaining({ page: 2 })),
+    )
+  })
+
+  it('muestra mensaje de disponibles para contabilidad', async () => {
+    vi.mocked(useAuth).mockReturnValue({
+      user: { id: '2', email: 'conta@test.com', role: 'contabilidad' },
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+    })
+    vi.mocked(listRadicadosDisponibles).mockResolvedValue({
+      items: [],
+      total: 0,
+      pages: 0,
+    })
+    render(<RegistrarPagoForm />)
+    await waitFor(() =>
+      expect(screen.getByText(/cuando rrhh marque trámites como cobrada/i)).toBeInTheDocument(),
+    )
   })
 })

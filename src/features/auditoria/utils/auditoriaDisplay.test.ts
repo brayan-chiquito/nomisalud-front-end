@@ -4,6 +4,7 @@ import {
   dateInputToIsoStart,
   formatAuditoriaTimestamp,
   usuarioAuditoriaLabel,
+  usuarioAuditoriaTooltip,
 } from './auditoriaDisplay'
 
 describe('auditoriaDisplay', () => {
@@ -30,5 +31,57 @@ describe('auditoriaDisplay', () => {
 
   it('formatea timestamp legible', () => {
     expect(formatAuditoriaTimestamp('2026-05-21T14:30:00Z')).toMatch(/\d{2}/)
+  })
+
+  it('usa email o user_id si no hay nombre', () => {
+    expect(
+      usuarioAuditoriaLabel({
+        id: '1',
+        user_id: 'u1',
+        usuario_email: 'a@test.com',
+        accion: 'GET',
+        timestamp: '2026-01-01T00:00:00Z',
+      }),
+    ).toBe('a@test.com')
+    expect(
+      usuarioAuditoriaLabel({
+        id: '2',
+        user_id: 'u2',
+        accion: 'GET',
+        timestamp: '2026-01-01T00:00:00Z',
+      }),
+    ).toBe('u2')
+  })
+
+  it('arma tooltip con nombre, email e id', () => {
+    expect(
+      usuarioAuditoriaTooltip({
+        id: '1',
+        user_id: 'u1',
+        usuario_nombre: 'Ana',
+        usuario_email: 'a@test.com',
+        accion: 'GET',
+        timestamp: '2026-01-01T00:00:00Z',
+      }),
+    ).toContain('Ana')
+    expect(
+      usuarioAuditoriaTooltip({
+        id: '1',
+        user_id: 'u1',
+        usuario_email: 'a@test.com',
+        accion: 'GET',
+        timestamp: '2026-01-01T00:00:00Z',
+      }),
+    ).toContain('ID: u1')
+  })
+
+  it('devuelve undefined para fechas vacías o inválidas', () => {
+    expect(dateInputToIsoStart('')).toBeUndefined()
+    expect(dateInputToIsoEnd('   ')).toBeUndefined()
+    expect(dateInputToIsoStart('invalid')).toBeUndefined()
+  })
+
+  it('devuelve ISO sin formatear si timestamp es inválido', () => {
+    expect(formatAuditoriaTimestamp('no-es-fecha')).toBe('no-es-fecha')
   })
 })
