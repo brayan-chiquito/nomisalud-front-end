@@ -41,4 +41,10 @@ describe('fetchEntidadNombreSuggestions', () => {
     )
     expect(listPagos).toHaveBeenCalledWith(expect.objectContaining({ page: 1, entidad: 'sis' }))
   })
+
+  it('devuelve vacío si las peticiones fallan', async () => {
+    vi.mocked(listIncapacidades).mockRejectedValue(new Error('red'))
+    vi.mocked(listPagos).mockRejectedValue(new Error('red'))
+    expect(await fetchEntidadNombreSuggestions('eps')).toEqual([])
+  })
 })

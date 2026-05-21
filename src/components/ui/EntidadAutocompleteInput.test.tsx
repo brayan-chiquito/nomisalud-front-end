@@ -1,8 +1,16 @@
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import { EntidadAutocompleteInput } from './EntidadAutocompleteInput'
 
 describe('EntidadAutocompleteInput', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('no deshabilita el input y muestra sugerencias al enfocar', () => {
     const onChange = vi.fn()
     render(
@@ -45,5 +53,30 @@ describe('EntidadAutocompleteInput', () => {
     rerender(<EntidadAutocompleteInput value="si" onChange={onChange} suggestions={['SIS']} />)
 
     expect(screen.getByRole('listbox')).toBeInTheDocument()
+  })
+
+  it('muestra indicador de carga sin sugerencias', () => {
+    render(
+      <EntidadAutocompleteInput
+        value="si"
+        onChange={vi.fn()}
+        suggestions={[]}
+        suggestionsLoading
+      />,
+    )
+    fireEvent.focus(screen.getByLabelText('Filtrar por entidad'))
+    expect(screen.getByText(/buscando entidades/i)).toBeInTheDocument()
+  })
+
+  it('cierra el listado al perder foco', () => {
+    render(<EntidadAutocompleteInput value="sis" onChange={vi.fn()} suggestions={['SIS']} />)
+    const input = screen.getByLabelText('Filtrar por entidad')
+    fireEvent.focus(input)
+    expect(screen.getByRole('listbox')).toBeInTheDocument()
+    fireEvent.blur(input)
+    act(() => {
+      vi.advanceTimersByTime(200)
+    })
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
   })
 })

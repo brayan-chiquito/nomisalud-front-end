@@ -25,4 +25,11 @@ describe('useEntidadSuggestions', () => {
     await waitFor(() => expect(result.current.suggestions).toEqual(['EPS Sura']))
     expect(fetchEntidadNombreSuggestions).toHaveBeenCalledWith('sur', expect.any(AbortSignal))
   })
+
+  it('limpia sugerencias si la petición falla', async () => {
+    vi.mocked(fetchEntidadNombreSuggestions).mockRejectedValue(new Error('fail'))
+    const { result } = renderHook(() => useEntidadSuggestions('sur', 0))
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.suggestions).toEqual([])
+  })
 })

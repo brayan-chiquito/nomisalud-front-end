@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, waitFor, act } from '@testing-library/react'
 import { useConciliacion } from './useConciliacion'
-import { getConciliacion } from '../services/conciliacion.service'
+import { exportConciliacionExcel, getConciliacion } from '../services/conciliacion.service'
 
 vi.mock('../services/conciliacion.service', () => ({
   getConciliacion: vi.fn(),
@@ -39,5 +39,38 @@ describe('useConciliacion', () => {
     await waitFor(() => expect(result.current.canQuery).toBe(true))
     await waitFor(() => expect(result.current.data?.entidad).toBe('NomiSalud'))
     expect(getConciliacion).toHaveBeenCalled()
+  })
+
+  it('expone error si falla la carga', async () => {
+    vi.mocked(getConciliacion).mockRejectedValue(new Error('fallo'))
+    const { result } = renderHook(() => useConciliacion(0))
+    act(() => result.current.setEntidadInput('EPS'))
+    await waitFor(() => expect(result.current.error).toBeTruthy())
+    expect(result.current.data).toBeNull()
+  })
+
+  it('exportar descarga excel y limpia exporting', async () => {
+    vi.mocked(exportConciliacionExcel).mockResolvedValue({ filename: 'a.xlsx' })
+    const { result } = renderHook(() => useConciliacion(0))
+    act(() => result.current.setEntidadInput('EPS'))
+    await waitFor(() => expect(result.current.canQuery).toBe(true))
+    await act(async () => {
+      await result.current.exportar()
+    })
+    expect(exportConciliacionExcel).toHaveBeenCalled()
+    expect(result.current.exporting).toBe(false)
+    expect(result.current.exportError).toBeNull()
+  })
+
+  it('exportar guarda mensaje si falla', async () => {
+    vi.mocked(exportConciliacionExcel).mockRejectedValue(new Error('export fail'))
+    const { result } = renderHook(() => useConciliacion(0))
+    act(() => result.current.setEntidadInput('EPS'))
+    await waitFor(() => expect(result.current.canQuery).toBe(true))
+    await act(async () => {
+      await result.current.exportar()
+    })
+    expect(result.current.exportError).toBeTruthy()
+    expect(result.current.exporting).toBe(false)
   })
 })
