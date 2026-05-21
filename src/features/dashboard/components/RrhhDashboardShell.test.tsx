@@ -35,6 +35,22 @@ describe('RrhhDashboardShell', () => {
     )
   })
 
+  it('muestra enlace al módulo de cobro ante entidad', () => {
+    renderShell(<div />)
+    expect(screen.getByRole('link', { name: /cobro ante entidad/i })).toHaveAttribute(
+      'href',
+      '/dashboard/cobro-ante-entidad',
+    )
+  })
+
+  it('muestra enlace al módulo de pagos', () => {
+    renderShell(<div />)
+    expect(screen.getByRole('link', { name: /^pagos$/i })).toHaveAttribute(
+      'href',
+      '/dashboard/pagos',
+    )
+  })
+
   it('al pulsar Inicio marca la sección activa', () => {
     renderShell(<div />)
     fireEvent.click(screen.getByRole('link', { name: /^inicio$/i }))

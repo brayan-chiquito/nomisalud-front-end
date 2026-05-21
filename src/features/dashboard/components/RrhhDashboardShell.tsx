@@ -1,6 +1,14 @@
 import { useState, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, FileText, BarChart3, Users, UserCircle } from 'lucide-react'
+import {
+  LayoutDashboard,
+  FileText,
+  BarChart3,
+  Users,
+  UserCircle,
+  CreditCard,
+  CircleDollarSign,
+} from 'lucide-react'
 import logo from '@/assets/logo.png'
 import { UserProfileMenu } from '@/components/UserProfileMenu'
 import { cn } from '@/utils/cn'
@@ -101,6 +109,20 @@ export function RrhhDashboardShell({
               Administración
             </p>
           </div>
+          <NavLink
+            to="/dashboard/cobro-ante-entidad"
+            className={({ isActive }) => cn(navItemBase, isActive ? navActive : navInactive)}
+          >
+            <CircleDollarSign className="h-4 w-4 shrink-0" aria-hidden />
+            Cobro ante entidad
+          </NavLink>
+          <NavLink
+            to="/dashboard/pagos"
+            className={({ isActive }) => cn(navItemBase, isActive ? navActive : navInactive)}
+          >
+            <CreditCard className="h-4 w-4 shrink-0" aria-hidden />
+            Pagos
+          </NavLink>
         </nav>
 
         <div className="relative z-40 overflow-visible border-t border-gray-100 p-3">

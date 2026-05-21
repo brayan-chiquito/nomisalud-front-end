@@ -49,6 +49,8 @@ export type UseIncapacidadAiReviewResult = Readonly<{
   submitting: boolean
   submitError: string | null
   clearSubmitError: () => void
+  /** Actualiza `estado` en detalle tras PATCH manual (p. ej. marcar cobrada). */
+  patchDetailEstado: (estado: string) => void
 }>
 
 export function useIncapacidadAiReview(incapacidadId: string | null): UseIncapacidadAiReviewResult {
@@ -181,14 +183,14 @@ export function useIncapacidadAiReview(incapacidadId: string | null): UseIncapac
     if (!incapacidadId) return false
     const trimmed = overrideJustificacion.trim()
     if (trimmed.length < 10) {
-      setOverrideError('La justificación debe tener al menos 10 caracteres.')
+      setOverrideError('La justificaci?n debe tener al menos 10 caracteres.')
       return false
     }
     setSubmittingOverride(true)
     setOverrideError(null)
     if (detail?.estado !== 'inconsistencia_detectada') {
       setOverrideError(
-        'Solo se puede registrar excepción cuando el trámite está en Inconsistencia detectada.',
+        'Solo se puede registrar excepci?n cuando el tr?mite est? en Inconsistencia detectada.',
       )
       return false
     }
@@ -210,11 +212,11 @@ export function useIncapacidadAiReview(incapacidadId: string | null): UseIncapac
 
   const confirmar = useCallback(async (): Promise<boolean> => {
     if (!incapacidadId || !detail?.extraccion_ia) {
-      setSubmitError('No hay datos de extracción para confirmar.')
+      setSubmitError('No hay datos de extracci?n para confirmar.')
       return false
     }
     if (requiereOverrideAntesDeContinuar(detail.estado, inconsistencias) && !overrideRegistrado) {
-      setSubmitError('Registra la excepción con una justificación antes de confirmar los datos.')
+      setSubmitError('Registra la excepci?n con una justificaci?n antes de confirmar los datos.')
       return false
     }
     const datos = mergeFormIntoDatosExtraidos(detail.extraccion_ia.datos_extraidos ?? null, form)
@@ -225,12 +227,12 @@ export function useIncapacidadAiReview(incapacidadId: string | null): UseIncapac
         accion: 'confirmar',
         datos_extraidos: datos,
       })
-      // PUT verificar con `confirmar` deja el trámite en `en_verificacion` (docs API).
-      // Para avanzar el flujo visible (listado/KPIs), se requiere PATCH → `transcrita`.
+      // PUT verificar con `confirmar` deja el tr?mite en `en_verificacion` (docs API).
+      // Para avanzar el flujo visible (listado/KPIs), se requiere PATCH ? `transcrita`.
       if (verificado.estado !== 'transcrita') {
         await patchIncapacidadEstado(incapacidadId, {
           estado: 'transcrita',
-          observacion: 'Datos confirmados en revisión IA',
+          observacion: 'Datos confirmados en revisi?n IA',
         })
       }
       return true
@@ -246,7 +248,7 @@ export function useIncapacidadAiReview(incapacidadId: string | null): UseIncapac
     async (motivo: string): Promise<boolean> => {
       if (!incapacidadId) return false
       if (!detail?.extraccion_ia) {
-        setSubmitError('No hay extracción IA asociada a este trámite.')
+        setSubmitError('No hay extracci?n IA asociada a este tr?mite.')
         return false
       }
       const trimmed = motivo.trim()
@@ -298,6 +300,10 @@ export function useIncapacidadAiReview(incapacidadId: string | null): UseIncapac
     [incapacidadId],
   )
 
+  const patchDetailEstado = useCallback((estado: string) => {
+    setDetail((prev) => (prev ? { ...prev, estado } : prev))
+  }, [])
+
   return {
     detail,
     loadingDetail,
@@ -321,5 +327,6 @@ export function useIncapacidadAiReview(incapacidadId: string | null): UseIncapac
     submitting,
     submitError,
     clearSubmitError,
+    patchDetailEstado,
   }
 }

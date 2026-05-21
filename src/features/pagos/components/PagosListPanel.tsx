@@ -1,0 +1,214 @@
+import { useCallback, useEffect, useState } from 'react'
+import axios from 'axios'
+import { ChevronLeft, ChevronRight, Loader2, Search } from 'lucide-react'
+import { listPagos } from '../services/pagos.service'
+import type { PagoListItem } from '../types/pago'
+import {
+  fechaPagoIso,
+  formatFechaPago,
+  formatMontoPago,
+  labelEstadoPago,
+} from '../utils/pagoDisplay'
+import { Card } from '@/components/ui/Card'
+import { cn } from '@/utils/cn'
+
+function messageFromLoadError(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    const d = error.response?.data
+    if (d && typeof d === 'object' && 'detail' in d) {
+      const detail = (d as { detail: unknown }).detail
+      if (typeof detail === 'string') return detail
+    }
+    if (error.message) return error.message
+  }
+  if (error instanceof Error) return error.message
+  return 'No se pudo cargar el listado de pagos.'
+}
+
+function pageSizeFromResponse(total: number, pages: number, rowCount: number): number {
+  if (pages > 0 && total > 0) return Math.ceil(total / pages)
+  return rowCount
+}
+
+export type PagosListPanelProps = Readonly<{
+  refreshToken?: number
+}>
+
+/**
+ * Tabla de histórico desde `GET /api/v1/pagos`.
+ */
+export function PagosListPanel({ refreshToken = 0 }: PagosListPanelProps) {
+  const [items, setItems] = useState<readonly PagoListItem[]>([])
+  const [total, setTotal] = useState(0)
+  const [pages, setPages] = useState(0)
+  const [page, setPage] = useState(1)
+  const [entidadFiltro, setEntidadFiltro] = useState('')
+  const [entidadDebounced, setEntidadDebounced] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const t = globalThis.setTimeout(() => setEntidadDebounced(entidadFiltro.trim()), 350)
+    return () => globalThis.clearTimeout(t)
+  }, [entidadFiltro])
+
+  useEffect(() => {
+    setPage(1)
+  }, [entidadDebounced])
+
+  const load = useCallback(
+    async (signal: AbortSignal) => {
+      setLoading(true)
+      setError(null)
+      try {
+        const res = await listPagos({
+          page,
+          ...(entidadDebounced ? { entidad: entidadDebounced } : {}),
+          signal,
+        })
+        if (!signal.aborted) {
+          setItems(res.items)
+          setTotal(res.total)
+          setPages(res.pages)
+        }
+      } catch (e) {
+        if (signal.aborted || axios.isCancel(e)) return
+        setItems([])
+        setTotal(0)
+        setPages(0)
+        setError(messageFromLoadError(e))
+      } finally {
+        if (!signal.aborted) setLoading(false)
+      }
+    },
+    [page, entidadDebounced],
+  )
+
+  useEffect(() => {
+    const ac = new AbortController()
+    void load(ac.signal)
+    return () => ac.abort()
+  }, [load, refreshToken])
+
+  const pageSize = pageSizeFromResponse(total, pages, items.length)
+  const start = total === 0 ? 0 : (page - 1) * pageSize + 1
+  const end = total === 0 ? 0 : Math.min(page * pageSize, total)
+  const canPrev = page > 1 && !loading
+  const canNext = pages > 0 && page < pages && !loading
+
+  return (
+    <Card className="mt-6 overflow-hidden">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-5 py-4 sm:px-6">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">Historial de pagos</h2>
+          <p className="text-sm text-gray-500">Entidad, referencia, monto y fecha por operación.</p>
+        </div>
+        <div className="relative flex min-w-[200px] max-w-xs flex-1 items-center">
+          <Search className="absolute left-3 h-4 w-4 shrink-0 text-gray-400" aria-hidden />
+          <input
+            type="search"
+            value={entidadFiltro}
+            onChange={(e) => setEntidadFiltro(e.target.value)}
+            disabled={loading}
+            placeholder="Filtrar por entidad…"
+            className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pr-3 pl-9 text-sm placeholder:text-gray-400 focus:border-primary/50 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:outline-none"
+            aria-label="Filtrar pagos por entidad"
+          />
+        </div>
+      </div>
+
+      {error ? (
+        <p className="mx-5 my-3 border border-danger/20 bg-danger-light px-4 py-3 text-sm text-danger-text sm:mx-6">
+          {error}
+        </p>
+      ) : null}
+
+      <div className="overflow-x-auto">
+        <div className="min-w-[720px]">
+          <div
+            className="grid h-11 items-center gap-x-3 border-b border-gray-100 bg-gray-50/80 px-5 text-[11px] font-semibold tracking-wider text-gray-400 uppercase sm:px-6"
+            style={{
+              gridTemplateColumns:
+                'minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 120px) minmax(0, 160px) minmax(0, 100px)',
+            }}
+          >
+            <span>Entidad</span>
+            <span>Referencia</span>
+            <span className="text-right sm:text-left">Monto</span>
+            <span>Fecha</span>
+            <span>Estado</span>
+          </div>
+
+          {loading ? (
+            <div className="flex flex-col items-center gap-2 py-16 text-gray-500">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden />
+              <span className="text-sm">Cargando…</span>
+            </div>
+          ) : items.length === 0 ? (
+            <p className="py-12 text-center text-sm text-gray-500">No hay pagos registrados aún.</p>
+          ) : (
+            items.map((row) => (
+              <div
+                key={row.id}
+                className="grid items-center gap-x-3 border-b border-gray-50 px-5 py-3 text-sm sm:px-6"
+                style={{
+                  gridTemplateColumns:
+                    'minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 120px) minmax(0, 160px) minmax(0, 100px)',
+                }}
+              >
+                <span className="truncate font-medium text-gray-900" title={row.entidad_origen}>
+                  {row.entidad_origen}
+                </span>
+                <span className="truncate font-mono text-xs text-gray-700" title={row.referencia}>
+                  {row.referencia}
+                </span>
+                <span className="text-right tabular-nums text-gray-800 sm:text-left">
+                  {formatMontoPago(row.monto)}
+                </span>
+                <span className="truncate text-slate-600" title={fechaPagoIso(row)}>
+                  {formatFechaPago(fechaPagoIso(row))}
+                </span>
+                <span className="text-xs text-gray-600">{labelEstadoPago(row.estado)}</span>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 px-5 py-3 sm:px-6">
+        <p className="text-[13px] text-slate-500">
+          Mostrando {start} - {end} de {total}
+        </p>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            disabled={!canPrev}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            className={cn(
+              'rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700',
+              'disabled:cursor-not-allowed disabled:opacity-30',
+            )}
+            aria-label="Página anterior"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <span className="flex h-8 min-w-8 items-center justify-center rounded-md bg-primary px-2 text-[13px] font-semibold text-white">
+            {pages === 0 ? 0 : page}
+          </span>
+          <button
+            type="button"
+            disabled={!canNext}
+            onClick={() => setPage((p) => p + 1)}
+            className={cn(
+              'rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700',
+              'disabled:cursor-not-allowed disabled:opacity-30',
+            )}
+            aria-label="Página siguiente"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+      </footer>
+    </Card>
+  )
+}

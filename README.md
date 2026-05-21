@@ -72,6 +72,8 @@ Rutas definidas en `src/router/index.tsx`. Las marcadas como **protegidas** requ
 | `/` | Pública | Inicio de sesión |
 | `/login` | Pública | Inicio de sesión (alias) |
 | `/dashboard` | Protegida | Dashboard RRHH: layout con sidebar, KPIs por estado, tabla de incapacidades (`GET /incapacidades`) con filtros estado/tipo/búsqueda y paginación |
+| `/dashboard/cobro-ante-entidad` | Protegida (admin, auxiliar_rrhh, coordinador_rrhh) | Marcar trámites **transcrita** → **cobrada** (`PATCH /incapacidades/{id}/estado`). Flujo manual hasta integración EPS; desbloquea el selector en Pagos |
+| `/dashboard/pagos` | Protegida (admin, auxiliar_rrhh, coordinador_rrhh) | Registrar pago (`POST /pagos`) y listar histórico; solo radicados en estado **cobrada** |
 | `/portal/mi-tramite` | Protegida | Portal colaborador: lista de trámites (`GET /incapacidades/mias`) |
 | `/portal/mi-tramite/:tramiteId` | Protegida | Detalle del trámite (`GET /incapacidades/{id}`) con `StatusTimeline` desde `historial_estados` |
 | `/portal/radicar-incapacidad` | Protegida | Portal colaborador: radicar incapacidad (carga de archivo) |
@@ -79,6 +81,14 @@ Rutas definidas en `src/router/index.tsx`. Las marcadas como **protegidas** requ
 | `*` (cualquier otra) | Pública | Página 404 |
 
 > Desde el **dashboard**, el enlace **Revisar** abre `/incapacidad/revision-ia?id={id}`. Tras radicar, el colaborador va a `/portal/mi-tramite/{id}`; desde el detalle puede abrir la revisión del documento.
+
+### Flujo cobrada → pagada (RRHH)
+
+1. Confirmar revisión IA → trámite **transcrita**.
+2. **Cobro ante entidad** (`/dashboard/cobro-ante-entidad`) o botón en revisión IA → **cobrada** (`PATCH` con `estado: "cobrada"`).
+3. **Pagos** (`/dashboard/pagos`) → `POST /pagos` asocia radicados cobrada → **pagada**.
+
+En producción, el paso 2 podrá automatizarse vía API externa (EPS); la pantalla actual es el sustituto manual.
 
 ## Scripts disponibles
 

@@ -18,6 +18,7 @@ import type { ActionSuccessKind } from '@/features/dashboard/types/dashboardNavi
 import { DocumentPreviewPanel } from './DocumentPreviewPanel'
 import { InconsistenciasReviewBanner } from './InconsistenciasReviewBanner'
 import { RejectIncapacityModal, type RejectModalSubmit } from './RejectIncapacityModal'
+import { MarcarCobradaDetalleAction } from '@/features/cobro-ante-entidad/components/MarcarCobradaDetalleAction'
 
 function displayNameFromEmail(email: string | undefined): string {
   if (!email) return 'Usuario'
@@ -63,6 +64,7 @@ export function IncapacityAiReviewView() {
     submitting,
     submitError,
     clearSubmitError,
+    patchDetailEstado,
   } = useIncapacidadAiReview(incapacidadId)
 
   const [rejectModalOpen, setRejectModalOpen] = useState(false)
@@ -365,7 +367,14 @@ export function IncapacityAiReviewView() {
               : 'Revisa los campos antes de confirmar.'}
           {puedeVerificar ? null : ' Solo personal RRHH puede confirmar o rechazar.'}
         </p>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-end gap-3">
+          {detail?.estado === 'transcrita' && puedeVerificar ? (
+            <MarcarCobradaDetalleAction
+              incapacidadId={detail.id}
+              radicado={detail.radicado}
+              onEstadoActualizado={patchDetailEstado}
+            />
+          ) : null}
           <button
             type="button"
             disabled={accionesRevisionDeshabilitadas}
