@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   accessDeniedRedirectForRole,
+  canExportIncapacidades,
   FINANZAS_HOME_PATH,
   isContabilidadRole,
   ROLES_MODULO_FINANZAS,
@@ -26,5 +27,12 @@ describe('roleAccess', () => {
 
   it('respeta redirect explícito', () => {
     expect(accessDeniedRedirectForRole('contabilidad', '/custom')).toBe('/custom')
+  })
+
+  it('permite exportar incapacidades a RRHH y admin', () => {
+    expect(canExportIncapacidades('coordinador_rrhh')).toBe(true)
+    expect(canExportIncapacidades('auxiliar_rrhh')).toBe(true)
+    expect(canExportIncapacidades('admin')).toBe(true)
+    expect(canExportIncapacidades('contabilidad')).toBe(false)
   })
 })

@@ -19,6 +19,15 @@ export function isContabilidadRole(role: string | undefined): boolean {
   return role?.trim().toLowerCase() === ROLE_CONTABILIDAD
 }
 
+/** Roles con exportación XLSX del listado de incapacidades (SCRUM-215). */
+export const ROLES_INCAPACIDADES_EXPORT = ['admin', 'auxiliar_rrhh', 'coordinador_rrhh'] as const
+
+export function canExportIncapacidades(role: string | undefined): boolean {
+  if (!role) return false
+  const normalized = role.trim().toLowerCase()
+  return (ROLES_INCAPACIDADES_EXPORT as readonly string[]).includes(normalized)
+}
+
 /** Redirección cuando el usuario no puede acceder a la ruta solicitada. */
 export function accessDeniedRedirectForRole(
   role: string | undefined,

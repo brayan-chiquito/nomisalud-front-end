@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { listIncapacidades } from './listIncapacidades.service'
+import { buildIncapacidadesFilterQuery, listIncapacidades } from './listIncapacidades.service'
 
 vi.mock('@/services/http', () => ({
   http: {
@@ -8,6 +8,29 @@ vi.mock('@/services/http', () => ({
 }))
 
 import { http } from '@/services/http'
+
+describe('buildIncapacidadesFilterQuery', () => {
+  it('omite parámetros vacíos', () => {
+    expect(buildIncapacidadesFilterQuery({})).toEqual({})
+    expect(buildIncapacidadesFilterQuery({ estado: '  ', tipo: '' })).toEqual({})
+  })
+
+  it('serializa filtros activos', () => {
+    expect(
+      buildIncapacidadesFilterQuery({
+        estado: 'transcrita',
+        entidad: 'SURA',
+        urgencia: 'ROJO',
+        pagoRetrasado: true,
+      }),
+    ).toEqual({
+      estado: 'transcrita',
+      entidad: 'SURA',
+      urgencia: 'rojo',
+      pago_retrasado: 'true',
+    })
+  })
+})
 
 describe('listIncapacidades', () => {
   beforeEach(() => {
