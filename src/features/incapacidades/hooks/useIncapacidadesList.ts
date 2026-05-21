@@ -31,6 +31,8 @@ export type UseIncapacidadesListResult = Readonly<{
   setEntidadInput: (v: string) => void
   urgencia: '' | UrgenciaNivel
   setUrgencia: (v: '' | UrgenciaNivel) => void
+  soloPagoRetrasado: boolean
+  setSoloPagoRetrasado: (v: boolean) => void
   refetch?: () => void
 }>
 
@@ -57,6 +59,7 @@ export function useIncapacidadesList(
   const [entidadInput, setEntidadInput] = useState('')
   const [entidadDebounced, setEntidadDebounced] = useState('')
   const [urgencia, setUrgenciaState] = useState<'' | UrgenciaNivel>('')
+  const [soloPagoRetrasado, setSoloPagoRetrasadoState] = useState(false)
   const [data, setData] = useState<IncapacidadesListResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -103,6 +106,15 @@ export function useIncapacidadesList(
     setPage(1)
   }, [])
 
+  const setSoloPagoRetrasado = useCallback(
+    (v: boolean) => {
+      setSoloPagoRetrasadoState(v)
+      setPage(1)
+      if (v && !fixedEstado) setEstadoState('cobrada')
+    },
+    [fixedEstado],
+  )
+
   const refetch = useCallback(() => {
     setListVersion((n) => n + 1)
   }, [])
@@ -118,6 +130,7 @@ export function useIncapacidadesList(
           ...(tipo ? { tipo } : {}),
           ...(entidadDebounced ? { entidad: entidadDebounced } : {}),
           ...(urgencia ? { urgencia } : {}),
+          ...(soloPagoRetrasado ? { pagoRetrasado: true } : {}),
           signal,
         })
         if (!signal.aborted) {
@@ -134,7 +147,7 @@ export function useIncapacidadesList(
         if (!signal.aborted) setLoading(false)
       }
     },
-    [page, estadoEfectivo, tipo, entidadDebounced, urgencia],
+    [page, estadoEfectivo, tipo, entidadDebounced, urgencia, soloPagoRetrasado],
   )
 
   const effectDeps = refetchable ? [load, listVersion] : [load]
@@ -154,6 +167,8 @@ export function useIncapacidadesList(
     setEntidadInput,
     urgencia,
     setUrgencia,
+    soloPagoRetrasado,
+    setSoloPagoRetrasado,
     ...(refetchable ? { refetch } : {}),
   }
 }

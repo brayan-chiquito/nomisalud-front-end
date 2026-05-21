@@ -1,5 +1,5 @@
-import { useState, type ReactNode } from 'react'
-import { NavLink } from 'react-router-dom'
+import type { ReactNode } from 'react'
+import { NavLink, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard,
   FileText,
@@ -27,6 +27,8 @@ const navItemBase =
 const navInactive = 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
 const navActive = 'bg-primary/8 font-medium text-primary'
 
+const INCAPACIDADES_HASH = '#panel-incapacidades'
+
 export function RrhhDashboardShell({
   headerTitle,
   userName,
@@ -34,14 +36,9 @@ export function RrhhDashboardShell({
   companyName = 'Recursos Humanos',
   children,
 }: RrhhDashboardShellProps) {
-  const [activeSection, setActiveSection] = useState<'inicio' | 'incapacidades'>('inicio')
-
-  const scrollToIncapacidades = () => {
-    setActiveSection('incapacidades')
-    globalThis.document
-      .getElementById('panel-incapacidades')
-      ?.scrollIntoView({ behavior: 'smooth' })
-  }
+  const { pathname, hash } = useLocation()
+  const enDashboard = pathname === '/dashboard'
+  const enTablaIncapacidades = enDashboard && hash === INCAPACIDADES_HASH
 
   return (
     <div className="min-h-screen bg-gray-50/50">
@@ -55,24 +52,21 @@ export function RrhhDashboardShell({
           <NavLink
             to="/dashboard"
             end
-            onClick={() => setActiveSection('inicio')}
-            className={cn(navItemBase, activeSection === 'inicio' ? navActive : navInactive)}
+            className={cn(
+              navItemBase,
+              enDashboard && !enTablaIncapacidades ? navActive : navInactive,
+            )}
           >
             <LayoutDashboard className="h-4 w-4 shrink-0" aria-hidden />
             Inicio
           </NavLink>
-          <button
-            type="button"
-            onClick={scrollToIncapacidades}
-            className={cn(
-              navItemBase,
-              'text-left',
-              activeSection === 'incapacidades' ? navActive : navInactive,
-            )}
+          <NavLink
+            to={`/dashboard${INCAPACIDADES_HASH}`}
+            className={cn(navItemBase, enTablaIncapacidades ? navActive : navInactive)}
           >
             <FileText className="h-4 w-4 shrink-0" aria-hidden />
             Incapacidades
-          </button>
+          </NavLink>
           <NavLink
             to="/dashboard/conciliacion"
             className={({ isActive }) => cn(navItemBase, isActive ? navActive : navInactive)}

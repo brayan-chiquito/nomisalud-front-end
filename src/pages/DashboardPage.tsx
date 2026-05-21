@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { postLoginPathForRole } from '@/features/auth/utils/postLoginPath'
 import { useAuth } from '@/features/auth/context/AuthContext'
 import { ActionSuccessBanner } from '@/features/dashboard/components/ActionSuccessBanner'
@@ -30,6 +30,7 @@ function parseSuccessParam(raw: string | null): ActionSuccessKind | null {
 export function DashboardPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const { hash } = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const [actionSuccess, setActionSuccess] = useState<ActionSuccessKind | null>(() =>
     parseSuccessParam(searchParams.get('success')),
@@ -49,6 +50,16 @@ export function DashboardPage() {
     next.delete('success')
     setSearchParams(next, { replace: true })
   }, [searchParams, setSearchParams])
+
+  useEffect(() => {
+    if (hash !== '#panel-incapacidades') return
+    const id = globalThis.requestAnimationFrame(() => {
+      globalThis.document
+        .getElementById('panel-incapacidades')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+    return () => globalThis.cancelAnimationFrame(id)
+  }, [hash])
 
   return (
     <RrhhDashboardShell
