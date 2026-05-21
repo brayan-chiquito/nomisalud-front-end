@@ -8,10 +8,16 @@ import { IncapacityAiReviewPage } from '@/pages/IncapacityAiReviewPage'
 import { PagosRrhhPage } from '@/pages/PagosRrhhPage'
 import { CobroAnteEntidadRrhhPage } from '@/pages/CobroAnteEntidadRrhhPage'
 import { ConciliacionRrhhPage } from '@/pages/ConciliacionRrhhPage'
+import { RecepcionRadicarPage } from '@/pages/RecepcionRadicarPage'
+import { PlazosEntidadAdminPage } from '@/pages/PlazosEntidadAdminPage'
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute'
 
 /** Roles RRHH/admin con acceso a pagos y conciliación (`docs/README.md`). */
 const ROLES_FINANZAS_RRHH = ['admin', 'auxiliar_rrhh', 'coordinador_rrhh'] as const
+
+const ROLES_RECEPCION_RADICAR = ['recepcion', 'auxiliar_rrhh', 'coordinador_rrhh', 'admin'] as const
+
+const ROLES_PLAZOS_NAV = ['admin', 'coordinador_rrhh'] as const
 
 export const router = createBrowserRouter([
   {
@@ -43,6 +49,22 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute allowedRoles={[...ROLES_FINANZAS_RRHH]}>
         <PagosRrhhPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/recepcion/radicar',
+    element: (
+      <ProtectedRoute allowedRoles={[...ROLES_RECEPCION_RADICAR]}>
+        <RecepcionRadicarPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/admin/plazos-entidad',
+    element: (
+      <ProtectedRoute allowedRoles={[...ROLES_PLAZOS_NAV]}>
+        <PlazosEntidadAdminPage />
       </ProtectedRoute>
     ),
   },

@@ -4,6 +4,7 @@ import { postLoginPathForRole } from '@/features/auth/utils/postLoginPath'
 import { useAuth } from '@/features/auth/context/AuthContext'
 import { ActionSuccessBanner } from '@/features/dashboard/components/ActionSuccessBanner'
 import { RrhhDashboardShell } from '@/features/dashboard/components/RrhhDashboardShell'
+import { CoordinadorDashboardKpis } from '@/features/dashboard/components/CoordinadorDashboardKpis'
 import { RrhhDashboardKpis } from '@/features/dashboard/components/RrhhDashboardKpis'
 import { RrhhIncapacidadesPanel } from '@/features/dashboard/components/RrhhIncapacidadesPanel'
 import type { ActionSuccessKind } from '@/features/dashboard/types/dashboardNavigation'
@@ -61,6 +62,8 @@ export function DashboardPage() {
     return () => globalThis.cancelAnimationFrame(id)
   }, [hash])
 
+  const showCoordinadorKpis = user?.role === 'coordinador_rrhh' || user?.role === 'admin'
+
   return (
     <RrhhDashboardShell
       headerTitle="Dashboard RRHH"
@@ -70,6 +73,7 @@ export function DashboardPage() {
       {actionSuccess ? (
         <ActionSuccessBanner kind={actionSuccess} onDismiss={() => setActionSuccess(null)} />
       ) : null}
+      {showCoordinadorKpis ? <CoordinadorDashboardKpis /> : null}
       <RrhhDashboardKpis />
       <RrhhIncapacidadesPanel />
     </RrhhDashboardShell>

@@ -181,10 +181,10 @@ export function RrhhIncapacidadesPanel() {
             type="search"
             value={entidadInput}
             onChange={(e) => setEntidadInput(e.target.value)}
-            disabled={loading}
             placeholder="Buscar colaborador..."
+            aria-busy={loading}
             className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pr-3 pl-9 text-sm transition-all duration-150 placeholder:text-gray-400 focus:border-primary/50 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:outline-none"
-            title="Filtra por texto en el nombre de entidad (EPS/ARL) según datos extraídos por la API"
+            title="Filtra por nombre de colaborador o entidad (EPS/ARL) según datos del listado"
           />
         </div>
       </div>
@@ -214,7 +214,7 @@ export function RrhhIncapacidadesPanel() {
             <span className="min-w-0 text-center">Acciones</span>
           </div>
 
-          {loading ? (
+          {loading && items.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-2 py-16 text-slate-500">
               <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden />
               <span className="text-sm">Cargando…</span>
@@ -224,71 +224,73 @@ export function RrhhIncapacidadesPanel() {
               No hay trámites con los filtros seleccionados.
             </p>
           ) : (
-            items.map((row) => {
-              const nombreCol = colaboradorNombreLegible(row)
-              const colaboradorTitulo = colaboradorTooltipLista(row)
-              const entNombre = entidadNombreLegible(row)
-              const entidadTxt = entNombre || '—'
-              const entidadTip =
-                entNombre && entidadDetalleTooltip(row)
-                  ? `${entNombre} · ${entidadDetalleTooltip(row)}`
-                  : entNombre || undefined
-              return (
-                <div
-                  key={row.id}
-                  className={cn(
-                    'group grid h-14 items-center gap-x-2 border-b border-gray-50 px-5 text-sm transition-colors duration-100 hover:bg-gray-50/60',
-                    'bg-white',
-                  )}
-                  style={{ gridTemplateColumns: TABLE_GRID_COLUMNS }}
-                >
-                  <span className="min-w-0 truncate" title={row.radicado}>
-                    <span className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs text-gray-600">
-                      {row.radicado}
-                    </span>
-                  </span>
-                  <span className="min-w-0 truncate" title={colaboradorTitulo}>
-                    <span className="text-sm font-medium text-gray-900">
-                      {nombreCol || 'Sin nombre'}
-                    </span>
-                  </span>
-                  <span
-                    className="min-w-0 truncate text-slate-500"
-                    title={`Documento: ${tipoArchivoLegible(row)}`}
+            <div className={cn(loading && 'pointer-events-none opacity-60')} aria-busy={loading}>
+              {items.map((row) => {
+                const nombreCol = colaboradorNombreLegible(row)
+                const colaboradorTitulo = colaboradorTooltipLista(row)
+                const entNombre = entidadNombreLegible(row)
+                const entidadTxt = entNombre || '—'
+                const entidadTip =
+                  entNombre && entidadDetalleTooltip(row)
+                    ? `${entNombre} · ${entidadDetalleTooltip(row)}`
+                    : entNombre || undefined
+                return (
+                  <div
+                    key={row.id}
+                    className={cn(
+                      'group grid h-14 items-center gap-x-2 border-b border-gray-50 px-5 text-sm transition-colors duration-100 hover:bg-gray-50/60',
+                      'bg-white',
+                    )}
+                    style={{ gridTemplateColumns: TABLE_GRID_COLUMNS }}
                   >
-                    {tipoArchivoLegible(row)}
-                  </span>
-                  <span className="min-w-0 truncate text-slate-500" title={entidadTip}>
-                    {entidadTxt}
-                  </span>
-                  <span className="min-w-0">
-                    <UrgenciaBadge urgencia={row.urgencia} />
-                  </span>
-                  <span className="flex min-w-0 flex-wrap items-center gap-1">
-                    <StatusBadge estado={row.estado} />
-                    {debeMostrarPagoRetrasado(row) ? <PagoRetrasadoBadge /> : null}
-                  </span>
-                  <span className="min-w-0 truncate text-slate-500">
-                    {formatFechaCorta(row.fecha_recepcion)}
-                  </span>
-                  <div className="flex min-w-0 items-center justify-center gap-1">
-                    <Link
-                      to={`/incapacidad/revision-ia?id=${encodeURIComponent(row.id)}`}
-                      className="rounded px-2 py-1 text-[12px] font-medium text-blue-600 hover:bg-blue-50 hover:underline"
+                    <span className="min-w-0 truncate" title={row.radicado}>
+                      <span className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs text-gray-600">
+                        {row.radicado}
+                      </span>
+                    </span>
+                    <span className="min-w-0 truncate" title={colaboradorTitulo}>
+                      <span className="text-sm font-medium text-gray-900">
+                        {nombreCol || 'Sin nombre'}
+                      </span>
+                    </span>
+                    <span
+                      className="min-w-0 truncate text-slate-500"
+                      title={`Documento: ${tipoArchivoLegible(row)}`}
                     >
-                      Revisar
-                    </Link>
-                    <button
-                      type="button"
-                      className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-                      aria-label="Más acciones"
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </button>
+                      {tipoArchivoLegible(row)}
+                    </span>
+                    <span className="min-w-0 truncate text-slate-500" title={entidadTip}>
+                      {entidadTxt}
+                    </span>
+                    <span className="min-w-0">
+                      <UrgenciaBadge urgencia={row.urgencia} />
+                    </span>
+                    <span className="flex min-w-0 flex-wrap items-center gap-1">
+                      <StatusBadge estado={row.estado} />
+                      {debeMostrarPagoRetrasado(row) ? <PagoRetrasadoBadge /> : null}
+                    </span>
+                    <span className="min-w-0 truncate text-slate-500">
+                      {formatFechaCorta(row.fecha_recepcion)}
+                    </span>
+                    <div className="flex min-w-0 items-center justify-center gap-1">
+                      <Link
+                        to={`/incapacidad/revision-ia?id=${encodeURIComponent(row.id)}`}
+                        className="rounded px-2 py-1 text-[12px] font-medium text-blue-600 hover:bg-blue-50 hover:underline"
+                      >
+                        Revisar
+                      </Link>
+                      <button
+                        type="button"
+                        className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                        aria-label="Más acciones"
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )
-            })
+                )
+              })}
+            </div>
           )}
         </div>
       </div>
