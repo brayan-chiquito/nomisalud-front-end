@@ -3,11 +3,23 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RrhhIncapacidadesPanel } from './RrhhIncapacidadesPanel'
 
+vi.mock('@/features/auth/context/AuthContext', () => ({
+  useAuth: vi.fn(),
+}))
+
+vi.mock('@/features/incapacidades/hooks/useExportIncapacidades', () => ({
+  useExportIncapacidades: vi.fn(),
+}))
+
 vi.mock('@/features/incapacidades/services/listIncapacidades.service', () => ({
   listIncapacidades: vi.fn(),
 }))
 
+import { useAuth } from '@/features/auth/context/AuthContext'
+import { useExportIncapacidades } from '@/features/incapacidades/hooks/useExportIncapacidades'
 import { listIncapacidades } from '@/features/incapacidades/services/listIncapacidades.service'
+
+const mockExportar = vi.fn().mockResolvedValue(undefined)
 
 const sampleItem = {
   id: '550e8400-e29b-41d4-a716-446655440000',
@@ -21,6 +33,17 @@ const sampleItem = {
 describe('RrhhIncapacidadesPanel', () => {
   beforeEach(() => {
     vi.mocked(listIncapacidades).mockReset()
+    mockExportar.mockClear()
+    vi.mocked(useAuth).mockReturnValue({
+      user: { id: '1', email: 'coord@test.com', role: 'coordinador_rrhh' },
+      isAuthenticated: true,
+    } as ReturnType<typeof useAuth>)
+    vi.mocked(useExportIncapacidades).mockReturnValue({
+      exporting: false,
+      exportError: null,
+      exportar: mockExportar,
+      clearExportError: vi.fn(),
+    })
   })
 
   it('muestra la tabla y el enlace de nueva incapacidad', async () => {
@@ -144,6 +167,63 @@ describe('RrhhIncapacidadesPanel', () => {
         expect.objectContaining({ page: 1, estado: 'cobrada', pagoRetrasado: true }),
       ),
     )
+  })
+
+  it('muestra botón exportar para coordinador y dispara exportación', async () => {
+    vi.mocked(listIncapacidades).mockResolvedValue({
+      items: [sampleItem],
+      total: 1,
+      pages: 1,
+    })
+    render(
+      <MemoryRouter>
+        <RrhhIncapacidadesPanel />
+      </MemoryRouter>,
+    )
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /exportar excel/i })).toBeInTheDocument(),
+    )
+    fireEvent.click(screen.getByRole('button', { name: /exportar excel/i }))
+    expect(mockExportar).toHaveBeenCalled()
+  })
+
+  it('oculta exportar para contabilidad', async () => {
+    vi.mocked(useAuth).mockReturnValue({
+      user: { id: '2', email: 'conta@test.com', role: 'contabilidad' },
+      isAuthenticated: true,
+    } as ReturnType<typeof useAuth>)
+    vi.mocked(listIncapacidades).mockResolvedValue({
+      items: [sampleItem],
+      total: 1,
+      pages: 1,
+    })
+    render(
+      <MemoryRouter>
+        <RrhhIncapacidadesPanel />
+      </MemoryRouter>,
+    )
+    await waitFor(() => expect(screen.getByText('IN0123456789ABCDEF0')).toBeInTheDocument())
+    expect(screen.queryByRole('button', { name: /exportar excel/i })).not.toBeInTheDocument()
+  })
+
+  it('muestra error de exportación', async () => {
+    vi.mocked(useExportIncapacidades).mockReturnValue({
+      exporting: false,
+      exportError: 'Demasiados registros',
+      exportar: mockExportar,
+      clearExportError: vi.fn(),
+    })
+    vi.mocked(listIncapacidades).mockResolvedValue({
+      items: [sampleItem],
+      total: 1,
+      pages: 1,
+    })
+    render(
+      <MemoryRouter>
+        <RrhhIncapacidadesPanel />
+      </MemoryRouter>,
+    )
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(/demasiados/i))
   })
 
   it('cambia el filtro de estado y vuelve a la página 1', async () => {

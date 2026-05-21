@@ -1,13 +1,18 @@
+import { useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Download,
   Loader2,
   MoreHorizontal,
   Plus,
   Search,
 } from 'lucide-react'
+import { useAuth } from '@/features/auth/context/AuthContext'
+import { canExportIncapacidades } from '@/features/auth/utils/roleAccess'
+import { useExportIncapacidades } from '@/features/incapacidades/hooks/useExportIncapacidades'
 import { useIncapacidadesList } from '@/features/incapacidades/hooks/useIncapacidadesList'
 import { INCAPACIDAD_ESTADOS_FILTRO } from '@/features/incapacidades/constants/estadosIncapacidad'
 import { URGENCIA_FILTRO_OPTIONS } from '@/features/incapacidades/types/urgencia'
@@ -57,6 +62,9 @@ function pageSizeFromResponse(total: number, pages: number, rowCount: number): n
 }
 
 export function RrhhIncapacidadesPanel() {
+  const { user } = useAuth()
+  const showExport = canExportIncapacidades(user?.role)
+
   const {
     data,
     loading,
@@ -73,7 +81,11 @@ export function RrhhIncapacidadesPanel() {
     setUrgencia,
     soloPagoRetrasado,
     setSoloPagoRetrasado,
+    exportFilters,
   } = useIncapacidadesList()
+
+  const getExportFilters = useCallback(() => exportFilters, [exportFilters])
+  const { exporting, exportError, exportar } = useExportIncapacidades(getExportFilters)
 
   const total = data?.total ?? 0
   const totalPages = data?.pages ?? 0
@@ -187,7 +199,34 @@ export function RrhhIncapacidadesPanel() {
             title="Filtra por nombre de colaborador o entidad (EPS/ARL) según datos del listado"
           />
         </div>
+
+        {showExport ? (
+          <button
+            type="button"
+            disabled={loading || exporting}
+            onClick={() => {
+              exportar().catch(() => undefined)
+            }}
+            className={buttonClassName('secondary', 'h-[38px] shrink-0 gap-2 text-sm')}
+          >
+            {exporting ? (
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+            ) : (
+              <Download className="h-4 w-4" aria-hidden />
+            )}
+            {exporting ? 'Exportando…' : 'Exportar Excel'}
+          </button>
+        ) : null}
       </div>
+
+      {exportError ? (
+        <p
+          className="mx-5 my-3 rounded-lg border border-danger/20 bg-danger-light px-4 py-3 text-sm text-danger-text sm:mx-6"
+          role="alert"
+        >
+          {exportError}
+        </p>
+      ) : null}
 
       {error ? (
         <p

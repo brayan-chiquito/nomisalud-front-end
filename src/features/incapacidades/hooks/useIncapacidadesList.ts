@@ -1,6 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import axios from 'axios'
-import { listIncapacidades } from '../services/listIncapacidades.service'
+import {
+  listIncapacidades,
+  type IncapacidadesFilterParams,
+} from '../services/listIncapacidades.service'
 import type { IncapacidadesListResponse } from '../types/listIncapacidades'
 import type { UrgenciaNivel } from '../types/urgencia'
 import { ordenarPorUrgenciaDesc } from '../utils/urgencia'
@@ -33,6 +36,8 @@ export type UseIncapacidadesListResult = Readonly<{
   setUrgencia: (v: '' | UrgenciaNivel) => void
   soloPagoRetrasado: boolean
   setSoloPagoRetrasado: (v: boolean) => void
+  /** Filtros activos (misma lógica que el listado, con entidad ya debounced). */
+  exportFilters: IncapacidadesFilterParams
   refetch?: () => void
 }>
 
@@ -153,6 +158,17 @@ export function useIncapacidadesList(
   const effectDeps = refetchable ? [load, listVersion] : [load]
   useAbortableEffect(load, effectDeps)
 
+  const exportFilters = useMemo<IncapacidadesFilterParams>(
+    () => ({
+      ...(estadoEfectivo ? { estado: estadoEfectivo } : {}),
+      ...(tipo ? { tipo } : {}),
+      ...(entidadDebounced ? { entidad: entidadDebounced } : {}),
+      ...(urgencia ? { urgencia } : {}),
+      ...(soloPagoRetrasado ? { pagoRetrasado: true } : {}),
+    }),
+    [estadoEfectivo, tipo, entidadDebounced, urgencia, soloPagoRetrasado],
+  )
+
   return {
     data,
     loading,
@@ -169,6 +185,7 @@ export function useIncapacidadesList(
     setUrgencia,
     soloPagoRetrasado,
     setSoloPagoRetrasado,
+    exportFilters,
     ...(refetchable ? { refetch } : {}),
   }
 }

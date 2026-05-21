@@ -1,79 +1,29 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import type { LucideIcon } from 'lucide-react'
-import { AlertTriangle, Brain, Clock, Percent, Settings, Tags, Wallet } from 'lucide-react'
+import { AlertCircle, Brain, FileStack, Percent, Settings, Tags } from 'lucide-react'
 import { useAuth } from '@/features/auth/context/AuthContext'
-import {
-  fetchCoordinatorKpis,
-  type CoordinatorKpis,
-} from '@/features/dashboard/services/coordinatorKpis.service'
 import { buttonClassName } from '@/components/ui/buttonStyles'
+import { KpiCard } from '@/features/reportes/components/KpiCard'
+import { EstadoDistributionChart } from '@/features/reportes/components/EstadoDistributionChart'
+import { useReportesKpis } from '@/features/reportes/hooks/useReportesKpis'
+import {
+  formatReportesRatioPercent,
+  mapPorEstadoToChartData,
+  urgenciaRojoTotal,
+} from '@/features/reportes/utils/reportesKpisDisplay'
 
-function KpiCard({
-  value,
-  label,
-  hint,
-  icon: Icon,
-  iconBg,
-  iconColor,
-}: Readonly<{
-  value: string
-  label: string
-  hint?: string
-  icon: LucideIcon
-  iconBg: string
-  iconColor: string
-}>) {
-  return (
-    <div className="rounded-card border border-gray-200/60 bg-white p-5 shadow-card">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="mb-1 text-xs font-medium tracking-widest text-gray-400 uppercase">
-            {label}
-          </p>
-          <p className="text-3xl font-bold text-gray-900 tabular-nums">{value}</p>
-          {hint ? <p className="mt-1 text-xs text-gray-500">{hint}</p> : null}
-        </div>
-        <div className={`shrink-0 rounded-lg p-2.5 ${iconBg}`}>
-          <Icon className={`h-4 w-4 ${iconColor}`} aria-hidden />
-        </div>
-      </div>
-    </div>
-  )
+function formatEntero(value: number | null | undefined, loading: boolean): string {
+  if (loading || value === null || value === undefined) return '—'
+  return String(value)
 }
 
-function formatPct(n: number | null, loading: boolean): string {
-  if (loading || n === null) return '—'
-  return `${n}%`
-}
-
+/** Panel analítico del coordinador: KPIs + gráfico por estado (SCRUM-214). */
 export function CoordinadorDashboardKpis() {
   const { user } = useAuth()
   const isAdmin = user?.role === 'admin'
-  const [kpis, setKpis] = useState<CoordinatorKpis | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { data, loading, error } = useReportesKpis()
 
-  useEffect(() => {
-    const ac = new AbortController()
-    void fetchCoordinatorKpis(ac.signal)
-      .then((d) => {
-        if (!ac.signal.aborted) setKpis(d)
-      })
-      .catch(() => {
-        if (!ac.signal.aborted) setKpis(null)
-      })
-      .finally(() => {
-        if (!ac.signal.aborted) setLoading(false)
-      })
-    return () => ac.abort()
-  }, [])
-
-  const num = (
-    key: keyof Pick<
-      CoordinatorKpis,
-      'pendientesVerificacion' | 'inconsistenciasIa' | 'pagosRetrasados'
-    >,
-  ) => (loading || kpis === null ? '—' : String(kpis[key]))
+  const chartData = mapPorEstadoToChartData(data?.por_estado ?? [])
+  const urgenciaCritica = urgenciaRojoTotal(data?.por_urgencia ?? [])
 
   return (
     <section className="mb-8" aria-labelledby="coordinador-kpis-heading">
@@ -83,7 +33,7 @@ export function CoordinadorDashboardKpis() {
             Indicadores analíticos
           </h2>
           <p className="text-xs text-gray-500">
-            Métricas calculadas desde el listado de trámites (vista coordinador).
+            Métricas consolidadas desde el servicio de reportes del coordinador.
           </p>
         </div>
         {isAdmin ? (
@@ -105,44 +55,56 @@ export function CoordinadorDashboardKpis() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      {error ? (
+        <p
+          className="mb-4 rounded-lg border border-danger/20 bg-danger-light px-4 py-3 text-sm text-danger-text"
+          role="alert"
+        >
+          {error}
+        </p>
+      ) : null}
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
-          value={formatPct(kpis?.precisionExtraccionPct ?? null, loading)}
-          label="Precisión extracción"
-          hint="Trámites sin inconsistencia ni doc. incompleta"
-          icon={Brain}
+          label="Total trámites"
+          value={formatEntero(data?.total_incapacidades, loading)}
+          hint="Incapacidades en el universo analizado"
+          icon={FileStack}
           iconBg="bg-primary/10"
           iconColor="text-primary"
+          loading={loading}
         />
         <KpiCard
-          value={formatPct(kpis?.tasaClasificacionPct ?? null, loading)}
-          label="Tasa clasificación"
-          hint="Estados post-IA vs fallos de clasificación"
-          icon={Tags}
+          label="Precisión OCR"
+          value={formatReportesRatioPercent(data?.precision_ocr_promedio)}
+          hint="Promedio de precisión de extracción"
+          icon={Brain}
           iconBg="bg-info-light"
           iconColor="text-info"
+          loading={loading}
         />
         <KpiCard
-          value={num('pendientesVerificacion')}
-          label="Pendientes verificación"
-          icon={Clock}
+          label="Clasificación IA"
+          value={formatReportesRatioPercent(data?.tasa_clasificacion_ia_correcta)}
+          hint="Tasa de clasificación correcta"
+          icon={Tags}
           iconBg="bg-warning-light"
           iconColor="text-warning"
+          loading={loading}
         />
         <KpiCard
-          value={num('inconsistenciasIa')}
-          label="Inconsistencias IA"
-          icon={AlertTriangle}
+          label="Urgencia crítica"
+          value={formatEntero(urgenciaCritica, loading)}
+          hint="Trámites con urgencia roja"
+          icon={AlertCircle}
           iconBg="bg-danger-light"
           iconColor="text-danger"
+          loading={loading}
         />
-        <KpiCard
-          value={num('pagosRetrasados')}
-          label="Pagos retrasados"
-          icon={Wallet}
-          iconBg="bg-gray-100"
-          iconColor="text-gray-600"
-        />
+      </div>
+
+      <div className="mt-6">
+        <EstadoDistributionChart data={chartData} loading={loading} />
       </div>
 
       {!isAdmin ? (
