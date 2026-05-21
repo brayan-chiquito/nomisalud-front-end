@@ -10,6 +10,10 @@ describe('postLoginPathForRole', () => {
     expect(postLoginPathForRole('recepcion')).toBe('/recepcion/radicar')
   })
 
+  it('envía contabilidad al inicio del módulo financiero', () => {
+    expect(postLoginPathForRole('contabilidad')).toBe('/dashboard/conciliacion')
+  })
+
   it('envía RRHH al dashboard', () => {
     expect(postLoginPathForRole('admin')).toBe('/dashboard')
     expect(postLoginPathForRole('auxiliar_rrhh')).toBe('/dashboard')

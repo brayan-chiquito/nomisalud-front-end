@@ -41,7 +41,7 @@ export function ConciliacionFilters({
   const { suggestions, loading: suggestionsLoading } = useEntidadSuggestions(entidadInput)
 
   return (
-    <div className="flex flex-col gap-4 border-b border-gray-100 bg-gray-50/50 px-5 py-4 sm:px-6">
+    <div className="relative z-10 flex flex-col gap-4 border-b border-gray-100 bg-gray-50/50 px-5 py-4 sm:px-6">
       <div className="flex flex-wrap items-center gap-2.5">
         <label className={incapacidadSelectFrameClassName}>
           <span className="shrink-0 text-slate-600">Mes:</span>

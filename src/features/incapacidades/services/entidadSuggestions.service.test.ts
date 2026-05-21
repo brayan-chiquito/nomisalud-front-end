@@ -42,7 +42,32 @@ describe('fetchEntidadNombreSuggestions', () => {
     expect(listPagos).toHaveBeenCalledWith(expect.objectContaining({ page: 1, entidad: 'sis' }))
   })
 
-  it('devuelve vacío si las peticiones fallan', async () => {
+  it('usa solo pagos cuando sources es pagos (contabilidad)', async () => {
+    vi.mocked(listPagos).mockResolvedValue({
+      items: [{ entidad_origen: 'SIS' }] as never[],
+      total: 1,
+      pages: 1,
+    })
+
+    const names = await fetchEntidadNombreSuggestions('sis', { sources: 'pagos' })
+    expect(names).toEqual(['SIS'])
+    expect(listIncapacidades).not.toHaveBeenCalled()
+    expect(listPagos).toHaveBeenCalled()
+  })
+
+  it('sigue con pagos si incapacidades responde 403', async () => {
+    vi.mocked(listIncapacidades).mockRejectedValue({ response: { status: 403 } })
+    vi.mocked(listPagos).mockResolvedValue({
+      items: [{ entidad_origen: 'SIS' }] as never[],
+      total: 1,
+      pages: 1,
+    })
+
+    const names = await fetchEntidadNombreSuggestions('sis')
+    expect(names).toEqual(['SIS'])
+  })
+
+  it('devuelve vacío solo si ambas fuentes fallan', async () => {
     vi.mocked(listIncapacidades).mockRejectedValue(new Error('red'))
     vi.mocked(listPagos).mockRejectedValue(new Error('red'))
     expect(await fetchEntidadNombreSuggestions('eps')).toEqual([])

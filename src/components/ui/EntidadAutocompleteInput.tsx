@@ -28,11 +28,8 @@ export function EntidadAutocompleteInput({
   const [listOpen, setListOpen] = useState(false)
   const blurTimerRef = useRef<ReturnType<typeof globalThis.setTimeout> | undefined>(undefined)
 
-  const showList =
-    focused &&
-    listOpen &&
-    value.trim().length >= 2 &&
-    (suggestions.length > 0 || suggestionsLoading)
+  const queryLongEnough = value.trim().length >= 2
+  const showList = focused && listOpen && queryLongEnough
 
   const clearBlurTimer = useCallback(() => {
     if (blurTimerRef.current !== undefined) {
@@ -102,15 +99,19 @@ export function EntidadAutocompleteInput({
         <ul
           id={listId}
           role="listbox"
-          className="absolute top-full right-0 left-0 z-20 mt-1 max-h-48 overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+          className="absolute top-full right-0 left-0 z-50 mt-1 max-h-48 overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
         >
-          {suggestionsLoading && suggestions.length === 0 ? (
+          {suggestionsLoading ? (
             <li
               className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500"
               role="presentation"
             >
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
               Buscando entidades…
+            </li>
+          ) : suggestions.length === 0 ? (
+            <li className="px-3 py-2 text-sm text-gray-500" role="presentation">
+              No se encontraron entidades.
             </li>
           ) : null}
           {suggestions.map((name) => (
