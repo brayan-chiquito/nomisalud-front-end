@@ -68,7 +68,9 @@ describe('RegistrarPagoForm', () => {
     fireEvent.click(screen.getByRole('button', { name: /registrar pago/i }))
     await waitFor(() => expect(createPago).toHaveBeenCalled())
     expect(onOk).toHaveBeenCalled()
-    await waitFor(() => expect(listRadicadosDisponibles.mock.calls.length).toBeGreaterThan(1))
+    await waitFor(() =>
+      expect(vi.mocked(listRadicadosDisponibles).mock.calls.length).toBeGreaterThan(1),
+    )
   })
 
   it('muestra error al fallar carga de disponibles', async () => {
