@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { listPagos, createPago } from './pagos.service'
+import { listPagos, listRadicadosDisponibles, createPago } from './pagos.service'
+import { RADICADOS_DISPONIBLES_API_PATH } from '@/features/auth/utils/financialModuleAccess'
 
 vi.mock('@/services/http', () => ({
   http: {
@@ -49,6 +50,17 @@ describe('pagos.service', () => {
         fecha_hasta: '2026-12-31',
       },
       signal: ac.signal,
+    })
+  })
+
+  it('listRadicadosDisponibles GET radicados-disponibles', async () => {
+    vi.mocked(http.get).mockResolvedValue({
+      data: { items: [], total: 0, pages: 0, page: 1 },
+    })
+    await listRadicadosDisponibles({ page: 2, entidad: 'SURA' })
+    expect(http.get).toHaveBeenCalledWith(RADICADOS_DISPONIBLES_API_PATH, {
+      params: { page: 2, entidad: 'SURA' },
+      signal: undefined,
     })
   })
 

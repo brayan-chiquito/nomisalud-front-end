@@ -10,6 +10,7 @@ import {
   CircleDollarSign,
   Scale,
   Settings,
+  ClipboardList,
 } from 'lucide-react'
 import { useAuth } from '@/features/auth/context/AuthContext'
 import logo from '@/assets/logo.png'
@@ -43,6 +44,7 @@ export function RrhhDashboardShell({
   const enDashboard = pathname === '/dashboard'
   const enTablaIncapacidades = enDashboard && hash === INCAPACIDADES_HASH
   const showPlazosNav = user?.role === 'admin' || user?.role === 'coordinador_rrhh'
+  const showAuditoriaNav = showPlazosNav
 
   return (
     <div className="min-h-screen bg-gray-50/50">
@@ -78,15 +80,25 @@ export function RrhhDashboardShell({
             <Scale className="h-4 w-4 shrink-0" aria-hidden />
             Conciliación
           </NavLink>
-          <button
-            type="button"
-            disabled
-            title="Próximamente"
-            className={cn(navItemBase, 'cursor-not-allowed text-gray-300 opacity-60')}
-          >
-            <BarChart3 className="h-4 w-4 shrink-0" aria-hidden />
-            Reportes
-          </button>
+          {showAuditoriaNav ? (
+            <NavLink
+              to="/dashboard/auditoria"
+              className={({ isActive }) => cn(navItemBase, isActive ? navActive : navInactive)}
+            >
+              <ClipboardList className="h-4 w-4 shrink-0" aria-hidden />
+              Auditoría
+            </NavLink>
+          ) : (
+            <button
+              type="button"
+              disabled
+              title="Próximamente"
+              className={cn(navItemBase, 'cursor-not-allowed text-gray-300 opacity-60')}
+            >
+              <BarChart3 className="h-4 w-4 shrink-0" aria-hidden />
+              Reportes
+            </button>
+          )}
           <button
             type="button"
             disabled

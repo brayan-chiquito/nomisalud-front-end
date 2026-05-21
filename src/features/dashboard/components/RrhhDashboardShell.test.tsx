@@ -92,4 +92,17 @@ describe('RrhhDashboardShell', () => {
     renderShell(<div />, 'auxiliar_rrhh')
     expect(screen.queryByRole('link', { name: /plazos por entidad/i })).not.toBeInTheDocument()
   })
+
+  it('muestra enlace a auditoría para coordinador', () => {
+    renderShell(<div />, 'coordinador_rrhh')
+    expect(screen.getByRole('link', { name: /^auditoría$/i })).toHaveAttribute(
+      'href',
+      '/dashboard/auditoria',
+    )
+  })
+
+  it('no muestra auditoría para auxiliar', () => {
+    renderShell(<div />, 'auxiliar_rrhh')
+    expect(screen.queryByRole('link', { name: /^auditoría$/i })).not.toBeInTheDocument()
+  })
 })

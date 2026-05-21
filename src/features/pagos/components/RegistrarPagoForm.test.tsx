@@ -1,28 +1,26 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { RegistrarPagoForm } from './RegistrarPagoForm'
-import { listIncapacidades } from '@/features/incapacidades/services/listIncapacidades.service'
-import { createPago } from '../services/pagos.service'
+import { listRadicadosDisponibles, createPago } from '../services/pagos.service'
 
-vi.mock('@/features/incapacidades/services/listIncapacidades.service', () => ({
-  listIncapacidades: vi.fn(),
+vi.mock('@/features/auth/context/AuthContext', () => ({
+  useAuth: vi.fn(() => ({ user: { id: '1', email: 'admin@test.com', role: 'admin' } })),
 }))
 
 vi.mock('../services/pagos.service', () => ({
+  listRadicadosDisponibles: vi.fn(),
   createPago: vi.fn(),
 }))
 
 describe('RegistrarPagoForm', () => {
   beforeEach(() => {
-    vi.mocked(listIncapacidades).mockResolvedValue({
+    vi.mocked(listRadicadosDisponibles).mockResolvedValue({
       items: [
         {
-          id: '1',
+          incapacidad_id: '1',
           radicado: 'IN01',
-          estado: 'cobrada',
-          colaborador_id: 'c1',
-          archivo_tipo: 'pdf',
-          fecha_recepcion: '2025-01-01',
+          colaborador_email: 'col@test.com',
+          entidad_nombre: 'EPS SURA',
         },
       ],
       total: 1,
@@ -44,6 +42,12 @@ describe('RegistrarPagoForm', () => {
     expect(await screen.findByText(/indica la entidad/i)).toBeInTheDocument()
   })
 
+  it('carga radicados desde radicados-disponibles', async () => {
+    render(<RegistrarPagoForm />)
+    await waitFor(() => expect(listRadicadosDisponibles).toHaveBeenCalled())
+    expect(screen.getByText('IN01')).toBeInTheDocument()
+  })
+
   it('envía pago cuando el formulario es válido', async () => {
     const onOk = vi.fn()
     render(<RegistrarPagoForm onRegistroExitoso={onOk} />)
@@ -55,5 +59,6 @@ describe('RegistrarPagoForm', () => {
     fireEvent.click(screen.getByRole('button', { name: /registrar pago/i }))
     await waitFor(() => expect(createPago).toHaveBeenCalled())
     expect(onOk).toHaveBeenCalled()
+    await waitFor(() => expect(listRadicadosDisponibles.mock.calls.length).toBeGreaterThan(1))
   })
 })

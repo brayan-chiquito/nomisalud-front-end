@@ -1,5 +1,7 @@
 import { http } from '@/services/http'
+import { RADICADOS_DISPONIBLES_API_PATH } from '@/features/auth/utils/financialModuleAccess'
 import type { CreatePagoPayload, PagosListResponse, PagoListItem } from '../types/pago'
+import type { RadicadosDisponiblesResponse } from '../types/radicadoDisponible'
 
 export type ListPagosParams = Readonly<{
   page?: number
@@ -23,6 +25,25 @@ export async function listPagos(params: ListPagosParams = {}): Promise<PagosList
   const { signal, ...rest } = params
   const { data } = await http.get<PagosListResponse>('/pagos', {
     params: buildQuery(rest),
+    signal,
+  })
+  return data
+}
+
+export type ListRadicadosDisponiblesParams = Readonly<{
+  page?: number
+  entidad?: string
+  signal?: AbortSignal
+}>
+
+export async function listRadicadosDisponibles(
+  params: ListRadicadosDisponiblesParams = {},
+): Promise<RadicadosDisponiblesResponse> {
+  const { signal, ...rest } = params
+  const q: Record<string, string | number> = { page: rest.page ?? 1 }
+  if (rest.entidad?.trim()) q.entidad = rest.entidad.trim()
+  const { data } = await http.get<RadicadosDisponiblesResponse>(RADICADOS_DISPONIBLES_API_PATH, {
+    params: q,
     signal,
   })
   return data
