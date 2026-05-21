@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   colaboradorNombreLegible,
   colaboradorTooltipLista,
+  entidadCeldaLista,
   entidadDetalleTooltip,
   entidadNombreLegible,
   tipoArchivoLegible,
@@ -100,5 +101,16 @@ describe('listIncapacidadItemDisplay', () => {
         entidad_ciudad: 'Bogotá',
       }),
     ).toBe('EPS · 800-1 · Bogotá')
+  })
+
+  it('entidadCeldaLista arma texto y title', () => {
+    expect(
+      entidadCeldaLista({
+        ...base,
+        entidad_nombre: 'EPS Sura',
+        entidad_tipo: 'EPS',
+      }),
+    ).toEqual({ texto: 'EPS Sura', title: 'EPS Sura · EPS' })
+    expect(entidadCeldaLista(base)).toEqual({ texto: '—' })
   })
 })

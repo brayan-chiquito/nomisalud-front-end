@@ -3,19 +3,10 @@ import axios from 'axios'
 import { listIncapacidades } from '@/features/incapacidades/services/listIncapacidades.service'
 import type { IncapacidadesListResponse } from '@/features/incapacidades/types/listIncapacidades'
 import { ordenarPorUrgenciaDesc } from '@/features/incapacidades/utils/urgencia'
+import { messageFromLoadError } from '@/utils/messageFromLoadError'
+import { useAbortableEffect } from '@/hooks/useAbortableEffect'
 
-function messageFromLoadError(error: unknown): string {
-  if (axios.isAxiosError(error)) {
-    const d = error.response?.data
-    if (d && typeof d === 'object' && 'detail' in d) {
-      const detail = (d as { detail: unknown }).detail
-      if (typeof detail === 'string') return detail
-    }
-    if (error.message) return error.message
-  }
-  if (error instanceof Error) return error.message
-  return 'No se pudo cargar el listado. Intenta de nuevo.'
-}
+const LOAD_ERROR_FALLBACK = 'No se pudo cargar el listado. Intenta de nuevo.'
 
 export type UseTranscritasCobroListResult = Readonly<{
   data: IncapacidadesListResponse | null
@@ -33,13 +24,13 @@ export type UseTranscritasCobroListResult = Readonly<{
 /** Listado paginado `GET /incapacidades?estado=transcrita` para marcar cobrada. */
 export function useTranscritasCobroList(entidadDebounceMs = 350): UseTranscritasCobroListResult {
   const [page, setPage] = useState(1)
-  const [tipo, setTipoState] = useState('')
+  const [tipo, setTipo] = useState('')
   const [entidadInput, setEntidadInput] = useState('')
   const [entidadDebounced, setEntidadDebounced] = useState('')
   const [data, setData] = useState<IncapacidadesListResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [refreshToken, setRefreshToken] = useState(0)
+  const [listVersion, setListVersion] = useState(0)
 
   const prevEntidad = useRef<string | undefined>(undefined)
   useEffect(() => {
@@ -61,13 +52,13 @@ export function useTranscritasCobroList(entidadDebounceMs = 350): UseTranscritas
     }
   }, [entidadDebounced])
 
-  const setTipo = useCallback((v: string) => {
-    setTipoState(v)
+  const setTipoFilter = useCallback((v: string) => {
+    setTipo(v)
     setPage(1)
   }, [])
 
   const refetch = useCallback(() => {
-    setRefreshToken((n) => n + 1)
+    setListVersion((n) => n + 1)
   }, [])
 
   const load = useCallback(
@@ -91,7 +82,7 @@ export function useTranscritasCobroList(entidadDebounceMs = 350): UseTranscritas
       } catch (e) {
         if (signal.aborted || axios.isCancel(e)) return
         setData(null)
-        setError(messageFromLoadError(e))
+        setError(messageFromLoadError(e, LOAD_ERROR_FALLBACK))
       } finally {
         if (!signal.aborted) setLoading(false)
       }
@@ -99,11 +90,7 @@ export function useTranscritasCobroList(entidadDebounceMs = 350): UseTranscritas
     [page, tipo, entidadDebounced],
   )
 
-  useEffect(() => {
-    const ac = new AbortController()
-    void load(ac.signal)
-    return () => ac.abort()
-  }, [load, refreshToken])
+  useAbortableEffect(load, [load, listVersion])
 
   return {
     data,
@@ -112,7 +99,7 @@ export function useTranscritasCobroList(entidadDebounceMs = 350): UseTranscritas
     page,
     setPage,
     tipo,
-    setTipo,
+    setTipo: setTipoFilter,
     entidadInput,
     setEntidadInput,
     refetch,

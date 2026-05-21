@@ -35,11 +35,14 @@ export function MarcarCobradaModal({
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 p-4"
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      open
+      className="fixed inset-0 z-50 m-0 h-full max-h-none w-full max-w-none border-0 bg-gray-900/50 p-4 backdrop:bg-gray-900/50 open:flex open:items-center open:justify-center"
       aria-labelledby="marcar-cobrada-title"
+      onCancel={(e) => {
+        e.preventDefault()
+        if (!isSubmitting) onClose()
+      }}
     >
       <div className="w-full max-w-[480px] overflow-hidden rounded-card border border-gray-200/60 bg-white shadow-card">
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
@@ -104,7 +107,7 @@ export function MarcarCobradaModal({
           <button
             type="button"
             onClick={() => {
-              void handleSubmit()
+              handleSubmit().catch(() => undefined)
             }}
             disabled={isSubmitting}
             className={buttonClassName('primary')}
@@ -120,6 +123,6 @@ export function MarcarCobradaModal({
           </button>
         </div>
       </div>
-    </div>
+    </dialog>
   )
 }

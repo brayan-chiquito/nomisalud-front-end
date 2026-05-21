@@ -1,25 +1,19 @@
 import { useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
-import {
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  CircleCheck,
-  Loader2,
-  Search,
-  X,
-} from 'lucide-react'
+import { ChevronDown, ChevronLeft, ChevronRight, CircleCheck, Search, X } from 'lucide-react'
 import type { IncapacidadListItem } from '@/features/incapacidades/types/listIncapacidades'
 import {
   colaboradorNombreLegible,
   colaboradorTooltipLista,
-  entidadDetalleTooltip,
-  entidadNombreLegible,
+  entidadCeldaLista,
 } from '@/features/incapacidades/utils/listIncapacidadItemDisplay'
+import { formatFechaCorta } from '@/features/collaborator-portal/utils/formatFecha'
 import { UrgenciaBadge } from '@/components/ui/UrgenciaBadge'
+import { ListPanelBody } from '@/components/ui/ListPanelBody'
 import { buttonClassName } from '@/components/ui/buttonStyles'
 import { Card } from '@/components/ui/Card'
 import { cn } from '@/utils/cn'
+import { pageSizeFromResponse, paginationRange } from '@/utils/pagination'
 import { useTranscritasCobroList } from '../hooks/useTranscritasCobroList'
 import { marcarIncapacidadCobrada } from '../services/marcarCobrada.service'
 import { messageFromPatchEstadoError } from '../utils/patchEstadoErrorMessage'
@@ -40,21 +34,6 @@ const selectNative =
 
 const TABLE_GRID_COLUMNS =
   'minmax(0, 1fr) minmax(0, 1.35fr) minmax(0, 1.2fr) minmax(0, 100px) minmax(0, 112px) minmax(0, 140px)'
-
-function formatFechaCorta(iso: string): string {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return iso
-  return d.toLocaleDateString('es-CO', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  })
-}
-
-function pageSizeFromResponse(total: number, pages: number, rowCount: number): number {
-  if (pages > 0 && total > 0) return Math.ceil(total / pages)
-  return rowCount
-}
 
 export function CobroAnteEntidadPanel() {
   const {
@@ -79,8 +58,7 @@ export function CobroAnteEntidadPanel() {
   const totalPages = data?.pages ?? 0
   const items = data?.items ?? []
   const pageSize = data ? pageSizeFromResponse(total, totalPages, items.length) : 0
-  const start = total === 0 ? 0 : (page - 1) * pageSize + 1
-  const end = total === 0 ? 0 : Math.min(page * pageSize, total)
+  const { start, end } = paginationRange(total, page, pageSize)
   const tipoLabel = TIPO_OPTIONS.find((t) => t.value === tipo)?.label ?? 'Todos'
   const canPrev = page > 1 && !loading
   const canNext = totalPages > 0 && page < totalPages && !loading
@@ -201,26 +179,14 @@ export function CobroAnteEntidadPanel() {
             <span className="min-w-0 text-center">Acción</span>
           </div>
 
-          {loading ? (
-            <div className="flex flex-col items-center justify-center gap-2 py-16 text-slate-500">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden />
-              <span className="text-sm">Cargando…</span>
-            </div>
-          ) : items.length === 0 ? (
-            <p className="px-6 py-12 text-center text-sm text-slate-500">
-              No hay trámites en estado transcrita. Aprueba trámites desde verificación (PATCH
-              transcrita) antes de marcar cobro.
-            </p>
-          ) : (
-            items.map((row) => {
+          <ListPanelBody
+            loading={loading}
+            items={items}
+            emptyMessage="No hay trámites en estado transcrita. Aprueba trámites desde verificación (PATCH transcrita) antes de marcar cobro."
+            renderItem={(row) => {
               const nombreCol = colaboradorNombreLegible(row)
               const colaboradorTitulo = colaboradorTooltipLista(row)
-              const entNombre = entidadNombreLegible(row)
-              const entidadTxt = entNombre || '—'
-              const entidadTip =
-                entNombre && entidadDetalleTooltip(row)
-                  ? `${entNombre} · ${entidadDetalleTooltip(row)}`
-                  : entNombre || undefined
+              const entidad = entidadCeldaLista(row)
               return (
                 <div
                   key={row.id}
@@ -238,8 +204,8 @@ export function CobroAnteEntidadPanel() {
                   <span className="min-w-0 truncate" title={colaboradorTitulo}>
                     <span className="font-medium text-gray-900">{nombreCol || 'Sin nombre'}</span>
                   </span>
-                  <span className="min-w-0 truncate text-slate-500" title={entidadTip}>
-                    {entidadTxt}
+                  <span className="min-w-0 truncate text-slate-500" title={entidad.title}>
+                    {entidad.texto}
                   </span>
                   <span className="min-w-0">
                     <UrgenciaBadge urgencia={row.urgencia} />
@@ -267,8 +233,8 @@ export function CobroAnteEntidadPanel() {
                   </div>
                 </div>
               )
-            })
-          )}
+            }}
+          />
         </div>
       </div>
 

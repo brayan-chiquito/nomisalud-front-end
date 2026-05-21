@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import axios from 'axios'
-import { ChevronLeft, ChevronRight, Loader2, Search } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import { listPagos } from '../services/pagos.service'
 import type { PagoListItem } from '../types/pago'
 import {
@@ -10,25 +10,13 @@ import {
   labelEstadoPago,
 } from '../utils/pagoDisplay'
 import { Card } from '@/components/ui/Card'
+import { ListPanelBody } from '@/components/ui/ListPanelBody'
 import { cn } from '@/utils/cn'
+import { messageFromLoadError } from '@/utils/messageFromLoadError'
+import { pageSizeFromResponse, paginationRange } from '@/utils/pagination'
+import { useAbortableEffect } from '@/hooks/useAbortableEffect'
 
-function messageFromLoadError(error: unknown): string {
-  if (axios.isAxiosError(error)) {
-    const d = error.response?.data
-    if (d && typeof d === 'object' && 'detail' in d) {
-      const detail = (d as { detail: unknown }).detail
-      if (typeof detail === 'string') return detail
-    }
-    if (error.message) return error.message
-  }
-  if (error instanceof Error) return error.message
-  return 'No se pudo cargar el listado de pagos.'
-}
-
-function pageSizeFromResponse(total: number, pages: number, rowCount: number): number {
-  if (pages > 0 && total > 0) return Math.ceil(total / pages)
-  return rowCount
-}
+const LOAD_ERROR_FALLBACK = 'No se pudo cargar el listado de pagos.'
 
 export type PagosListPanelProps = Readonly<{
   refreshToken?: number
@@ -76,7 +64,7 @@ export function PagosListPanel({ refreshToken = 0 }: PagosListPanelProps) {
         setItems([])
         setTotal(0)
         setPages(0)
-        setError(messageFromLoadError(e))
+        setError(messageFromLoadError(e, LOAD_ERROR_FALLBACK))
       } finally {
         if (!signal.aborted) setLoading(false)
       }
@@ -84,15 +72,10 @@ export function PagosListPanel({ refreshToken = 0 }: PagosListPanelProps) {
     [page, entidadDebounced],
   )
 
-  useEffect(() => {
-    const ac = new AbortController()
-    void load(ac.signal)
-    return () => ac.abort()
-  }, [load, refreshToken])
+  useAbortableEffect(load, [load, refreshToken])
 
   const pageSize = pageSizeFromResponse(total, pages, items.length)
-  const start = total === 0 ? 0 : (page - 1) * pageSize + 1
-  const end = total === 0 ? 0 : Math.min(page * pageSize, total)
+  const { start, end } = paginationRange(total, page, pageSize)
   const canPrev = page > 1 && !loading
   const canNext = pages > 0 && page < pages && !loading
 
@@ -139,15 +122,11 @@ export function PagosListPanel({ refreshToken = 0 }: PagosListPanelProps) {
             <span>Estado</span>
           </div>
 
-          {loading ? (
-            <div className="flex flex-col items-center gap-2 py-16 text-gray-500">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden />
-              <span className="text-sm">Cargando…</span>
-            </div>
-          ) : items.length === 0 ? (
-            <p className="py-12 text-center text-sm text-gray-500">No hay pagos registrados aún.</p>
-          ) : (
-            items.map((row) => (
+          <ListPanelBody
+            loading={loading}
+            items={items}
+            emptyMessage="No hay pagos registrados aún."
+            renderItem={(row) => (
               <div
                 key={row.id}
                 className="grid items-center gap-x-3 border-b border-gray-50 px-5 py-3 text-sm sm:px-6"
@@ -170,8 +149,8 @@ export function PagosListPanel({ refreshToken = 0 }: PagosListPanelProps) {
                 </span>
                 <span className="text-xs text-gray-600">{labelEstadoPago(row.estado)}</span>
               </div>
-            ))
-          )}
+            )}
+          />
         </div>
       </div>
 
