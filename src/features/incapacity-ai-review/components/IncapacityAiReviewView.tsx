@@ -231,7 +231,7 @@ export function IncapacityAiReviewView() {
         onJustificacionChange={setOverrideJustificacion}
         onRegistrarOverride={() => {
           clearOverrideError()
-          registrarOverride().catch(() => false)
+          void registrarOverride()
         }}
         overrideRegistrado={overrideRegistrado}
         submitting={submittingOverride}

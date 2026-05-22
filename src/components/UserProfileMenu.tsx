@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { LogOut } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { LogOut, User } from 'lucide-react'
+import { ROUTES_MI_CUENTA } from '@/features/auth/utils/roleAccess'
 import { useAuth } from '@/features/auth/context/AuthContext'
 import { buttonClassName } from '@/components/ui/buttonStyles'
 import { cn } from '@/utils/cn'
@@ -110,6 +111,15 @@ export function UserProfileMenu({
             <p className="truncate text-sm font-medium text-gray-900">{userName}</p>
             <p className="truncate text-xs text-gray-400">{companyName}</p>
           </div>
+          <Link
+            to={ROUTES_MI_CUENTA}
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className={buttonClassName('ghost', 'w-full justify-start rounded-none px-4 py-2.5')}
+          >
+            <User className="h-4 w-4 shrink-0 text-gray-400" aria-hidden />
+            Mi cuenta
+          </Link>
           <button
             type="button"
             role="menuitem"

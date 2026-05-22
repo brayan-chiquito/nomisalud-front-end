@@ -29,8 +29,8 @@ export function InconsistenciasReviewBanner({
 }: InconsistenciasReviewBannerProps) {
   if (items.length === 0) return null
 
-  const canSubmit =
-    !disabled && !submitting && !overrideRegistrado && justificacion.trim().length >= 10
+  const chars = justificacion.trim().length
+  const canSubmit = !disabled && !submitting && !overrideRegistrado && chars >= 10
 
   return (
     <div
@@ -82,10 +82,14 @@ export function InconsistenciasReviewBanner({
               rows={3}
               value={justificacion}
               onChange={(e) => onJustificacionChange(e.target.value)}
-              disabled={disabled || submitting}
+              disabled={disabled}
               placeholder="Describe por qué se acepta continuar a pesar de las inconsistencias (mín. 10 caracteres)…"
               className={cn(inputClassName, 'h-auto resize-none py-3')}
             />
+            <p className="text-xs text-gray-500">
+              {chars}/10 caracteres mínimos
+              {disabled ? ' · Solo personal RRHH puede registrar la excepción.' : null}
+            </p>
             {error ? (
               <p className="text-sm text-danger-text" role="alert">
                 {error}

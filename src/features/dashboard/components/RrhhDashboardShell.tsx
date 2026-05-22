@@ -15,6 +15,7 @@ import {
 import { useAuth } from '@/features/auth/context/AuthContext'
 import logo from '@/assets/logo.png'
 import { UserProfileMenu } from '@/components/UserProfileMenu'
+import { ROUTES_USUARIOS_ADMIN } from '@/features/auth/utils/roleAccess'
 import { cn } from '@/utils/cn'
 
 export type RrhhDashboardShellProps = Readonly<{
@@ -45,6 +46,7 @@ export function RrhhDashboardShell({
   const enTablaIncapacidades = enDashboard && hash === INCAPACIDADES_HASH
   const showPlazosNav = user?.role === 'admin' || user?.role === 'coordinador_rrhh'
   const showAuditoriaNav = showPlazosNav
+  const showUsuariosNav = user?.role === 'admin'
 
   return (
     <div className="min-h-screen bg-gray-50/50">
@@ -99,15 +101,25 @@ export function RrhhDashboardShell({
               Reportes
             </button>
           )}
-          <button
-            type="button"
-            disabled
-            title="Próximamente"
-            className={cn(navItemBase, 'cursor-not-allowed text-gray-300 opacity-60')}
-          >
-            <Users className="h-4 w-4 shrink-0" aria-hidden />
-            Usuarios
-          </button>
+          {showUsuariosNav ? (
+            <NavLink
+              to={ROUTES_USUARIOS_ADMIN}
+              className={({ isActive }) => cn(navItemBase, isActive ? navActive : navInactive)}
+            >
+              <Users className="h-4 w-4 shrink-0" aria-hidden />
+              Usuarios
+            </NavLink>
+          ) : (
+            <button
+              type="button"
+              disabled
+              title="Próximamente"
+              className={cn(navItemBase, 'cursor-not-allowed text-gray-300 opacity-60')}
+            >
+              <Users className="h-4 w-4 shrink-0" aria-hidden />
+              Usuarios
+            </button>
+          )}
 
           <div className="pt-4 pb-2">
             <p className="px-3 text-[10px] font-semibold tracking-widest text-gray-300 uppercase">

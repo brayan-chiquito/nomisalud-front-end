@@ -15,9 +15,17 @@ describe('useColaboradorBuscar', () => {
 
   it('no consulta con menos de 2 caracteres tras el debounce', async () => {
     const { result } = renderHook(() => useColaboradorBuscar('a', 20))
-    await waitFor(() => expect(result.current.loading).toBe(false))
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+      expect(result.current.isDebouncing).toBe(false)
+    })
     expect(buscarColaboradores).not.toHaveBeenCalled()
     expect(result.current.items).toEqual([])
+  })
+
+  it('marca isDebouncing mientras el input no coincide con la consulta', () => {
+    const { result } = renderHook(() => useColaboradorBuscar('juan', 500))
+    expect(result.current.isDebouncing).toBe(true)
   })
 
   it('devuelve coincidencias tras debounce', async () => {
@@ -36,10 +44,13 @@ describe('useColaboradorBuscar', () => {
     )
   })
 
-  it('vacía resultados si la consulta falla', async () => {
+  it('expone error si la consulta falla', async () => {
     vi.mocked(buscarColaboradores).mockRejectedValue(new Error('falló'))
     const { result } = renderHook(() => useColaboradorBuscar('juan', 20))
-    await waitFor(() => expect(result.current.loading).toBe(false))
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+      expect(result.current.error).toBe('falló')
+    })
     expect(result.current.items).toEqual([])
   })
 })

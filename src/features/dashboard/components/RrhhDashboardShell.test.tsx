@@ -105,4 +105,18 @@ describe('RrhhDashboardShell', () => {
     renderShell(<div />, 'auxiliar_rrhh')
     expect(screen.queryByRole('link', { name: /^auditoría$/i })).not.toBeInTheDocument()
   })
+
+  it('muestra enlace a usuarios solo para admin', () => {
+    renderShell(<div />, 'admin')
+    expect(screen.getByRole('link', { name: /^usuarios$/i })).toHaveAttribute(
+      'href',
+      '/admin/usuarios',
+    )
+  })
+
+  it('usuarios permanece deshabilitado para coordinador', () => {
+    renderShell(<div />, 'coordinador_rrhh')
+    expect(screen.queryByRole('link', { name: /^usuarios$/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^usuarios$/i })).toBeDisabled()
+  })
 })

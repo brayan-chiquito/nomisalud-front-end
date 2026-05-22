@@ -30,6 +30,7 @@ describe('UserProfileMenu', () => {
 
     await user.click(screen.getByRole('button', { name: /menú de perfil de ana/i }))
     expect(screen.getByRole('menu')).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: /mi cuenta/i })).toHaveAttribute('href', '/cuenta')
 
     await user.click(screen.getByRole('menuitem', { name: /cerrar sesión/i }))
     expect(mockLogout).toHaveBeenCalled()

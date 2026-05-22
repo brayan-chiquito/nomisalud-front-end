@@ -11,6 +11,8 @@ import { ConciliacionRrhhPage } from '@/pages/ConciliacionRrhhPage'
 import { RecepcionRadicarPage } from '@/pages/RecepcionRadicarPage'
 import { PlazosEntidadAdminPage } from '@/pages/PlazosEntidadAdminPage'
 import { AuditoriaRrhhPage } from '@/pages/AuditoriaRrhhPage'
+import { UsuariosAdminPage } from '@/pages/UsuariosAdminPage'
+import { MiCuentaPage } from '@/pages/MiCuentaPage'
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute'
 import {
   FINANZAS_HOME_PATH,
@@ -26,6 +28,8 @@ const ROLES_RECEPCION_RADICAR = ['recepcion', 'auxiliar_rrhh', 'coordinador_rrhh
 const ROLES_PLAZOS_NAV = ['admin', 'coordinador_rrhh'] as const
 
 const ROLES_AUDITORIA = ['admin', 'coordinador_rrhh'] as const
+
+const ROLES_USUARIOS_ADMIN = ['admin'] as const
 
 /** Rutas de documentos/incapacidades prohibidas para contabilidad (SCRUM-201). */
 const FORBID_CONTABILIDAD = [ROLE_CONTABILIDAD] as const
@@ -68,6 +72,22 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute allowedRoles={[...ROLES_RECEPCION_RADICAR]}>
         <RecepcionRadicarPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/admin/usuarios',
+    element: (
+      <ProtectedRoute allowedRoles={[...ROLES_USUARIOS_ADMIN]}>
+        <UsuariosAdminPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/cuenta',
+    element: (
+      <ProtectedRoute>
+        <MiCuentaPage />
       </ProtectedRoute>
     ),
   },

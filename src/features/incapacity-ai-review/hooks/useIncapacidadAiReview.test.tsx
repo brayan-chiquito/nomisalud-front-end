@@ -229,6 +229,7 @@ describe('useIncapacidadAiReview', () => {
     const ok = await act(async () => result.current.registrarOverride())
     expect(ok).toBe(false)
     expect(result.current.overrideError).toMatch(/inconsistencia detectada/i)
+    expect(result.current.submittingOverride).toBe(false)
   })
 
   it('registrarOverride propaga error HTTP', async () => {
