@@ -44,8 +44,39 @@ describe('ColaboradorAutocompleteInput', () => {
     )
     const input = screen.getByLabelText(/buscar colaborador/i)
     await user.click(input)
-    expect(screen.getByText(/no se encontraron colaboradores/i)).toBeInTheDocument()
+    expect(screen.getByText(/no se encontraron colaboradores activos/i)).toBeInTheDocument()
     expect(input).toHaveFocus()
+  })
+
+  it('muestra carga mientras hay debounce pendiente', async () => {
+    const user = userEvent.setup()
+    render(
+      <ColaboradorAutocompleteInput
+        value="juan"
+        onChange={vi.fn()}
+        suggestions={[]}
+        suggestionsLoading={false}
+        isDebouncing
+        onSelect={vi.fn()}
+      />,
+    )
+    await user.click(screen.getByLabelText(/buscar colaborador/i))
+    expect(screen.getByText(/buscando colaboradores/i)).toBeInTheDocument()
+  })
+
+  it('muestra error de búsqueda', async () => {
+    const user = userEvent.setup()
+    render(
+      <ColaboradorAutocompleteInput
+        value="juan"
+        onChange={vi.fn()}
+        suggestions={[]}
+        searchError="Sin permiso"
+        onSelect={vi.fn()}
+      />,
+    )
+    await user.click(screen.getByLabelText(/buscar colaborador/i))
+    expect(screen.getByText('Sin permiso')).toBeInTheDocument()
   })
 
   it('muestra estado de carga en el desplegable', async () => {

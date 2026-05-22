@@ -186,14 +186,14 @@ export function useIncapacidadAiReview(incapacidadId: string | null): UseIncapac
       setOverrideError('La justificación debe tener al menos 10 caracteres.')
       return false
     }
-    setSubmittingOverride(true)
-    setOverrideError(null)
     if (detail?.estado !== 'inconsistencia_detectada') {
       setOverrideError(
         'Solo se puede registrar excepción cuando el trámite está en Inconsistencia detectada.',
       )
       return false
     }
+    setSubmittingOverride(true)
+    setOverrideError(null)
     try {
       const patched = await patchIncapacidadEstado(incapacidadId, {
         estado: 'en_verificacion',

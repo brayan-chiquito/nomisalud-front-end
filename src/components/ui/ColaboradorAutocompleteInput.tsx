@@ -9,6 +9,8 @@ export type ColaboradorAutocompleteInputProps = Readonly<{
   onChange: (value: string) => void
   suggestions: readonly ColaboradorBusquedaItem[]
   suggestionsLoading?: boolean
+  isDebouncing?: boolean
+  searchError?: string | null
   onSelect: (item: ColaboradorBusquedaItem) => void
   placeholder?: string
   ariaLabel?: string
@@ -20,6 +22,8 @@ export function ColaboradorAutocompleteInput({
   onChange,
   suggestions,
   suggestionsLoading = false,
+  isDebouncing = false,
+  searchError = null,
   onSelect,
   placeholder = 'Buscar por nombre o cédula…',
   ariaLabel = 'Buscar colaborador',
@@ -32,8 +36,10 @@ export function ColaboradorAutocompleteInput({
   const [listOpen, setListOpen] = useState(false)
   const blurTimerRef = useRef<ReturnType<typeof globalThis.setTimeout> | undefined>(undefined)
 
-  const queryLongEnough = value.trim().length >= 2
+  const query = value.trim()
+  const queryLongEnough = query.length >= 2
   const showList = focused && listOpen && queryLongEnough
+  const isPending = suggestionsLoading || isDebouncing
 
   const clearBlurTimer = useCallback(() => {
     if (blurTimerRef.current !== undefined) {
@@ -109,7 +115,7 @@ export function ColaboradorAutocompleteInput({
           role="listbox"
           className="absolute top-full right-0 left-0 z-20 mt-1 max-h-56 overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
         >
-          {suggestionsLoading ? (
+          {isPending ? (
             <li
               className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500"
               role="presentation"
@@ -117,9 +123,14 @@ export function ColaboradorAutocompleteInput({
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
               Buscando colaboradores…
             </li>
+          ) : searchError ? (
+            <li className="px-3 py-2 text-sm text-danger" role="presentation">
+              {searchError}
+            </li>
           ) : suggestions.length === 0 ? (
             <li className="px-3 py-2 text-sm text-gray-500" role="presentation">
-              No se encontraron colaboradores.
+              No se encontraron colaboradores activos con ese criterio. Prueba con nombre o cédula
+              (ej. juan, ana, pedro).
             </li>
           ) : null}
           {suggestions.map((item) => (

@@ -35,8 +35,12 @@ export function RecepcionRadicarView() {
   const [colaboradorQuery, setColaboradorQuery] = useState('')
   const [colaboradorSeleccionado, setColaboradorSeleccionado] =
     useState<ColaboradorBusquedaItem | null>(null)
-  const { items: sugerenciasColaborador, loading: buscandoColaborador } =
-    useColaboradorBuscar(colaboradorQuery)
+  const {
+    items: sugerenciasColaborador,
+    loading: buscandoColaborador,
+    isDebouncing: debounceColaborador,
+    error: errorBusquedaColaborador,
+  } = useColaboradorBuscar(colaboradorQuery)
 
   const [file, setFile] = useState<File | null>(null)
   const [clientError, setClientError] = useState<string | null>(null)
@@ -150,6 +154,8 @@ export function RecepcionRadicarView() {
                 onChange={handleColaboradorQueryChange}
                 suggestions={sugerenciasColaborador}
                 suggestionsLoading={buscandoColaborador}
+                isDebouncing={debounceColaborador}
+                searchError={errorBusquedaColaborador}
                 onSelect={handleColaboradorSelect}
               />
               {colaboradorSeleccionado ? (

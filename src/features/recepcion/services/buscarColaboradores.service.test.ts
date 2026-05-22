@@ -43,4 +43,26 @@ describe('buscarColaboradores', () => {
     vi.mocked(http.get).mockResolvedValue({ data: {} })
     await expect(buscarColaboradores({ q: 'xx' })).resolves.toEqual([])
   })
+
+  it('normaliza respuesta como arreglo directo', async () => {
+    vi.mocked(http.get).mockResolvedValue({
+      data: [
+        {
+          id: 'uuid-2',
+          nombre: 'Laura M',
+          documento: '200',
+          email: 'l@test.com',
+        },
+      ],
+    })
+    const items = await buscarColaboradores({ q: 'lau' })
+    expect(items).toEqual([
+      {
+        id: 'uuid-2',
+        nombre_completo: 'Laura M',
+        numero_documento: '200',
+        email: 'l@test.com',
+      },
+    ])
+  })
 })

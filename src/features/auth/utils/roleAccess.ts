@@ -6,6 +6,8 @@ export const FINANZAS_HOME_PATH = '/dashboard/conciliacion'
 
 export const ROUTES_PAGOS = '/dashboard/pagos'
 export const ROUTES_CONCILIACION = '/dashboard/conciliacion'
+export const ROUTES_USUARIOS_ADMIN = '/admin/usuarios'
+export const ROUTES_MI_CUENTA = '/cuenta'
 
 /** Roles con acceso a pagos y conciliación (`docs/README.md`, SCRUM-201). */
 export const ROLES_MODULO_FINANZAS = [

@@ -22,6 +22,8 @@ vi.mock('@/hooks/useColaboradorBuscar', () => ({
       },
     ],
     loading: false,
+    isDebouncing: false,
+    error: null,
   }),
 }))
 
