@@ -44,7 +44,7 @@ export function UsuariosAdminPanel() {
   const handleMutationSuccess = (message: string) => {
     setSuccessMsg(message)
     reload()
-    window.setTimeout(() => setSuccessMsg(null), 4000)
+    globalThis.setTimeout(() => setSuccessMsg(null), 4000)
   }
 
   return (
@@ -70,12 +70,9 @@ export function UsuariosAdminPanel() {
       </div>
 
       {successMsg ? (
-        <p
-          className="mx-5 mt-3 rounded-lg border border-success/20 bg-success-light px-4 py-2 text-sm text-success-text sm:mx-6"
-          role="status"
-        >
+        <output className="mx-5 mt-3 block w-auto rounded-lg border border-success/20 bg-success-light px-4 py-2 text-sm text-success-text sm:mx-6">
           {successMsg}
-        </p>
+        </output>
       ) : null}
 
       <UsuariosAdminFilters

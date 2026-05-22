@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
   listUsuariosAdmin,
+  getUsuarioAdmin,
   createUsuarioAdmin,
   updateUsuarioAdmin,
   deactivateUsuarioAdmin,
@@ -36,6 +37,25 @@ describe('usuariosAdmin.service', () => {
       params: { page: 2, page_size: 20, role: 'admin', activo: 'true', q: 'ana' },
       signal: undefined,
     })
+  })
+
+  it('listUsuariosAdmin envía activo false', async () => {
+    vi.mocked(http.get).mockResolvedValue({
+      data: { items: [], total: 0, page: 1, page_size: 20, pages: 0 },
+    })
+    await listUsuariosAdmin({ activo: false })
+    expect(http.get).toHaveBeenCalledWith('/admin/usuarios', {
+      params: { page: 1, page_size: 20, activo: 'false' },
+      signal: undefined,
+    })
+  })
+
+  it('getUsuarioAdmin GET por id', async () => {
+    const usuario = { id: 'u1', email: 'a@b.com', role: 'admin', activo: true, created_at: '' }
+    vi.mocked(http.get).mockResolvedValue({ data: usuario })
+    const res = await getUsuarioAdmin('u1')
+    expect(res).toEqual(usuario)
+    expect(http.get).toHaveBeenCalledWith('/admin/usuarios/u1', { signal: undefined })
   })
 
   it('createUsuarioAdmin POST', async () => {

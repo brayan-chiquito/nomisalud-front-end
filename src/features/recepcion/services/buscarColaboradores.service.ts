@@ -19,35 +19,30 @@ function extractRawItems(data: unknown): unknown[] {
   return []
 }
 
+function pickStringField(record: Record<string, unknown>, ...keys: string[]): string {
+  for (const key of keys) {
+    const value = record[key]
+    if (typeof value === 'string') return value
+  }
+  return ''
+}
+
+function mapColaboradorRow(row: unknown): ColaboradorBusquedaItem | null {
+  if (!row || typeof row !== 'object') return null
+  const r = row as Record<string, unknown>
+  const id = pickStringField(r, 'id')
+  if (!id) return null
+  return {
+    id,
+    nombre_completo: pickStringField(r, 'nombre_completo', 'nombre'),
+    numero_documento: pickStringField(r, 'numero_documento', 'documento'),
+    email: pickStringField(r, 'email'),
+  }
+}
+
 function normalizeColaboradorItems(data: unknown): readonly ColaboradorBusquedaItem[] {
   const raw = extractRawItems(data)
-  return raw
-    .map((row) => {
-      if (!row || typeof row !== 'object') return null
-      const r = row as Record<string, unknown>
-      const id = typeof r.id === 'string' ? r.id : ''
-      const nombre =
-        typeof r.nombre_completo === 'string'
-          ? r.nombre_completo
-          : typeof r.nombre === 'string'
-            ? r.nombre
-            : ''
-      const documento =
-        typeof r.numero_documento === 'string'
-          ? r.numero_documento
-          : typeof r.documento === 'string'
-            ? r.documento
-            : ''
-      const email = typeof r.email === 'string' ? r.email : ''
-      if (!id) return null
-      return {
-        id,
-        nombre_completo: nombre,
-        numero_documento: documento,
-        email,
-      } satisfies ColaboradorBusquedaItem
-    })
-    .filter((item): item is ColaboradorBusquedaItem => item !== null)
+  return raw.map(mapColaboradorRow).filter((item): item is ColaboradorBusquedaItem => item !== null)
 }
 
 export async function buscarColaboradores(

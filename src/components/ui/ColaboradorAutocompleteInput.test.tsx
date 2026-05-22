@@ -45,6 +45,7 @@ describe('ColaboradorAutocompleteInput', () => {
     const input = screen.getByLabelText(/buscar colaborador/i)
     await user.click(input)
     expect(screen.getByText(/no se encontraron colaboradores activos/i)).toBeInTheDocument()
+    expect(screen.queryByRole('presentation')).not.toBeInTheDocument()
     expect(input).toHaveFocus()
   })
 

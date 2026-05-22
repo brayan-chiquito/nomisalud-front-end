@@ -65,4 +65,14 @@ describe('buscarColaboradores', () => {
       },
     ])
   })
+
+  it('normaliza claves results en el cuerpo', async () => {
+    vi.mocked(http.get).mockResolvedValue({
+      data: {
+        results: [{ id: 'x1', nombre_completo: 'Ana', numero_documento: '1', email: 'a@t.com' }],
+      },
+    })
+    const items = await buscarColaboradores({ q: 'an' })
+    expect(items).toHaveLength(1)
+  })
 })

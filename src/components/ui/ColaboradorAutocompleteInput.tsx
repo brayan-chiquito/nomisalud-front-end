@@ -1,8 +1,39 @@
-import { useCallback, useId, useRef, useState } from 'react'
+import { useCallback, useId, useRef, useState, type ReactNode } from 'react'
 import { Loader2, Search } from 'lucide-react'
 import type { ColaboradorBusquedaItem } from '@/features/recepcion/types/colaboradorBusqueda'
 import { colaboradorDisplayLabel } from '@/features/recepcion/utils/colaboradorDisplay'
 import { cn } from '@/utils/cn'
+
+function renderListStatusMessage(
+  isPending: boolean,
+  searchError: string | null,
+  hasSuggestions: boolean,
+): ReactNode {
+  if (isPending) {
+    return (
+      <li className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500" aria-disabled="true">
+        <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+        Buscando colaboradores…
+      </li>
+    )
+  }
+  if (searchError) {
+    return (
+      <li className="px-3 py-2 text-sm text-danger" aria-disabled="true">
+        {searchError}
+      </li>
+    )
+  }
+  if (!hasSuggestions) {
+    return (
+      <li className="px-3 py-2 text-sm text-gray-500" aria-disabled="true">
+        No se encontraron colaboradores activos con ese criterio. Prueba con nombre o cédula (ej.
+        juan, ana, pedro).
+      </li>
+    )
+  }
+  return null
+}
 
 export type ColaboradorAutocompleteInputProps = Readonly<{
   value: string
@@ -115,24 +146,7 @@ export function ColaboradorAutocompleteInput({
           role="listbox"
           className="absolute top-full right-0 left-0 z-20 mt-1 max-h-56 overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
         >
-          {isPending ? (
-            <li
-              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500"
-              role="presentation"
-            >
-              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-              Buscando colaboradores…
-            </li>
-          ) : searchError ? (
-            <li className="px-3 py-2 text-sm text-danger" role="presentation">
-              {searchError}
-            </li>
-          ) : suggestions.length === 0 ? (
-            <li className="px-3 py-2 text-sm text-gray-500" role="presentation">
-              No se encontraron colaboradores activos con ese criterio. Prueba con nombre o cédula
-              (ej. juan, ana, pedro).
-            </li>
-          ) : null}
+          {renderListStatusMessage(isPending, searchError, suggestions.length > 0)}
           {suggestions.map((item) => (
             <li key={item.id} role="option">
               <button

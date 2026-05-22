@@ -107,9 +107,9 @@ export function CambiarPasswordPropioForm() {
           </p>
         ) : null}
         {success ? (
-          <p className="mt-4 text-sm text-success-text" role="status">
+          <output className="mt-4 block text-sm text-success-text">
             Contraseña actualizada correctamente.
-          </p>
+          </output>
         ) : null}
         <button
           type="submit"

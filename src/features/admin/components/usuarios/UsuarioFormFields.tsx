@@ -107,7 +107,7 @@ export function UsuarioFormFields({
           onChange={(e) => onCoreChange({ activo: e.target.checked })}
           className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/30"
         />
-        Usuario activo
+        <span>Usuario activo</span>
       </label>
 
       <fieldset className="rounded-lg border border-gray-100 px-4 py-3">
