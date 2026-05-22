@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { UsuariosAdminPanel } from './UsuariosAdminPanel'
+import type { UsuarioAdmin } from '../../types/usuarioAdmin'
 
 vi.mock('../../services/usuariosAdmin.service', () => ({
   createUsuarioAdmin: vi.fn(),
@@ -27,24 +28,24 @@ vi.mock('../../hooks/useUsuariosAdminList', () => ({
   useUsuariosAdminList: () => mockHook(),
 }))
 
+const usuarioRow: UsuarioAdmin = {
+  id: 'u2',
+  email: 'col@test.com',
+  role: 'colaborador',
+  nombre_completo: 'Col Test',
+  tipo_documento: null,
+  numero_documento: null,
+  area: null,
+  cargo: null,
+  eps_afiliacion: null,
+  arl_afiliacion: null,
+  activo: true,
+  created_at: '2026-01-01T00:00:00Z',
+}
+
 const defaultHook = () => ({
   data: {
-    items: [
-      {
-        id: 'u2',
-        email: 'col@test.com',
-        role: 'colaborador',
-        nombre_completo: 'Col Test',
-        tipo_documento: null,
-        numero_documento: null,
-        area: null,
-        cargo: null,
-        eps_afiliacion: null,
-        arl_afiliacion: null,
-        activo: true,
-        created_at: '2026-01-01T00:00:00Z',
-      },
-    ],
+    items: [usuarioRow],
     total: 1,
     page: 1,
     page_size: 20,
@@ -63,8 +64,6 @@ const defaultHook = () => ({
   pageSize: 20,
   reload: vi.fn(),
 })
-
-const usuarioRow = defaultHook().data.items[0]
 
 describe('UsuariosAdminPanel', () => {
   beforeEach(() => {
