@@ -5,9 +5,9 @@ export type UnidadLimitePlazo = 'dias' | 'meses' | 'anos'
 export type PlazoEntidadItem = Readonly<{
   id: string
   entidad_nombre: string
-  tipo_incapacidad: TipoIncapacidadPlazo | string
+  tipo_incapacidad: string
   valor_limite: number
-  unidad_limite: UnidadLimitePlazo | string
+  unidad_limite: string
   dias_limite: number
   dias_alerta: number
   dias_promedio_pago?: number | null

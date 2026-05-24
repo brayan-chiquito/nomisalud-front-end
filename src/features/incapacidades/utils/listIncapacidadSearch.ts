@@ -3,8 +3,7 @@ import {
   type IncapacidadesFilterParams,
   type ListIncapacidadesParams,
 } from '../services/listIncapacidades.service'
-import type { IncapacidadListItem } from '../types/listIncapacidades'
-import type { IncapacidadesListResponse } from '../types/listIncapacidades'
+import type { IncapacidadListItem, IncapacidadesListResponse } from '../types/listIncapacidades'
 import { listSearchQueryVariants } from './listSearchQuery'
 import { colaboradorNombreLegible, entidadNombreLegible } from './listIncapacidadItemDisplay'
 

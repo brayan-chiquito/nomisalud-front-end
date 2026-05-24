@@ -62,7 +62,7 @@ export function buildCreatePlazoEntidadPayload(
     valor_limite: parsePositiveInt(values.valor_limite, 'Plazo límite'),
     unidad_limite: values.unidad_limite,
     dias_alerta: parsePositiveInt(values.dias_alerta, 'Días de alerta'),
-    ...(pagoProm != null ? { dias_promedio_pago: pagoProm } : {}),
+    ...(pagoProm == null ? {} : { dias_promedio_pago: pagoProm }),
   } satisfies CreatePlazoEntidadPayload
 
   return payload
@@ -72,7 +72,14 @@ export function buildUpdatePlazoEntidadPayload(
   values: PlazoEntidadFormValues,
   original: PlazoEntidadItem,
 ): UpdatePlazoEntidadPayload {
-  const payload: Record<string, string | number | null> = {}
+  const payload: {
+    entidad_nombre?: string
+    tipo_incapacidad?: string
+    valor_limite?: number
+    unidad_limite?: string
+    dias_alerta?: number
+    dias_promedio_pago?: number | null
+  } = {}
   const entidad = values.entidad_nombre.trim()
   if (!entidad) throw new Error('Indica el nombre de la entidad.')
   if (entidad !== original.entidad_nombre) payload.entidad_nombre = entidad
@@ -95,5 +102,5 @@ export function buildUpdatePlazoEntidadPayload(
     throw new Error('No hay cambios para guardar.')
   }
 
-  return payload as UpdatePlazoEntidadPayload
+  return payload
 }

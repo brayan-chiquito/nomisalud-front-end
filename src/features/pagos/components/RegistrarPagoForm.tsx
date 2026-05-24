@@ -9,7 +9,10 @@ import {
 } from '@/features/auth/utils/financialModuleAccess'
 import { isContabilidadRole } from '@/features/auth/utils/roleAccess'
 import { createPago } from '../services/pagos.service'
-import { listRadicadosDisponiblesWithEntidadSearch } from '../utils/radicadosDisponiblesSearch'
+import {
+  listRadicadosDisponibles,
+  listRadicadosDisponiblesWithTextSearch,
+} from '../services/pagos.service'
 import { validatePagoFormFields } from '../utils/validatePagoForm'
 import { messageFromHttpError } from '@/features/incapacity-ai-review/utils/httpErrorMessage'
 import { messageFromLoadError } from '@/utils/messageFromLoadError'
@@ -30,6 +33,20 @@ import { pageSizeFromResponse, paginationRange } from '@/utils/pagination'
 import { awaitMinBusyDuration } from '@/utils/awaitMinBusyDuration'
 
 const LOAD_DISPONIBLES_ERROR = 'No se pudo cargar los radicados disponibles para liquidar.'
+
+async function fetchRadicadosDisponibles(
+  params: Readonly<{
+    page: number
+    signal?: AbortSignal
+    q?: string
+  }>,
+) {
+  const term = params.q?.trim() ?? ''
+  if (!term) {
+    return listRadicadosDisponibles({ page: params.page, signal: params.signal })
+  }
+  return listRadicadosDisponiblesWithTextSearch({ page: params.page, signal: params.signal }, term)
+}
 
 export type RegistrarPagoFormProps = Readonly<{
   onRegistroExitoso?: () => void
@@ -91,9 +108,9 @@ export function RegistrarPagoForm({ onRegistroExitoso }: RegistrarPagoFormProps)
       else setLoadingDisponibles(true)
       setDisponiblesError(null)
       try {
-        const res = await listRadicadosDisponiblesWithEntidadSearch({
+        const res = await fetchRadicadosDisponibles({
           page: disponiblesPage,
-          ...(entidadFiltroDebounced ? { entidad: entidadFiltroDebounced } : {}),
+          ...(entidadFiltroDebounced ? { q: entidadFiltroDebounced } : {}),
           signal,
         })
         if (!signal.aborted) {
@@ -126,9 +143,9 @@ export function RegistrarPagoForm({ onRegistroExitoso }: RegistrarPagoFormProps)
   useAbortableEffect(loadDisponibles, [loadDisponibles])
 
   const reloadDisponibles = useCallback(() => {
-    listRadicadosDisponiblesWithEntidadSearch({
+    fetchRadicadosDisponibles({
       page: disponiblesPage,
-      ...(entidadFiltroDebounced ? { entidad: entidadFiltroDebounced } : {}),
+      ...(entidadFiltroDebounced ? { q: entidadFiltroDebounced } : {}),
     })
       .then((res) => {
         setDisponibles([...res.items])

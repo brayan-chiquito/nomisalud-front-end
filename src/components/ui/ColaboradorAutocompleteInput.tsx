@@ -17,25 +17,18 @@ function renderListStatusMessage(
 ): ReactNode {
   if (isPending) {
     return (
-      <li
-        className={cn(autocompleteStatusClassName, 'flex items-center gap-2')}
-        aria-disabled="true"
-      >
+      <li className={cn(autocompleteStatusClassName, 'flex items-center gap-2')}>
         <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
         Buscando colaboradores…
       </li>
     )
   }
   if (searchError) {
-    return (
-      <li className={cn(autocompleteStatusClassName, 'text-danger')} aria-disabled="true">
-        {searchError}
-      </li>
-    )
+    return <li className={cn(autocompleteStatusClassName, 'text-danger')}>{searchError}</li>
   }
   if (!hasSuggestions) {
     return (
-      <li className={autocompleteStatusClassName} aria-disabled="true">
+      <li className={autocompleteStatusClassName}>
         No se encontraron colaboradores activos con ese criterio. Prueba con nombre o cédula (ej.
         juan, ana, pedro).
       </li>

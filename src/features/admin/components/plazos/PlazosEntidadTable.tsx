@@ -19,6 +19,61 @@ export function PlazosEntidadTable({ items, loading, onEdit, onDelete }: PlazosE
   const initialLoad = loading && items.length === 0
   const refreshing = loading && items.length > 0
 
+  const renderRows = () => {
+    if (initialLoad) {
+      return (
+        <tr>
+          <td colSpan={6} className="px-4 py-10 text-center text-gray-500">
+            <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin" aria-hidden />
+            Cargando plazos…
+          </td>
+        </tr>
+      )
+    }
+    if (items.length === 0) {
+      return (
+        <tr>
+          <td colSpan={6} className="px-4 py-10 text-center text-gray-500">
+            No hay plazos configurados.
+          </td>
+        </tr>
+      )
+    }
+    return items.map((row) => (
+      <tr key={row.id} className="border-b border-gray-50 last:border-0">
+        <td className="px-4 py-3 font-medium text-gray-900">{row.entidad_nombre}</td>
+        <td className="px-4 py-3 text-gray-600">{labelTipoIncapacidad(row.tipo_incapacidad)}</td>
+        <td className="px-4 py-3 text-gray-600 tabular-nums">{formatPlazoLimite(row)}</td>
+        <td className="px-4 py-3 text-gray-600 tabular-nums">{row.dias_alerta}</td>
+        <td className="px-4 py-3 text-gray-600 tabular-nums">
+          {formatDiasPromedioPago(row.dias_promedio_pago)}
+        </td>
+        <td className="px-4 py-3">
+          <div className="flex justify-end gap-1">
+            <button
+              type="button"
+              onClick={() => onEdit(row)}
+              className={buttonClassName('ghost', 'gap-1.5 px-2')}
+              aria-label={`Editar plazo de ${row.entidad_nombre}`}
+            >
+              <Pencil className="h-4 w-4" aria-hidden />
+              Editar
+            </button>
+            <button
+              type="button"
+              onClick={() => onDelete(row)}
+              className={buttonClassName('ghost', 'gap-1.5 px-2 text-danger hover:bg-danger-light')}
+              aria-label={`Eliminar plazo de ${row.entidad_nombre}`}
+            >
+              <Trash2 className="h-4 w-4" aria-hidden />
+              Eliminar
+            </button>
+          </div>
+        </td>
+      </tr>
+    ))
+  }
+
   return (
     <div
       className={cn('overflow-x-auto transition-opacity duration-150', refreshing && 'opacity-60')}
@@ -34,61 +89,7 @@ export function PlazosEntidadTable({ items, loading, onEdit, onDelete }: PlazosE
             <th className="px-4 py-3 font-medium text-right">Acciones</th>
           </tr>
         </thead>
-        <tbody>
-          {initialLoad ? (
-            <tr>
-              <td colSpan={6} className="px-4 py-10 text-center text-gray-500">
-                <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin" aria-hidden />
-                Cargando plazos…
-              </td>
-            </tr>
-          ) : items.length === 0 ? (
-            <tr>
-              <td colSpan={6} className="px-4 py-10 text-center text-gray-500">
-                No hay plazos configurados.
-              </td>
-            </tr>
-          ) : (
-            items.map((row) => (
-              <tr key={row.id} className="border-b border-gray-50 last:border-0">
-                <td className="px-4 py-3 font-medium text-gray-900">{row.entidad_nombre}</td>
-                <td className="px-4 py-3 text-gray-600">
-                  {labelTipoIncapacidad(row.tipo_incapacidad)}
-                </td>
-                <td className="px-4 py-3 text-gray-600 tabular-nums">{formatPlazoLimite(row)}</td>
-                <td className="px-4 py-3 text-gray-600 tabular-nums">{row.dias_alerta}</td>
-                <td className="px-4 py-3 text-gray-600 tabular-nums">
-                  {formatDiasPromedioPago(row.dias_promedio_pago)}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex justify-end gap-1">
-                    <button
-                      type="button"
-                      onClick={() => onEdit(row)}
-                      className={buttonClassName('ghost', 'gap-1.5 px-2')}
-                      aria-label={`Editar plazo de ${row.entidad_nombre}`}
-                    >
-                      <Pencil className="h-4 w-4" aria-hidden />
-                      Editar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onDelete(row)}
-                      className={buttonClassName(
-                        'ghost',
-                        'gap-1.5 px-2 text-danger hover:bg-danger-light',
-                      )}
-                      aria-label={`Eliminar plazo de ${row.entidad_nombre}`}
-                    >
-                      <Trash2 className="h-4 w-4" aria-hidden />
-                      Eliminar
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
+        <tbody>{renderRows()}</tbody>
       </table>
     </div>
   )

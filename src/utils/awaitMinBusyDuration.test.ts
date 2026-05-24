@@ -14,7 +14,7 @@ describe('awaitMinBusyDuration', () => {
     const ac = new AbortController()
     const p = awaitMinBusyDuration(Date.now() - 3000, ac.signal, 2000)
     await vi.runAllTimersAsync()
-    await p
+    await expect(p).resolves.toBeUndefined()
   })
 
   it('espera el tiempo restante', async () => {
@@ -36,6 +36,6 @@ describe('awaitMinBusyDuration', () => {
     const p = awaitMinBusyDuration(Date.now(), ac.signal, 2000)
     ac.abort()
     await vi.runAllTimersAsync()
-    await p
+    await expect(p).resolves.toBeUndefined()
   })
 })

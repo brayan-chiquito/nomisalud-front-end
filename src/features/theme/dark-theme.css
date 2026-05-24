@@ -111,8 +111,8 @@
   }
 
   .dark ::selection {
-    background-color: rgb(92 168 245 / 0.35);
-    color: #fff;
+    background-color: rgb(46 120 200 / 0.55);
+    color: var(--color-gray-50);
   }
 
   /* Tablas y listados densos */

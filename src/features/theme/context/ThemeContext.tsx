@@ -15,16 +15,16 @@ export type ThemeContextValue = Readonly<{
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 export function ThemeProvider({ children }: Readonly<{ children: ReactNode }>) {
-  const [theme, setThemeState] = useState<ThemeMode>(() => initThemeFromStorage())
+  const [theme, setTheme] = useState<ThemeMode>(() => initThemeFromStorage())
 
-  const setTheme = useCallback((mode: ThemeMode) => {
-    setThemeState(mode)
+  const applyTheme = useCallback((mode: ThemeMode) => {
+    setTheme(mode)
     applyThemeToDocument(mode)
     persistTheme(mode)
   }, [])
 
   const toggleTheme = useCallback(() => {
-    setThemeState((prev) => {
+    setTheme((prev) => {
       const next: ThemeMode = prev === 'dark' ? 'light' : 'dark'
       applyThemeToDocument(next)
       persistTheme(next)
@@ -35,10 +35,10 @@ export function ThemeProvider({ children }: Readonly<{ children: ReactNode }>) {
   const value = useMemo(
     () => ({
       theme,
-      setTheme,
+      setTheme: applyTheme,
       toggleTheme,
     }),
-    [theme, setTheme, toggleTheme],
+    [theme, applyTheme, toggleTheme],
   )
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
