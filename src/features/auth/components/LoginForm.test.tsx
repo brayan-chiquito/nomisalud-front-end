@@ -1,8 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, act, fireEvent } from '@testing-library/react'
+import { ThemeProvider } from '@/features/theme/context/ThemeContext'
 import { LoginForm } from './LoginForm'
+import { loginService } from '../services/auth.service'
+import type { LoginCredentials } from '../types'
 
 const mockNavigate = vi.fn()
+const mockLogin = vi.fn()
 
 vi.mock('react-router-dom', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-router-dom')>()
@@ -11,11 +15,26 @@ vi.mock('react-router-dom', async (importOriginal) => {
 
 vi.mock('@/assets/logo.png', () => ({ default: 'logo.png' }))
 
+vi.mock('../services/auth.service', () => ({
+  loginService: vi.fn(),
+}))
+
+vi.mock('../context/AuthContext', () => ({
+  useAuth: () => ({ login: mockLogin }),
+}))
+
+const mockLoginService = vi.mocked(loginService)
+
 const VALID_EMAIL = 'admin@nomisalud.com'
 const VALID_PASSWORD = 'Admin1234'
+const FAKE_TOKEN = 'fake.jwt.token'
 
 function renderForm() {
-  render(<LoginForm />)
+  render(
+    <ThemeProvider>
+      <LoginForm />
+    </ThemeProvider>,
+  )
 }
 
 function fillForm(email: string, password: string) {
@@ -35,6 +54,18 @@ describe('LoginForm', () => {
   beforeEach(() => {
     vi.useFakeTimers()
     mockNavigate.mockClear()
+    mockLogin.mockClear()
+    mockLoginService.mockImplementation(({ email, password }: LoginCredentials) => {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          if (email === VALID_EMAIL && password === VALID_PASSWORD) {
+            resolve({ access_token: FAKE_TOKEN, token_type: 'bearer' })
+          } else {
+            reject(new Error('invalid_credentials'))
+          }
+        }, 800)
+      })
+    })
   })
 
   afterEach(() => {
@@ -174,6 +205,12 @@ describe('LoginForm', () => {
       expect(screen.getByLabelText('Correo electrónico')).toBeDisabled()
     })
 
+    it('llama a login del AuthContext con el token recibido', async () => {
+      renderForm()
+      await submitWith(VALID_EMAIL, VALID_PASSWORD)
+      expect(mockLogin).toHaveBeenCalledWith(FAKE_TOKEN)
+    })
+
     it('redirige al dashboard tras el delay de éxito', async () => {
       renderForm()
       await submitWith(VALID_EMAIL, VALID_PASSWORD)
@@ -216,6 +253,12 @@ describe('LoginForm', () => {
         await vi.advanceTimersByTimeAsync(1500)
       })
       expect(mockNavigate).not.toHaveBeenCalled()
+    })
+
+    it('no llama a login del AuthContext cuando las credenciales son incorrectas', async () => {
+      renderForm()
+      await submitWith('malo@test.com', 'wrongpass')
+      expect(mockLogin).not.toHaveBeenCalled()
     })
   })
 

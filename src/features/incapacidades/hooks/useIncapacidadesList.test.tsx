@@ -1,0 +1,277 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { renderHook, waitFor, act } from '@testing-library/react'
+import axios, { AxiosError } from 'axios'
+import { useIncapacidadesList } from './useIncapacidadesList'
+import { listIncapacidades } from '../services/listIncapacidades.service'
+import type { IncapacidadesListResponse } from '../types/listIncapacidades'
+
+vi.mock('../services/listIncapacidades.service', () => ({
+  listIncapacidades: vi.fn(),
+}))
+
+const emptyList: IncapacidadesListResponse = { items: [], total: 0, pages: 0 }
+
+describe('useIncapacidadesList', () => {
+  beforeEach(() => {
+    vi.mocked(listIncapacidades).mockReset()
+    vi.mocked(listIncapacidades).mockResolvedValue(emptyList)
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('carga datos iniciales y expone estado sin error', async () => {
+    vi.mocked(listIncapacidades).mockResolvedValue({
+      items: [
+        {
+          id: '1',
+          radicado: 'R1',
+          estado: 'recibida',
+          colaborador_id: 'c1',
+          archivo_tipo: 'pdf',
+          fecha_recepcion: '2026-01-01T00:00:00.000Z',
+        },
+      ],
+      total: 1,
+      pages: 1,
+    })
+    const { result } = renderHook(() => useIncapacidadesList())
+
+    expect(result.current.loading).toBe(true)
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.error).toBeNull()
+    expect(result.current.data?.total).toBe(1)
+    expect(listIncapacidades).toHaveBeenCalledWith(
+      expect.objectContaining({ page: 1, signal: expect.any(AbortSignal) }),
+    )
+  })
+
+  it('envía filtros estado, tipo y búsqueda q al servicio', async () => {
+    const { result } = renderHook(() => useIncapacidadesList(0))
+
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    act(() => {
+      result.current.setEstado('recibida')
+      result.current.setTipo('pdf')
+      result.current.setEntidadInput('EPS')
+    })
+
+    await waitFor(() =>
+      expect(listIncapacidades).toHaveBeenCalledWith(
+        expect.objectContaining({
+          page: 1,
+          estado: 'recibida',
+          tipo: 'pdf',
+          q: 'EPS',
+        }),
+      ),
+    )
+  })
+
+  it('envía pagoRetrasado y fija estado cobrada al activar el filtro', async () => {
+    const { result } = renderHook(() => useIncapacidadesList(0))
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    act(() => result.current.setSoloPagoRetrasado(true))
+
+    await waitFor(() => {
+      expect(result.current.estado).toBe('cobrada')
+      expect(result.current.soloPagoRetrasado).toBe(true)
+      expect(listIncapacidades).toHaveBeenCalledWith(
+        expect.objectContaining({ page: 1, estado: 'cobrada', pagoRetrasado: true }),
+      )
+    })
+  })
+
+  it('envía filtro urgencia y ordena ítems con rojo primero', async () => {
+    vi.mocked(listIncapacidades).mockResolvedValue({
+      items: [
+        {
+          id: '1',
+          radicado: 'R1',
+          estado: 'recibida',
+          colaborador_id: 'c1',
+          archivo_tipo: 'pdf',
+          fecha_recepcion: '2026-01-01T00:00:00.000Z',
+          urgencia: 'verde',
+        },
+        {
+          id: '2',
+          radicado: 'R2',
+          estado: 'recibida',
+          colaborador_id: 'c1',
+          archivo_tipo: 'pdf',
+          fecha_recepcion: '2026-01-01T00:00:00.000Z',
+          urgencia: 'rojo',
+        },
+      ],
+      total: 2,
+      pages: 1,
+    })
+    const { result } = renderHook(() => useIncapacidadesList(0))
+
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.data?.items.map((i) => i.urgencia)).toEqual(['rojo', 'verde'])
+
+    act(() => result.current.setUrgencia('amarillo'))
+
+    await waitFor(() =>
+      expect(listIncapacidades).toHaveBeenLastCalledWith(
+        expect.objectContaining({ page: 1, urgencia: 'amarillo' }),
+      ),
+    )
+  })
+
+  it('resetea la página a 1 cuando cambia la búsqueda debounced', async () => {
+    vi.mocked(listIncapacidades).mockResolvedValue({
+      items: [
+        {
+          id: '1',
+          radicado: 'R1',
+          estado: 'recibida',
+          colaborador_id: 'c1',
+          archivo_tipo: 'pdf',
+          fecha_recepcion: '2026-01-01T00:00:00.000Z',
+        },
+      ],
+      total: 20,
+      pages: 2,
+    })
+
+    const { result } = renderHook(() => useIncapacidadesList(0))
+
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    act(() => {
+      result.current.setPage(2)
+    })
+    await waitFor(() => expect(result.current.page).toBe(2))
+
+    act(() => {
+      result.current.setEntidadInput('Sura')
+    })
+
+    await waitFor(() => {
+      expect(result.current.page).toBe(1)
+      expect(listIncapacidades).toHaveBeenCalledWith(
+        expect.objectContaining({ page: 1, q: 'Sura' }),
+      )
+    })
+  })
+
+  it('setEstado y setTipo vuelven a la página 1', async () => {
+    vi.mocked(listIncapacidades).mockResolvedValue({
+      items: [
+        {
+          id: '1',
+          radicado: 'R1',
+          estado: 'recibida',
+          colaborador_id: 'c1',
+          archivo_tipo: 'pdf',
+          fecha_recepcion: '2026-01-01T00:00:00.000Z',
+        },
+      ],
+      total: 20,
+      pages: 2,
+    })
+    const { result } = renderHook(() => useIncapacidadesList())
+
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    act(() => {
+      result.current.setPage(2)
+    })
+    await waitFor(() => expect(result.current.page).toBe(2))
+
+    act(() => {
+      result.current.setEstado('transcrita')
+    })
+    await waitFor(() => expect(result.current.page).toBe(1))
+
+    act(() => {
+      result.current.setPage(2)
+    })
+    await waitFor(() => expect(result.current.page).toBe(2))
+
+    act(() => {
+      result.current.setTipo('png')
+    })
+    await waitFor(() => expect(result.current.page).toBe(1))
+  })
+
+  it('expone mensaje detail de Axios cuando viene como string', async () => {
+    const err = new AxiosError('request failed')
+    err.response = { status: 400, data: { detail: 'Listado no disponible' } } as never
+    vi.mocked(listIncapacidades).mockRejectedValueOnce(err)
+
+    const { result } = renderHook(() => useIncapacidadesList())
+
+    await waitFor(() => {
+      expect(result.current.error).toBe('Listado no disponible')
+      expect(result.current.data).toBeNull()
+      expect(result.current.loading).toBe(false)
+    })
+  })
+
+  it('usa message de Axios si detail no es string', async () => {
+    const err = new AxiosError('fallo de red')
+    err.response = { status: 500, data: { detail: { code: 1 } } } as never
+    vi.mocked(listIncapacidades).mockRejectedValueOnce(err)
+
+    const { result } = renderHook(() => useIncapacidadesList())
+
+    await waitFor(() => expect(result.current.error).toBe('fallo de red'))
+  })
+
+  it('usa message de Error genérico', async () => {
+    vi.mocked(listIncapacidades).mockRejectedValueOnce(new Error('sin permiso'))
+
+    const { result } = renderHook(() => useIncapacidadesList())
+
+    await waitFor(() => expect(result.current.error).toBe('sin permiso'))
+  })
+
+  it('usa mensaje por defecto para errores desconocidos', async () => {
+    vi.mocked(listIncapacidades).mockRejectedValueOnce('x')
+
+    const { result } = renderHook(() => useIncapacidadesList())
+
+    await waitFor(() =>
+      expect(result.current.error).toBe('No se pudo cargar el listado. Intenta de nuevo.'),
+    )
+  })
+
+  it('no actualiza error si axios marca cancelación', async () => {
+    const cancelErr = new Error('canceled')
+    const isCancelSpy = vi.spyOn(axios, 'isCancel').mockReturnValueOnce(true)
+    vi.mocked(listIncapacidades).mockRejectedValueOnce(cancelErr)
+
+    try {
+      const { result } = renderHook(() => useIncapacidadesList())
+
+      await waitFor(() => expect(result.current.loading).toBe(false))
+      expect(result.current.error).toBeNull()
+    } finally {
+      isCancelSpy.mockRestore()
+    }
+  })
+
+  it('no aplica resultado si el request fue abortado (desmontaje)', async () => {
+    let resolveLoad!: (v: IncapacidadesListResponse) => void
+    const deferred = new Promise<IncapacidadesListResponse>((r) => {
+      resolveLoad = r
+    })
+    vi.mocked(listIncapacidades).mockReturnValueOnce(deferred)
+
+    const { result, unmount } = renderHook(() => useIncapacidadesList())
+
+    await waitFor(() => expect(result.current.loading).toBe(true))
+    unmount()
+    resolveLoad({ items: [], total: 99, pages: 1 } satisfies IncapacidadesListResponse)
+
+    await act(async () => {
+      await Promise.resolve()
+    })
+  })
+})
