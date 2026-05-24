@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import { useCurrentReturnState, useReturnNavigation } from '@/hooks/useReturnNavigation'
 import { ArrowLeft, FileText, Loader2 } from 'lucide-react'
 import type { IncapacidadDetalle } from '@/features/incapacity-ai-review/types/incapacidadDetalle'
 import { StatusBadge } from '@/components/ui/StatusBadge'
@@ -16,6 +17,8 @@ export type MiTramiteDetallePanelProps = Readonly<{
 }>
 
 export function MiTramiteDetallePanel({ detail, loading, error }: MiTramiteDetallePanelProps) {
+  const returnState = useCurrentReturnState()
+  const { goBack } = useReturnNavigation('/portal/mi-tramite')
   const timelineEntries = useMemo(() => {
     if (!detail) return []
     const historial = detail.historial_estados ?? []
@@ -39,9 +42,9 @@ export function MiTramiteDetallePanel({ detail, loading, error }: MiTramiteDetal
         <p className="max-w-md text-center text-sm text-danger-text" role="alert">
           {error}
         </p>
-        <Link to="/portal/mi-tramite" className={buttonClassName('secondary')}>
+        <button type="button" onClick={goBack} className={buttonClassName('secondary')}>
           Volver a mis trámites
-        </Link>
+        </button>
       </main>
     )
   }
@@ -52,13 +55,14 @@ export function MiTramiteDetallePanel({ detail, loading, error }: MiTramiteDetal
     <>
       <main className="flex w-full flex-col gap-5">
         <div className="flex items-center gap-3">
-          <Link
-            to="/portal/mi-tramite"
+          <button
+            type="button"
+            onClick={goBack}
             className={buttonClassName('secondary', 'gap-1.5 py-1.5 text-[13px]')}
           >
             <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
             Volver
-          </Link>
+          </button>
           <h1 className="text-[22px] font-semibold tracking-tight text-gray-900">
             Detalle del trámite
           </h1>
@@ -104,6 +108,7 @@ export function MiTramiteDetallePanel({ detail, loading, error }: MiTramiteDetal
           <div className="mt-5 flex flex-wrap justify-end gap-2 border-t border-gray-100 pt-4">
             <Link
               to={`/incapacidad/revision-ia?id=${encodeURIComponent(detail.id)}`}
+              state={returnState}
               className={buttonClassName('secondary', 'gap-1.5')}
             >
               <FileText className="h-3.5 w-3.5" aria-hidden />

@@ -1,5 +1,11 @@
 import { useCallback, useId, useRef, useState } from 'react'
-import { Loader2, Search } from 'lucide-react'
+import { Search } from 'lucide-react'
+import {
+  autocompleteListClassName,
+  autocompleteOptionButtonClassName,
+  autocompleteStatusClassName,
+} from '@/components/ui/autocompleteStyles'
+import { inputClassName } from '@/components/ui/buttonStyles'
 import { cn } from '@/utils/cn'
 
 export type EntidadAutocompleteInputProps = Readonly<{
@@ -10,6 +16,8 @@ export type EntidadAutocompleteInputProps = Readonly<{
   placeholder?: string
   ariaLabel?: string
   className?: string
+  /** Se invoca al elegir una sugerencia del listado (además de `onChange`). */
+  onSelectSuggestion?: (value: string) => void
 }>
 
 export function EntidadAutocompleteInput({
@@ -20,6 +28,7 @@ export function EntidadAutocompleteInput({
   placeholder = 'Filtrar por entidad…',
   ariaLabel = 'Filtrar por entidad',
   className,
+  onSelectSuggestion,
 }: EntidadAutocompleteInputProps) {
   const listId = useId()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -51,11 +60,12 @@ export function EntidadAutocompleteInput({
       clearBlurTimer()
       skipOpenOnNextFocusRef.current = true
       onChange(name)
+      onSelectSuggestion?.(name)
       setFocused(true)
       setListOpen(false)
       inputRef.current?.focus()
     },
-    [onChange, clearBlurTimer],
+    [onChange, onSelectSuggestion, clearBlurTimer],
   )
 
   const handleChange = useCallback(
@@ -73,7 +83,7 @@ export function EntidadAutocompleteInput({
       <Search className="absolute left-3 h-4 w-4 shrink-0 text-gray-400" aria-hidden />
       <input
         ref={inputRef}
-        type="text"
+        type="search"
         value={value}
         onChange={(e) => handleChange(e.target.value)}
         onFocus={() => {
@@ -87,38 +97,26 @@ export function EntidadAutocompleteInput({
         }}
         onBlur={scheduleBlur}
         placeholder={placeholder}
-        className="w-full rounded-lg border border-gray-200 bg-white py-2 pr-3 pl-9 text-sm placeholder:text-gray-400 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:outline-none"
+        className={cn(inputClassName, 'py-2 pl-9')}
         aria-label={ariaLabel}
         aria-autocomplete="list"
         aria-expanded={showList}
         aria-controls={showList ? listId : undefined}
+        aria-busy={false}
         autoComplete="off"
       />
 
       {showList ? (
-        <ul
-          id={listId}
-          role="listbox"
-          className="absolute top-full right-0 left-0 z-50 mt-1 max-h-48 overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
-        >
-          {suggestionsLoading ? (
-            <li
-              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500"
-              role="presentation"
-            >
-              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-              Buscando entidades…
-            </li>
-          ) : suggestions.length === 0 ? (
-            <li className="px-3 py-2 text-sm text-gray-500" role="presentation">
-              No se encontraron entidades.
-            </li>
+        <ul id={listId} role="listbox" className={autocompleteListClassName}>
+          {suggestionsLoading ? <li className={autocompleteStatusClassName}>Buscando…</li> : null}
+          {!suggestionsLoading && suggestions.length === 0 ? (
+            <li className={autocompleteStatusClassName}>No se encontraron coincidencias.</li>
           ) : null}
           {suggestions.map((name) => (
             <li key={name} role="option" aria-selected={value === name}>
               <button
                 type="button"
-                className="w-full px-3 py-2 text-left text-sm text-gray-800 hover:bg-primary/5 focus:bg-primary/5 focus:outline-none"
+                className={autocompleteOptionButtonClassName}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => selectSuggestion(name)}
               >

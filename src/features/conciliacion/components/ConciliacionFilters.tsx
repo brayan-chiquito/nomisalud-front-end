@@ -38,17 +38,16 @@ export function ConciliacionFilters({
   onExportar,
 }: ConciliacionFiltersProps) {
   const anios = aniosConciliacionOptions()
-  const { suggestions, loading: suggestionsLoading } = useEntidadSuggestions(entidadInput)
+  const { suggestions } = useEntidadSuggestions(entidadInput)
 
   return (
     <div className="relative z-10 flex flex-col gap-4 border-b border-gray-100 bg-gray-50/50 px-5 py-4 sm:px-6">
       <div className="flex flex-wrap items-center gap-2.5">
         <label className={incapacidadSelectFrameClassName}>
-          <span className="shrink-0 text-slate-600">Mes:</span>
+          <span className="shrink-0 text-gray-600">Mes:</span>
           <select
             value={mes}
             onChange={(e) => onMesChange(Number.parseInt(e.target.value, 10))}
-            disabled={loading}
             className={incapacidadSelectNativeClassName}
             aria-label={`Mes, actualmente ${labelMes(mes)}`}
           >
@@ -62,11 +61,10 @@ export function ConciliacionFilters({
         </label>
 
         <label className={incapacidadSelectFrameClassName}>
-          <span className="shrink-0 text-slate-600">Año:</span>
+          <span className="shrink-0 text-gray-600">Año:</span>
           <select
             value={anio}
             onChange={(e) => onAnioChange(Number.parseInt(e.target.value, 10))}
-            disabled={loading}
             className={incapacidadSelectNativeClassName}
             aria-label={`Año, actualmente ${anio}`}
           >
@@ -83,7 +81,7 @@ export function ConciliacionFilters({
           value={entidadInput}
           onChange={onEntidadChange}
           suggestions={suggestions}
-          suggestionsLoading={suggestionsLoading}
+          suggestionsLoading={false}
           placeholder="Entidad (EPS / origen) — mín. 2 caracteres"
           ariaLabel="Filtrar por entidad"
         />

@@ -75,7 +75,7 @@ export function UserProfileMenu({
         className={cn(
           'transition-all duration-150 hover:opacity-90',
           showUserInfo
-            ? 'flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left hover:bg-gray-50'
+            ? 'flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left hover:bg-gray-100'
             : 'flex h-9 w-9 items-center justify-center rounded-full',
           !showUserInfo && avatarClassName,
         )}

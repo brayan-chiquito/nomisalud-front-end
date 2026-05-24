@@ -50,10 +50,7 @@ describe('MiTramiteDetallePanel', () => {
   it('muestra error y enlace para volver al listado', () => {
     renderPanel({ detail: null, loading: false, error: 'No autorizado' })
     expect(screen.getByRole('alert')).toHaveTextContent('No autorizado')
-    expect(screen.getByRole('link', { name: /volver a mis trámites/i })).toHaveAttribute(
-      'href',
-      '/portal/mi-tramite',
-    )
+    expect(screen.getByRole('button', { name: /volver a mis trámites/i })).toBeInTheDocument()
   })
 
   it('muestra detalle, timeline y enlace a revisión IA', () => {

@@ -6,7 +6,11 @@ export const AUDITORIA_PAGE_SIZE = 50
 export type ListAuditoriaAccesosParams = Readonly<{
   page?: number
   page_size?: number
+  /** Filtro exacto por UUID. */
   user_id?: string
+  /** Búsqueda por correo o nombre (alias API: `q`). */
+  usuario?: string
+  q?: string
   accion?: string
   fecha_desde?: string
   fecha_hasta?: string
@@ -22,6 +26,8 @@ function buildQuery(
   }
   const userId = params.user_id?.trim()
   if (userId) q.user_id = userId
+  const usuario = params.usuario?.trim() || params.q?.trim()
+  if (usuario && usuario.length >= 2) q.q = usuario
   const accion = params.accion?.trim()
   if (accion) q.accion = accion
   if (params.fecha_desde?.trim()) q.fecha_desde = params.fecha_desde.trim()

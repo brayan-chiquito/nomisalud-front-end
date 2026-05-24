@@ -48,7 +48,7 @@ export function CobradasCheckboxList({
               className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/30"
             />
             <label htmlFor={`rad-${row.radicado}`} className="min-w-0 flex-1 cursor-pointer">
-              <span className="font-mono text-xs text-gray-800">{row.radicado}</span>
+              <span className="font-mono text-xs font-medium text-gray-900">{row.radicado}</span>
               {subtitle ? (
                 <span className="mt-0.5 block text-xs text-gray-500">{subtitle}</span>
               ) : null}

@@ -26,4 +26,17 @@ describe('ListPanelBody', () => {
     )
     expect(screen.getByText('Fila 1')).toBeInTheDocument()
   })
+
+  it('mantiene filas visibles mientras fetching', () => {
+    render(
+      <ListPanelBody
+        loading={false}
+        fetching
+        items={[{ id: '1' }]}
+        emptyMessage="Vacío"
+        renderItem={(item) => <span key={item.id}>Fila {item.id}</span>}
+      />,
+    )
+    expect(screen.getByText('Fila 1')).toBeInTheDocument()
+  })
 })

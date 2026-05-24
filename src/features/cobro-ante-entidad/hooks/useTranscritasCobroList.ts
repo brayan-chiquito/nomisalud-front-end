@@ -3,6 +3,7 @@ import { useIncapacidadesList } from '@/features/incapacidades/hooks/useIncapaci
 export type UseTranscritasCobroListResult = Readonly<{
   data: ReturnType<typeof useIncapacidadesList>['data']
   loading: boolean
+  fetching: boolean
   error: string | null
   page: number
   setPage: ReturnType<typeof useIncapacidadesList>['setPage']
@@ -24,6 +25,7 @@ export function useTranscritasCobroList(entidadDebounceMs = 350): UseTranscritas
   return {
     data: list.data,
     loading: list.loading,
+    fetching: list.fetching,
     error: list.error,
     page: list.page,
     setPage: list.setPage,

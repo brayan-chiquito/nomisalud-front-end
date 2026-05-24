@@ -2,6 +2,12 @@ import { useCallback, useId, useRef, useState, type ReactNode } from 'react'
 import { Loader2, Search } from 'lucide-react'
 import type { ColaboradorBusquedaItem } from '@/features/recepcion/types/colaboradorBusqueda'
 import { colaboradorDisplayLabel } from '@/features/recepcion/utils/colaboradorDisplay'
+import {
+  autocompleteListClassName,
+  autocompleteOptionButtonClassName,
+  autocompleteStatusClassName,
+} from '@/components/ui/autocompleteStyles'
+import { inputClassName } from '@/components/ui/buttonStyles'
 import { cn } from '@/utils/cn'
 
 function renderListStatusMessage(
@@ -11,22 +17,18 @@ function renderListStatusMessage(
 ): ReactNode {
   if (isPending) {
     return (
-      <li className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500" aria-disabled="true">
+      <li className={cn(autocompleteStatusClassName, 'flex items-center gap-2')}>
         <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
         Buscando colaboradores…
       </li>
     )
   }
   if (searchError) {
-    return (
-      <li className="px-3 py-2 text-sm text-danger" aria-disabled="true">
-        {searchError}
-      </li>
-    )
+    return <li className={cn(autocompleteStatusClassName, 'text-danger')}>{searchError}</li>
   }
   if (!hasSuggestions) {
     return (
-      <li className="px-3 py-2 text-sm text-gray-500" aria-disabled="true">
+      <li className={autocompleteStatusClassName}>
         No se encontraron colaboradores activos con ese criterio. Prueba con nombre o cédula (ej.
         juan, ana, pedro).
       </li>
@@ -132,7 +134,7 @@ export function ColaboradorAutocompleteInput({
         }}
         onBlur={scheduleBlur}
         placeholder={placeholder}
-        className="w-full rounded-lg border border-gray-200 bg-white py-2.5 pr-3 pl-9 text-sm placeholder:text-gray-400 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:outline-none"
+        className={cn(inputClassName, 'py-2.5 pl-9')}
         aria-label={ariaLabel}
         aria-autocomplete="list"
         aria-expanded={showList}
@@ -141,17 +143,13 @@ export function ColaboradorAutocompleteInput({
       />
 
       {showList ? (
-        <ul
-          id={listId}
-          role="listbox"
-          className="absolute top-full right-0 left-0 z-20 mt-1 max-h-56 overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
-        >
+        <ul id={listId} role="listbox" className={cn(autocompleteListClassName, 'z-20 max-h-56')}>
           {renderListStatusMessage(isPending, searchError, suggestions.length > 0)}
           {suggestions.map((item) => (
             <li key={item.id} role="option">
               <button
                 type="button"
-                className="w-full px-3 py-2 text-left hover:bg-primary/5 focus:bg-primary/5 focus:outline-none"
+                className={autocompleteOptionButtonClassName}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => selectItem(item)}
               >

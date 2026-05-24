@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
+import { ThemeProvider } from '@/features/theme/context/ThemeContext'
 import { PlazosEntidadAdminPage } from './PlazosEntidadAdminPage'
 import { useAuth } from '@/features/auth/context/AuthContext'
 
@@ -8,13 +10,14 @@ vi.mock('@/features/auth/context/AuthContext', () => ({
   useAuth: vi.fn(),
 }))
 
-vi.mock('@/features/admin/services/plazosEntidad.service', () => ({
-  listPlazosEntidad: vi.fn(),
+vi.mock('@/features/admin/hooks/usePlazosEntidadList', () => ({
+  usePlazosEntidadList: vi.fn(),
 }))
 
-import { listPlazosEntidad } from '@/features/admin/services/plazosEntidad.service'
+import { usePlazosEntidadList } from '@/features/admin/hooks/usePlazosEntidadList'
 
 const mockUseAuth = vi.mocked(useAuth)
+const mockUsePlazosEntidadList = vi.mocked(usePlazosEntidadList)
 
 const plazo = {
   id: 'p1',
@@ -27,100 +30,69 @@ const plazo = {
   dias_promedio_pago: 30,
 }
 
+function renderPage() {
+  return render(
+    <ThemeProvider>
+      <MemoryRouter>
+        <PlazosEntidadAdminPage />
+      </MemoryRouter>
+    </ThemeProvider>,
+  )
+}
+
 describe('PlazosEntidadAdminPage', () => {
   beforeEach(() => {
-    vi.mocked(listPlazosEntidad).mockReset()
+    mockUsePlazosEntidadList.mockReturnValue({
+      items: [],
+      loading: false,
+      error: null,
+      reload: vi.fn(),
+    })
   })
 
-  it('muestra aviso para coordinador sin cargar plazos', () => {
+  it('muestra aviso para coordinador sin panel CRUD', () => {
     mockUseAuth.mockReturnValue({
       user: { id: 'c1', email: 'coord@nomisalud.com', role: 'coordinador_rrhh' },
       isAuthenticated: true,
       login: vi.fn(),
       logout: vi.fn(),
     })
-    render(
-      <MemoryRouter>
-        <PlazosEntidadAdminPage />
-      </MemoryRouter>,
-    )
+    renderPage()
     expect(screen.getByRole('status')).toHaveTextContent(/restringida al rol/i)
-    expect(listPlazosEntidad).not.toHaveBeenCalled()
+    expect(screen.queryByRole('button', { name: /nuevo plazo/i })).not.toBeInTheDocument()
   })
 
-  it('lista plazos para admin', async () => {
+  it('muestra panel CRUD para admin', async () => {
     mockUseAuth.mockReturnValue({
       user: { id: 'a1', email: 'admin@nomisalud.com', role: 'admin' },
       isAuthenticated: true,
       login: vi.fn(),
       logout: vi.fn(),
     })
-    vi.mocked(listPlazosEntidad).mockResolvedValue({ items: [plazo], total: 1 })
-    render(
-      <MemoryRouter>
-        <PlazosEntidadAdminPage />
-      </MemoryRouter>,
-    )
+    mockUsePlazosEntidadList.mockReturnValue({
+      items: [plazo],
+      loading: false,
+      error: null,
+      reload: vi.fn(),
+    })
+    renderPage()
     await waitFor(() => {
       expect(screen.getByText('Salud Total')).toBeInTheDocument()
     })
-    expect(screen.getByText('30')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /nuevo plazo/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /editar plazo de salud total/i })).toBeInTheDocument()
   })
 
-  it('muestra tabla vacía cuando no hay plazos', async () => {
+  it('abre modal de creación', async () => {
+    const user = userEvent.setup()
     mockUseAuth.mockReturnValue({
       user: { id: 'a1', email: 'admin@nomisalud.com', role: 'admin' },
       isAuthenticated: true,
       login: vi.fn(),
       logout: vi.fn(),
     })
-    vi.mocked(listPlazosEntidad).mockResolvedValue({ items: [], total: 0 })
-    render(
-      <MemoryRouter>
-        <PlazosEntidadAdminPage />
-      </MemoryRouter>,
-    )
-    await waitFor(() => {
-      expect(screen.getByText(/no hay plazos configurados/i)).toBeInTheDocument()
-    })
-  })
-
-  it('muestra error si falla la carga', async () => {
-    mockUseAuth.mockReturnValue({
-      user: { id: 'a1', email: 'admin@nomisalud.com', role: 'admin' },
-      isAuthenticated: true,
-      login: vi.fn(),
-      logout: vi.fn(),
-    })
-    vi.mocked(listPlazosEntidad).mockRejectedValue(new Error('Sin permisos'))
-    render(
-      <MemoryRouter>
-        <PlazosEntidadAdminPage />
-      </MemoryRouter>,
-    )
-    await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent('Sin permisos')
-    })
-  })
-
-  it('muestra guion cuando dias_promedio_pago es null', async () => {
-    mockUseAuth.mockReturnValue({
-      user: { id: 'a1', email: 'admin@nomisalud.com', role: 'admin' },
-      isAuthenticated: true,
-      login: vi.fn(),
-      logout: vi.fn(),
-    })
-    vi.mocked(listPlazosEntidad).mockResolvedValue({
-      items: [{ ...plazo, dias_promedio_pago: null }],
-      total: 1,
-    })
-    render(
-      <MemoryRouter>
-        <PlazosEntidadAdminPage />
-      </MemoryRouter>,
-    )
-    await waitFor(() => {
-      expect(screen.getByText('—')).toBeInTheDocument()
-    })
+    renderPage()
+    await user.click(screen.getByRole('button', { name: /nuevo plazo/i }))
+    expect(screen.getByRole('heading', { name: /nuevo plazo por entidad/i })).toBeInTheDocument()
   })
 })

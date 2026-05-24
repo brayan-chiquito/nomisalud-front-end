@@ -20,6 +20,17 @@ vi.mock('../hooks/useIncapacidadAiReview', () => ({
   useIncapacidadAiReview: (id: string | null) => mockUseIncapacidadAiReview(id),
 }))
 
+const mockGoBack = vi.fn()
+
+vi.mock('@/hooks/useReturnNavigation', () => ({
+  useReturnNavigation: () => ({
+    backTarget: '/dashboard',
+    goBack: mockGoBack,
+    returnTo: null,
+  }),
+  useCurrentReturnState: () => ({}),
+}))
+
 const mockUseAuth = vi.fn()
 
 vi.mock('@/features/auth/context/AuthContext', () => ({
@@ -70,6 +81,7 @@ function baseHookReturn(
 describe('IncapacityAiReviewView', () => {
   beforeEach(() => {
     mockNavigate.mockReset()
+    mockGoBack.mockReset()
     mockUseIncapacidadAiReview.mockReset()
     mockUseAuth.mockReturnValue({
       user: { id: '1', email: 'rrhh@nomisalud.com', role: 'admin' },
@@ -83,10 +95,7 @@ describe('IncapacityAiReviewView', () => {
     mockUseIncapacidadAiReview.mockReturnValue(baseHookReturn())
     renderAt('/incapacidad/revision-ia')
     expect(screen.getByText(/falta el identificador/i)).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /ir al dashboard/i })).toHaveAttribute(
-      'href',
-      '/dashboard',
-    )
+    expect(screen.getByRole('button', { name: /ir al dashboard/i })).toBeInTheDocument()
   })
 
   it('muestra carga mientras llega el detalle', () => {
@@ -103,7 +112,7 @@ describe('IncapacityAiReviewView', () => {
     )
     renderAt('/incapacidad/revision-ia?id=x')
     expect(screen.getByText('No encontrado')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /^volver$/i })).toHaveAttribute('href', '/dashboard')
+    expect(screen.getByRole('button', { name: /^volver$/i })).toBeInTheDocument()
   })
 
   it('muestra radicado y abre el modal de rechazo', async () => {
@@ -182,10 +191,7 @@ describe('IncapacityAiReviewView', () => {
     })
     mockUseIncapacidadAiReview.mockReturnValue(baseHookReturn())
     renderAt('/incapacidad/revision-ia')
-    expect(screen.getByRole('link', { name: /ir a mi trámite/i })).toHaveAttribute(
-      'href',
-      '/portal/mi-tramite',
-    )
+    expect(screen.getByRole('button', { name: /ir a mi trámite/i })).toBeInTheDocument()
   })
 
   it('bloquea confirmar si hay inconsistencias sin override', () => {

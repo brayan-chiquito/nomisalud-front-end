@@ -1,10 +1,12 @@
 import { useCallback, useMemo, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Calculator, Cpu, Loader2 } from 'lucide-react'
 import { useAuth } from '@/features/auth/context/AuthContext'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { Card } from '@/components/ui/Card'
 import { buttonClassName, inputClassName, labelClassName } from '@/components/ui/buttonStyles'
+import { useReturnNavigation } from '@/hooks/useReturnNavigation'
+import { isDashboardReturnPath } from '@/utils/navigationReturn'
 import { useIncapacidadAiReview } from '../hooks/useIncapacidadAiReview'
 import {
   calidadDocPercent,
@@ -72,7 +74,8 @@ export function IncapacityAiReviewView() {
   const [zoomPercent, setZoomPercent] = useState(100)
 
   const puedeVerificar = canHumanVerifyIncapacidad(user?.role)
-  const backHref = puedeVerificar ? '/dashboard' : '/portal/mi-tramite'
+  const fallbackBack = puedeVerificar ? '/dashboard' : '/portal/mi-tramite'
+  const { goBack, returnTo } = useReturnNavigation(fallbackBack)
 
   const confianza = useMemo(
     () => calidadDocPercent(detail?.extraccion_ia?.calidad_doc ?? undefined),
@@ -96,9 +99,13 @@ export function IncapacityAiReviewView() {
 
   const navigateToDashboardWithSuccess = useCallback(
     (actionSuccess: ActionSuccessKind) => {
-      navigate(`/dashboard?success=${actionSuccess}`)
+      if (isDashboardReturnPath(returnTo) || !returnTo) {
+        navigate(`/dashboard?success=${actionSuccess}`)
+        return
+      }
+      navigate(returnTo)
     },
-    [navigate],
+    [navigate, returnTo],
   )
 
   const handleConfirmar = useCallback(async () => {
@@ -146,9 +153,9 @@ export function IncapacityAiReviewView() {
           <code className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs">id</code>, o desde{' '}
           <strong>Continuar al resumen</strong> tras radicar una incapacidad.
         </p>
-        <Link to={backHref} className={buttonClassName('primary')}>
+        <button type="button" onClick={goBack} className={buttonClassName('primary')}>
           {puedeVerificar ? 'Ir al dashboard' : 'Ir a mi trámite'}
-        </Link>
+        </button>
       </div>
     )
   }
@@ -168,9 +175,9 @@ export function IncapacityAiReviewView() {
         <p className="max-w-md text-center text-sm text-danger-text" role="alert">
           {errorDetail}
         </p>
-        <Link to={backHref} className={buttonClassName('secondary')}>
+        <button type="button" onClick={goBack} className={buttonClassName('secondary')}>
           Volver
-        </Link>
+        </button>
       </div>
     )
   }
@@ -189,13 +196,14 @@ export function IncapacityAiReviewView() {
     <div className="flex min-h-screen flex-col bg-gray-50/50">
       <header className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-6">
         <div className="flex min-w-0 flex-1 items-center gap-4">
-          <Link
-            to={backHref}
+          <button
+            type="button"
+            onClick={goBack}
             className={buttonClassName('icon', 'h-9 w-9 shrink-0')}
             aria-label="Volver"
           >
             <ArrowLeft className="h-[18px] w-[18px]" />
-          </Link>
+          </button>
           <div className="min-w-0 flex flex-col gap-0.5">
             <span className="truncate font-mono text-sm font-semibold text-gray-900">
               {detail.radicado}

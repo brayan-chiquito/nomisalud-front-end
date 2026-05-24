@@ -2,7 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import axios from 'axios'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { RegistrarPagoForm } from './RegistrarPagoForm'
-import { listRadicadosDisponibles, createPago } from '../services/pagos.service'
+import {
+  listRadicadosDisponibles,
+  listRadicadosDisponiblesWithTextSearch,
+  createPago,
+} from '../services/pagos.service'
 
 import { useAuth } from '@/features/auth/context/AuthContext'
 
@@ -12,6 +16,7 @@ vi.mock('@/features/auth/context/AuthContext', () => ({
 
 vi.mock('../services/pagos.service', () => ({
   listRadicadosDisponibles: vi.fn(),
+  listRadicadosDisponiblesWithTextSearch: vi.fn(),
   createPago: vi.fn(),
 }))
 
@@ -23,7 +28,7 @@ describe('RegistrarPagoForm', () => {
       login: vi.fn(),
       logout: vi.fn(),
     })
-    vi.mocked(listRadicadosDisponibles).mockResolvedValue({
+    const disponibles = {
       items: [
         {
           incapacidad_id: '1',
@@ -34,7 +39,9 @@ describe('RegistrarPagoForm', () => {
       ],
       total: 1,
       pages: 1,
-    })
+    }
+    vi.mocked(listRadicadosDisponibles).mockResolvedValue(disponibles)
+    vi.mocked(listRadicadosDisponiblesWithTextSearch).mockResolvedValue(disponibles)
     vi.mocked(createPago).mockResolvedValue({
       id: 'p1',
       entidad_origen: 'EPS',
@@ -53,7 +60,8 @@ describe('RegistrarPagoForm', () => {
 
   it('carga radicados desde radicados-disponibles', async () => {
     render(<RegistrarPagoForm />)
-    await waitFor(() => expect(listRadicadosDisponibles).toHaveBeenCalled())
+    await waitFor(() => expect(listRadicadosDisponiblesWithTextSearch).not.toHaveBeenCalled())
+    expect(listRadicadosDisponibles).toHaveBeenCalled()
     expect(screen.getByText('IN01')).toBeInTheDocument()
   })
 
@@ -69,7 +77,10 @@ describe('RegistrarPagoForm', () => {
     await waitFor(() => expect(createPago).toHaveBeenCalled())
     expect(onOk).toHaveBeenCalled()
     await waitFor(() =>
-      expect(vi.mocked(listRadicadosDisponibles).mock.calls.length).toBeGreaterThan(1),
+      expect(
+        vi.mocked(listRadicadosDisponibles).mock.calls.length +
+          vi.mocked(listRadicadosDisponiblesWithTextSearch).mock.calls.length,
+      ).toBeGreaterThan(1),
     )
   })
 
@@ -87,6 +98,23 @@ describe('RegistrarPagoForm', () => {
     await waitFor(() => {
       expect(screen.getByText('fail')).toBeInTheDocument()
     })
+  })
+
+  it('filtra radicados por entidad sin deshabilitar el buscador al recargar', async () => {
+    render(<RegistrarPagoForm />)
+    await waitFor(() => expect(screen.getByText('IN01')).toBeInTheDocument())
+    const input = screen.getByLabelText(/filtrar radicados por entidad/i)
+    fireEvent.change(input, { target: { value: 'EPS' } })
+    expect(input).toHaveValue('EPS')
+    expect(input).not.toBeDisabled()
+    await waitFor(
+      () =>
+        expect(listRadicadosDisponiblesWithTextSearch).toHaveBeenCalledWith(
+          expect.objectContaining({ page: 1 }),
+          'EPS',
+        ),
+      { timeout: 2000 },
+    )
   })
 
   it('pagina radicados disponibles cuando hay varias páginas', async () => {

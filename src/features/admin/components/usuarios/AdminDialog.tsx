@@ -27,7 +27,7 @@ export function AdminDialog({
   return (
     <dialog
       open
-      className="fixed inset-0 z-50 m-0 h-full max-h-none w-full max-w-none border-0 bg-gray-900/50 p-4 backdrop:bg-gray-900/50 open:flex open:items-center open:justify-center"
+      className="fixed inset-0 z-50 m-0 h-full max-h-none w-full max-w-none border-0 bg-gray-950/50 p-4 backdrop:bg-gray-950/50 open:flex open:items-center open:justify-center"
       aria-labelledby={titleId}
       onCancel={(e) => {
         e.preventDefault()

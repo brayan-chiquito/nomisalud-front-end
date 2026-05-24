@@ -1,4 +1,6 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { ListFetchIndicator } from '@/components/ui/ListFetchIndicator'
+import { useStableTableRowCount } from '@/hooks/useStableTableRowCount'
 import { Link } from 'react-router-dom'
 import { CircleCheck, X } from 'lucide-react'
 import type { IncapacidadListItem } from '@/features/incapacidades/types/listIncapacidades'
@@ -24,6 +26,7 @@ export function CobroAnteEntidadPanel() {
   const {
     data,
     loading,
+    fetching,
     error,
     page,
     setPage,
@@ -42,8 +45,17 @@ export function CobroAnteEntidadPanel() {
   const total = data?.total ?? 0
   const totalPages = data?.pages ?? 0
   const items = data?.items ?? []
+  const stableRowCount = useStableTableRowCount(items.length, fetching)
   const pageSize = data ? pageSizeFromResponse(total, totalPages, items.length) : 0
   const { start, end } = paginationRange(total, page, pageSize)
+
+  const searchListFilters = useMemo(
+    () => ({
+      estado: 'transcrita' as const,
+      ...(tipo ? { tipo } : {}),
+    }),
+    [tipo],
+  )
 
   const openMarcarModal = useCallback((row: IncapacidadListItem) => {
     setModalError(null)
@@ -115,8 +127,13 @@ export function CobroAnteEntidadPanel() {
         onTipoChange={setTipo}
         entidadInput={entidadInput}
         onEntidadInputChange={setEntidadInput}
-        loading={loading}
+        searchListFilters={searchListFilters}
+        suggestionSources="incapacidades"
+        entidadPlaceholder="Buscar radicado, colaborador o entidad en transcritas…"
+        entidadAriaLabel="Buscar trámites en estado transcrita"
       />
+
+      <ListFetchIndicator active={fetching} label="Actualizando resultados…" />
 
       {error ? (
         <p
@@ -143,6 +160,8 @@ export function CobroAnteEntidadPanel() {
 
           <ListPanelBody
             loading={loading}
+            fetching={fetching}
+            stableRowCount={stableRowCount}
             items={items}
             emptyMessage={EMPTY_MESSAGE}
             renderItem={(row) => (
@@ -163,7 +182,7 @@ export function CobroAnteEntidadPanel() {
         total={total}
         page={page}
         totalPages={totalPages}
-        loading={loading}
+        loading={loading || fetching}
         onPrev={() => setPage((p) => Math.max(1, p - 1))}
         onNext={() => setPage((p) => p + 1)}
       />

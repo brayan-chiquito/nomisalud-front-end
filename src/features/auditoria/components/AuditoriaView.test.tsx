@@ -7,14 +7,20 @@ vi.mock('../hooks/useAuditoriaAccesos', () => ({
   useAuditoriaAccesos: vi.fn(),
 }))
 
+vi.mock('./AuditoriaUsuarioSearchField', () => ({
+  AuditoriaUsuarioSearchField: () => <input aria-label="Filtrar por usuario" readOnly value="" />,
+}))
+
 const mockHook = {
   data: null as ReturnType<typeof useAuditoriaAccesos>['data'],
   loading: false,
   error: null as string | null,
+  filterError: null as string | null,
   page: 1,
   setPage: vi.fn(),
-  userId: '',
-  setUserId: vi.fn(),
+  usuario: '',
+  setUsuario: vi.fn(),
+  selectUsuario: vi.fn(),
   accion: '',
   setAccion: vi.fn(),
   fechaDesde: '',
@@ -32,7 +38,7 @@ describe('AuditoriaView', () => {
   it('muestra título y filtros', () => {
     render(<AuditoriaView />)
     expect(screen.getByRole('heading', { name: /auditoría de accesos/i })).toBeInTheDocument()
-    expect(screen.getByLabelText(/usuario/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/filtrar por usuario/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/acción/i)).toBeInTheDocument()
     expect(screen.getByText(/50 registros por página/i)).toBeInTheDocument()
   })

@@ -18,6 +18,7 @@ export type AuditoriaTableProps = Readonly<{
   totalPages: number
   pageSize: number
   onPageChange: (page: number) => void
+  onFiltrarPorUsuario?: (row: AuditoriaAccesoItem) => void
 }>
 
 function paginationRange(page: number, pageSize: number, total: number) {
@@ -29,9 +30,10 @@ function paginationRange(page: number, pageSize: number, total: number) {
 type AuditoriaTableBodyProps = Readonly<{
   loading: boolean
   items: readonly AuditoriaAccesoItem[]
+  onFiltrarPorUsuario?: (row: AuditoriaAccesoItem) => void
 }>
 
-function AuditoriaTableBody({ loading, items }: AuditoriaTableBodyProps) {
+function AuditoriaTableBody({ loading, items, onFiltrarPorUsuario }: AuditoriaTableBodyProps) {
   if (loading && items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-2 py-16 text-slate-500">
@@ -55,12 +57,23 @@ function AuditoriaTableBody({ loading, items }: AuditoriaTableBodyProps) {
           className="grid h-14 items-center gap-x-2 border-b border-gray-50 px-5 text-sm hover:bg-gray-50/60"
           style={{ gridTemplateColumns: TABLE_GRID }}
         >
-          <span
-            className="min-w-0 truncate font-medium text-gray-900"
-            title={usuarioAuditoriaTooltip(row)}
-          >
-            {usuarioAuditoriaLabel(row)}
-          </span>
+          {onFiltrarPorUsuario && (row.usuario_email || row.usuario_nombre) ? (
+            <button
+              type="button"
+              className="min-w-0 truncate text-left font-medium text-gray-900 underline-offset-2 hover:text-primary hover:underline"
+              title={`${usuarioAuditoriaTooltip(row)} — Clic para filtrar por este usuario`}
+              onClick={() => onFiltrarPorUsuario(row)}
+            >
+              {usuarioAuditoriaLabel(row)}
+            </button>
+          ) : (
+            <span
+              className="min-w-0 truncate font-medium text-gray-900"
+              title={usuarioAuditoriaTooltip(row)}
+            >
+              {usuarioAuditoriaLabel(row)}
+            </span>
+          )}
           <span className="min-w-0 truncate font-mono text-xs text-slate-600" title={row.accion}>
             {row.accion}
           </span>
@@ -85,6 +98,7 @@ export function AuditoriaTable({
   totalPages,
   pageSize,
   onPageChange,
+  onFiltrarPorUsuario,
 }: AuditoriaTableProps) {
   const { start, end } = paginationRange(page, pageSize, total)
   const canPrev = page > 1 && !loading
@@ -105,7 +119,11 @@ export function AuditoriaTable({
             <span>Fecha</span>
           </div>
 
-          <AuditoriaTableBody loading={loading} items={items} />
+          <AuditoriaTableBody
+            loading={loading}
+            items={items}
+            onFiltrarPorUsuario={onFiltrarPorUsuario}
+          />
         </div>
       </div>
 

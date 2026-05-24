@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { listPagos, listRadicadosDisponibles, createPago } from './pagos.service'
+import {
+  listPagos,
+  listPagosWithTextSearch,
+  listRadicadosDisponibles,
+  listRadicadosDisponiblesWithTextSearch,
+  createPago,
+} from './pagos.service'
 import { RADICADOS_DISPONIBLES_API_PATH } from '@/features/auth/utils/financialModuleAccess'
 
 vi.mock('@/services/http', () => ({
@@ -28,7 +34,18 @@ describe('pagos.service', () => {
     })
   })
 
-  it('listPagos incluye filtros', async () => {
+  it('listPagos envía q cuando hay búsqueda libre', async () => {
+    vi.mocked(http.get).mockResolvedValue({
+      data: { items: [], total: 0, pages: 0 },
+    })
+    await listPagos({ page: 2, q: 'LOTE-2026' })
+    expect(http.get).toHaveBeenCalledWith('/pagos', {
+      params: { page: 2, q: 'LOTE-2026' },
+      signal: undefined,
+    })
+  })
+
+  it('listPagos incluye filtros y entidad legacy', async () => {
     vi.mocked(http.get).mockResolvedValue({
       data: { items: [], total: 0, pages: 0 },
     })
@@ -53,13 +70,40 @@ describe('pagos.service', () => {
     })
   })
 
-  it('listRadicadosDisponibles GET radicados-disponibles', async () => {
+  it('listPagosWithTextSearch reintenta variantes de correo', async () => {
+    vi.mocked(http.get)
+      .mockResolvedValueOnce({ data: { items: [], total: 0, pages: 0 } })
+      .mockResolvedValueOnce({ data: { items: [{ id: 'p1' }], total: 1, pages: 1 } })
+    const res = await listPagosWithTextSearch({ page: 1 }, 'user@nomisalud.com')
+    expect(res.total).toBe(1)
+    expect(http.get).toHaveBeenNthCalledWith(1, '/pagos', {
+      params: { page: 1, q: 'user@nomisalud.com' },
+      signal: undefined,
+    })
+    expect(http.get).toHaveBeenNthCalledWith(2, '/pagos', {
+      params: { page: 1, q: 'user' },
+      signal: undefined,
+    })
+  })
+
+  it('listRadicadosDisponibles GET con q', async () => {
     vi.mocked(http.get).mockResolvedValue({
       data: { items: [], total: 0, pages: 0, page: 1 },
     })
-    await listRadicadosDisponibles({ page: 2, entidad: 'SURA' })
+    await listRadicadosDisponibles({ page: 2, q: 'brayan' })
     expect(http.get).toHaveBeenCalledWith(RADICADOS_DISPONIBLES_API_PATH, {
-      params: { page: 2, entidad: 'SURA' },
+      params: { page: 2, q: 'brayan' },
+      signal: undefined,
+    })
+  })
+
+  it('listRadicadosDisponiblesWithTextSearch usa q en API', async () => {
+    vi.mocked(http.get).mockResolvedValue({
+      data: { items: [{ incapacidad_id: '1' }], total: 1, pages: 1 },
+    })
+    await listRadicadosDisponiblesWithTextSearch({ page: 1 }, 'SURA')
+    expect(http.get).toHaveBeenCalledWith(RADICADOS_DISPONIBLES_API_PATH, {
+      params: { page: 1, q: 'SURA' },
       signal: undefined,
     })
   })

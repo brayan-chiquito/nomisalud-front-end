@@ -1,3 +1,7 @@
+export type TipoIncapacidadPlazo = 'general' | 'accidente_transito' | 'accidente_trabajo'
+
+export type UnidadLimitePlazo = 'dias' | 'meses' | 'anos'
+
 export type PlazoEntidadItem = Readonly<{
   id: string
   entidad_nombre: string
@@ -12,4 +16,22 @@ export type PlazoEntidadItem = Readonly<{
 export type PlazosEntidadListResponse = Readonly<{
   items: PlazoEntidadItem[]
   total: number
+}>
+
+export type CreatePlazoEntidadPayload = Readonly<{
+  entidad_nombre: string
+  tipo_incapacidad: string
+  valor_limite: number
+  unidad_limite: string
+  dias_alerta: number
+  dias_promedio_pago?: number | null
+}>
+
+export type UpdatePlazoEntidadPayload = Readonly<{
+  entidad_nombre?: string
+  tipo_incapacidad?: string
+  valor_limite?: number
+  unidad_limite?: string
+  dias_alerta?: number
+  dias_promedio_pago?: number | null
 }>

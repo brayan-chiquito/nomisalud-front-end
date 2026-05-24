@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import axios from 'axios'
-import { Search } from 'lucide-react'
-import { listPagos } from '../services/pagos.service'
+import { IncapacidadEntidadSearchField } from '@/features/incapacidades/components/IncapacidadEntidadSearchField'
+import { listPagos, listPagosWithTextSearch } from '../services/pagos.service'
 import type { PagoListItem } from '../types/pago'
 import {
   fechaPagoIso,
@@ -10,11 +10,14 @@ import {
   labelEstadoPago,
 } from '../utils/pagoDisplay'
 import { Card } from '@/components/ui/Card'
+import { ListFetchIndicator } from '@/components/ui/ListFetchIndicator'
+import { useStableTableRowCount } from '@/hooks/useStableTableRowCount'
 import { ListPanelBody } from '@/components/ui/ListPanelBody'
 import { ListPaginationFooter } from '@/components/ui/ListPaginationFooter'
 import { messageFromLoadError } from '@/utils/messageFromLoadError'
 import { pageSizeFromResponse, paginationRange } from '@/utils/pagination'
 import { useAbortableEffect } from '@/hooks/useAbortableEffect'
+import { awaitMinBusyDuration } from '@/utils/awaitMinBusyDuration'
 
 const LOAD_ERROR_FALLBACK = 'No se pudo cargar el listado de pagos.'
 
@@ -33,7 +36,9 @@ export function PagosListPanel({ refreshToken = 0 }: PagosListPanelProps) {
   const [entidadFiltro, setEntidadFiltro] = useState('')
   const [entidadDebounced, setEntidadDebounced] = useState('')
   const [loading, setLoading] = useState(true)
+  const [fetching, setFetching] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const hasLoadedOnceRef = useRef(false)
 
   useEffect(() => {
     const t = globalThis.setTimeout(() => setEntidadDebounced(entidadFiltro.trim()), 350)
@@ -46,27 +51,35 @@ export function PagosListPanel({ refreshToken = 0 }: PagosListPanelProps) {
 
   const load = useCallback(
     async (signal: AbortSignal) => {
-      setLoading(true)
+      const busyStartedAt = Date.now()
+      if (hasLoadedOnceRef.current) setFetching(true)
+      else setLoading(true)
       setError(null)
       try {
-        const res = await listPagos({
-          page,
-          ...(entidadDebounced ? { entidad: entidadDebounced } : {}),
-          signal,
-        })
+        const res = entidadDebounced
+          ? await listPagosWithTextSearch({ page, signal }, entidadDebounced)
+          : await listPagos({ page, signal })
         if (!signal.aborted) {
+          if (hasLoadedOnceRef.current) await awaitMinBusyDuration(busyStartedAt, signal)
+        }
+        if (!signal.aborted) {
+          hasLoadedOnceRef.current = true
           setItems(res.items)
           setTotal(res.total)
           setPages(res.pages)
         }
       } catch (e) {
         if (signal.aborted || axios.isCancel(e)) return
+        hasLoadedOnceRef.current = false
         setItems([])
         setTotal(0)
         setPages(0)
         setError(messageFromLoadError(e, LOAD_ERROR_FALLBACK))
       } finally {
-        if (!signal.aborted) setLoading(false)
+        if (!signal.aborted) {
+          setLoading(false)
+          setFetching(false)
+        }
       }
     },
     [page, entidadDebounced],
@@ -74,6 +87,7 @@ export function PagosListPanel({ refreshToken = 0 }: PagosListPanelProps) {
 
   useAbortableEffect(load, [load, refreshToken])
 
+  const stableRowCount = useStableTableRowCount(items.length, fetching)
   const pageSize = pageSizeFromResponse(total, pages, items.length)
   const { start, end } = paginationRange(total, page, pageSize)
   return (
@@ -83,18 +97,14 @@ export function PagosListPanel({ refreshToken = 0 }: PagosListPanelProps) {
           <h2 className="text-lg font-semibold text-gray-900">Historial de pagos</h2>
           <p className="text-sm text-gray-500">Entidad, referencia, monto y fecha por operación.</p>
         </div>
-        <div className="relative flex min-w-[200px] max-w-xs flex-1 items-center">
-          <Search className="absolute left-3 h-4 w-4 shrink-0 text-gray-400" aria-hidden />
-          <input
-            type="search"
-            value={entidadFiltro}
-            onChange={(e) => setEntidadFiltro(e.target.value)}
-            disabled={loading}
-            placeholder="Filtrar por entidad…"
-            className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pr-3 pl-9 text-sm placeholder:text-gray-400 focus:border-primary/50 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:outline-none"
-            aria-label="Filtrar pagos por entidad"
-          />
-        </div>
+        <IncapacidadEntidadSearchField
+          value={entidadFiltro}
+          onChange={setEntidadFiltro}
+          suggestionSources="pagos"
+          entidadPlaceholder="Filtrar por entidad u origen…"
+          entidadAriaLabel="Filtrar pagos por entidad"
+          className="min-w-[200px] max-w-xs flex-1"
+        />
       </div>
 
       {error ? (
@@ -102,6 +112,8 @@ export function PagosListPanel({ refreshToken = 0 }: PagosListPanelProps) {
           {error}
         </p>
       ) : null}
+
+      <ListFetchIndicator active={fetching} label="Actualizando resultados…" />
 
       <div className="overflow-x-auto">
         <div className="min-w-[720px]">
@@ -121,6 +133,8 @@ export function PagosListPanel({ refreshToken = 0 }: PagosListPanelProps) {
 
           <ListPanelBody
             loading={loading}
+            fetching={fetching}
+            stableRowCount={stableRowCount}
             items={items}
             emptyMessage="Aún no hay pagos registrados."
             renderItem={(row) => (
@@ -138,10 +152,10 @@ export function PagosListPanel({ refreshToken = 0 }: PagosListPanelProps) {
                 <span className="truncate font-mono text-xs text-gray-700" title={row.referencia}>
                   {row.referencia}
                 </span>
-                <span className="text-right tabular-nums text-gray-800 sm:text-left">
+                <span className="text-right font-medium tabular-nums text-gray-900 sm:text-left">
                   {formatMontoPago(row.monto)}
                 </span>
-                <span className="truncate text-slate-600" title={fechaPagoIso(row)}>
+                <span className="truncate text-gray-600" title={fechaPagoIso(row)}>
                   {formatFechaPago(fechaPagoIso(row))}
                 </span>
                 <span className="text-xs text-gray-600">{labelEstadoPago(row.estado)}</span>
@@ -157,7 +171,7 @@ export function PagosListPanel({ refreshToken = 0 }: PagosListPanelProps) {
         total={total}
         page={page}
         totalPages={pages}
-        loading={loading}
+        loading={loading || fetching}
         onPrev={() => setPage((p) => Math.max(1, p - 1))}
         onNext={() => setPage((p) => p + 1)}
         pageBadgeClassName="bg-primary"

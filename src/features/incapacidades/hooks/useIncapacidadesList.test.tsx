@@ -47,7 +47,7 @@ describe('useIncapacidadesList', () => {
     )
   })
 
-  it('envía filtros estado, tipo y entidad al servicio', async () => {
+  it('envía filtros estado, tipo y búsqueda q al servicio', async () => {
     const { result } = renderHook(() => useIncapacidadesList(0))
 
     await waitFor(() => expect(result.current.loading).toBe(false))
@@ -64,7 +64,7 @@ describe('useIncapacidadesList', () => {
           page: 1,
           estado: 'recibida',
           tipo: 'pdf',
-          entidad: 'EPS',
+          q: 'EPS',
         }),
       ),
     )
@@ -124,7 +124,7 @@ describe('useIncapacidadesList', () => {
     )
   })
 
-  it('resetea la página a 1 cuando cambia la entidad debounced', async () => {
+  it('resetea la página a 1 cuando cambia la búsqueda debounced', async () => {
     vi.mocked(listIncapacidades).mockResolvedValue({
       items: [
         {
@@ -156,7 +156,7 @@ describe('useIncapacidadesList', () => {
     await waitFor(() => {
       expect(result.current.page).toBe(1)
       expect(listIncapacidades).toHaveBeenCalledWith(
-        expect.objectContaining({ page: 1, entidad: 'Sura' }),
+        expect.objectContaining({ page: 1, q: 'Sura' }),
       )
     })
   })

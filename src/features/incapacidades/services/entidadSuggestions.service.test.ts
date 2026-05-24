@@ -35,11 +35,9 @@ describe('fetchEntidadNombreSuggestions', () => {
     })
 
     const names = await fetchEntidadNombreSuggestions('sis')
-    expect(names).toEqual(['EPS Sura', 'SIS'])
-    expect(listIncapacidades).toHaveBeenCalledWith(
-      expect.objectContaining({ page: 1, entidad: 'sis' }),
-    )
-    expect(listPagos).toHaveBeenCalledWith(expect.objectContaining({ page: 1, entidad: 'sis' }))
+    expect(names).toEqual(['SIS'])
+    expect(listIncapacidades).toHaveBeenCalledWith(expect.objectContaining({ page: 1, q: 'sis' }))
+    expect(listPagos).toHaveBeenCalledWith(expect.objectContaining({ page: 1, q: 'sis' }))
   })
 
   it('usa solo pagos cuando sources es pagos (contabilidad)', async () => {
@@ -65,6 +63,55 @@ describe('fetchEntidadNombreSuggestions', () => {
 
     const names = await fetchEntidadNombreSuggestions('sis')
     expect(names).toEqual(['SIS'])
+  })
+
+  it('usa solo incapacidades con filtros de listado (cobro transcrita)', async () => {
+    vi.mocked(listIncapacidades).mockResolvedValueOnce({
+      items: [
+        {
+          entidad_nombre: 'EPS Sura',
+          colaborador_nombre: 'Colaborador Demo',
+          colaborador_email: 'colaborador@nomisalud.com',
+          radicado: 'IN0001',
+        },
+      ] as never[],
+      total: 1,
+      pages: 1,
+    })
+
+    const names = await fetchEntidadNombreSuggestions('cola', {
+      sources: 'incapacidades',
+      listFilters: { estado: 'transcrita' },
+    })
+    expect(names).toEqual(['Colaborador Demo'])
+    expect(listIncapacidades).toHaveBeenCalledWith(
+      expect.objectContaining({ page: 1, q: 'cola', estado: 'transcrita' }),
+    )
+    expect(listPagos).not.toHaveBeenCalled()
+  })
+
+  it('ignora q/entidad en listFilters y consulta con q en API', async () => {
+    vi.mocked(listIncapacidades).mockResolvedValueOnce({
+      items: [
+        {
+          colaborador_nombre: 'brayan chiquito',
+          colaborador_email: 'b@test.com',
+          entidad_nombre: 'COOSALUD EPS',
+          radicado: 'IN01',
+        },
+      ] as never[],
+      total: 1,
+      pages: 1,
+    })
+
+    const names = await fetchEntidadNombreSuggestions('brayan', {
+      sources: 'incapacidades',
+      listFilters: { q: 'brayan', entidad: 'brayan', estado: 'transcrita' },
+    })
+    expect(names).toContain('brayan chiquito')
+    expect(listIncapacidades).toHaveBeenCalledWith(
+      expect.objectContaining({ page: 1, estado: 'transcrita', q: 'brayan' }),
+    )
   })
 
   it('devuelve vacío solo si ambas fuentes fallan', async () => {
