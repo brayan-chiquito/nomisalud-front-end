@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useCurrentReturnState } from '@/hooks/useReturnNavigation'
 import type { IncapacidadListItem } from '@/features/incapacidades/types/listIncapacidades'
 import {
   colaboradorNombreLegible,
@@ -21,6 +22,7 @@ export function TranscritaCobroTableRow({
   gridTemplateColumns,
   onMarcarCobrada,
 }: TranscritaCobroTableRowProps) {
+  const returnState = useCurrentReturnState()
   const nombreCol = colaboradorNombreLegible(row)
   const colaboradorTitulo = colaboradorTooltipLista(row)
   const entidad = entidadCeldaLista(row)
@@ -53,6 +55,7 @@ export function TranscritaCobroTableRow({
       <div className="flex min-w-0 items-center justify-center gap-2">
         <Link
           to={`/incapacidad/revision-ia?id=${encodeURIComponent(row.id)}`}
+          state={returnState}
           className="rounded px-2 py-1 text-[12px] font-medium text-blue-600 hover:bg-blue-50 hover:underline"
         >
           Ver detalle

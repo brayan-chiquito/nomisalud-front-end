@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
+import { ThemeProvider } from '@/features/theme/context/ThemeContext'
 import { useAuth } from '@/features/auth/context/AuthContext'
 import { RrhhDashboardShell } from './RrhhDashboardShell'
 
@@ -22,11 +23,13 @@ function renderShell(children: ReactNode, role = 'admin') {
     logout: vi.fn(),
   })
   return render(
-    <MemoryRouter>
-      <RrhhDashboardShell headerTitle="Dashboard RRHH" userName="Ana" userInitials="AG">
-        {children}
-      </RrhhDashboardShell>
-    </MemoryRouter>,
+    <ThemeProvider>
+      <MemoryRouter>
+        <RrhhDashboardShell headerTitle="Dashboard RRHH" userName="Ana" userInitials="AG">
+          {children}
+        </RrhhDashboardShell>
+      </MemoryRouter>
+    </ThemeProvider>,
   )
 }
 
@@ -72,12 +75,10 @@ describe('RrhhDashboardShell', () => {
     )
   })
 
-  it('enlace Incapacidades apunta al listado en el dashboard', () => {
+  it('no muestra enlace Incapacidades (listado en inicio)', () => {
     renderShell(<div />)
-    expect(screen.getByRole('link', { name: /^incapacidades$/i })).toHaveAttribute(
-      'href',
-      '/dashboard#panel-incapacidades',
-    )
+    expect(screen.queryByRole('link', { name: /^incapacidades$/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^incapacidades$/i })).not.toBeInTheDocument()
   })
 
   it('muestra enlace a plazos por entidad para coordinador', () => {

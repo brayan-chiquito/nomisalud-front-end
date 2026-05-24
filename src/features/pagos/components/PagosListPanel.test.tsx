@@ -5,6 +5,11 @@ import { listPagos } from '../services/pagos.service'
 
 vi.mock('../services/pagos.service', () => ({
   listPagos: vi.fn(),
+  listPagosWithTextSearch: vi.fn(),
+}))
+
+vi.mock('@/hooks/useEntidadSuggestions', () => ({
+  useEntidadSuggestions: () => ({ suggestions: [], loading: false }),
 }))
 
 describe('PagosListPanel', () => {

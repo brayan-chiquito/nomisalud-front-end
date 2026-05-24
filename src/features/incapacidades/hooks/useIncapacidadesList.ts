@@ -8,7 +8,12 @@ import type { IncapacidadesListResponse } from '../types/listIncapacidades'
 import type { UrgenciaNivel } from '../types/urgencia'
 import { ordenarPorUrgenciaDesc } from '../utils/urgencia'
 import { messageFromLoadError } from '@/utils/messageFromLoadError'
+import {
+  incapacidadesSearchFilterParams,
+  listIncapacidadesWithTextSearch,
+} from '../utils/listIncapacidadSearch'
 import { useAbortableEffect } from '@/hooks/useAbortableEffect'
+import { awaitMinBusyDuration } from '@/utils/awaitMinBusyDuration'
 
 const LOAD_ERROR_FALLBACK = 'No se pudo cargar el listado. Intenta de nuevo.'
 
@@ -22,7 +27,10 @@ export type UseIncapacidadesListOptions = Readonly<{
 
 export type UseIncapacidadesListResult = Readonly<{
   data: IncapacidadesListResponse | null
+  /** Primera carga sin datos previos (spinner de tabla completa). */
   loading: boolean
+  /** Recarga por filtro/búsqueda manteniendo filas visibles. */
+  fetching: boolean
   error: string | null
   page: number
   setPage: (p: number | ((n: number) => number)) => void
@@ -36,7 +44,9 @@ export type UseIncapacidadesListResult = Readonly<{
   setUrgencia: (v: '' | UrgenciaNivel) => void
   soloPagoRetrasado: boolean
   setSoloPagoRetrasado: (v: boolean) => void
-  /** Filtros activos (misma lógica que el listado, con entidad ya debounced). */
+  /** Filtros de panel (estado, tipo, urgencia…) sin texto de búsqueda — para autocompletado. */
+  listFilters: IncapacidadesFilterParams
+  /** Filtros activos incluyendo búsqueda debounced (exportación XLSX). */
   exportFilters: IncapacidadesFilterParams
   refetch?: () => void
 }>
@@ -62,35 +72,37 @@ export function useIncapacidadesList(
   const [estado, setEstadoState] = useState(fixedEstado ?? '')
   const [tipo, setTipoState] = useState('')
   const [entidadInput, setEntidadInput] = useState('')
-  const [entidadDebounced, setEntidadDebounced] = useState('')
+  const [searchDebounced, setSearchDebounced] = useState('')
   const [urgencia, setUrgenciaState] = useState<'' | UrgenciaNivel>('')
   const [soloPagoRetrasado, setSoloPagoRetrasadoState] = useState(false)
   const [data, setData] = useState<IncapacidadesListResponse | null>(null)
   const [loading, setLoading] = useState(true)
+  const [fetching, setFetching] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [listVersion, setListVersion] = useState(0)
+  const hasLoadedOnceRef = useRef(false)
 
   const estadoEfectivo = fixedEstado ?? estado
 
-  const prevEntidad = useRef<string | undefined>(undefined)
+  const prevSearch = useRef<string | undefined>(undefined)
   useEffect(() => {
     const t = globalThis.setTimeout(
-      () => setEntidadDebounced(entidadInput.trim()),
+      () => setSearchDebounced(entidadInput.trim()),
       entidadDebounceMs,
     )
     return () => globalThis.clearTimeout(t)
   }, [entidadInput, entidadDebounceMs])
 
   useEffect(() => {
-    if (prevEntidad.current === undefined) {
-      prevEntidad.current = entidadDebounced
+    if (prevSearch.current === undefined) {
+      prevSearch.current = searchDebounced
       return
     }
-    if (prevEntidad.current !== entidadDebounced) {
-      prevEntidad.current = entidadDebounced
+    if (prevSearch.current !== searchDebounced) {
+      prevSearch.current = searchDebounced
       setPage(1)
     }
-  }, [entidadDebounced])
+  }, [searchDebounced])
 
   const setEstado = useCallback(
     (v: string) => {
@@ -126,19 +138,27 @@ export function useIncapacidadesList(
 
   const load = useCallback(
     async (signal: AbortSignal) => {
-      setLoading(true)
+      const isBackground = hasLoadedOnceRef.current
+      const busyStartedAt = Date.now()
+      if (isBackground) setFetching(true)
+      else setLoading(true)
       setError(null)
       try {
-        const res = await listIncapacidades({
+        const base = {
           page,
           ...(estadoEfectivo ? { estado: estadoEfectivo } : {}),
           ...(tipo ? { tipo } : {}),
-          ...(entidadDebounced ? { entidad: entidadDebounced } : {}),
           ...(urgencia ? { urgencia } : {}),
           ...(soloPagoRetrasado ? { pagoRetrasado: true } : {}),
-          signal,
-        })
+        }
+        const res = searchDebounced
+          ? await listIncapacidadesWithTextSearch(base, searchDebounced, signal)
+          : await listIncapacidades({ ...base, signal })
         if (!signal.aborted) {
+          if (isBackground) await awaitMinBusyDuration(busyStartedAt, signal)
+        }
+        if (!signal.aborted) {
+          hasLoadedOnceRef.current = true
           setData({
             ...res,
             items: ordenarPorUrgenciaDesc(res.items),
@@ -146,32 +166,44 @@ export function useIncapacidadesList(
         }
       } catch (e) {
         if (signal.aborted || axios.isCancel(e)) return
+        hasLoadedOnceRef.current = false
         setData(null)
         setError(messageFromLoadError(e, LOAD_ERROR_FALLBACK))
       } finally {
-        if (!signal.aborted) setLoading(false)
+        if (!signal.aborted) {
+          setLoading(false)
+          setFetching(false)
+        }
       }
     },
-    [page, estadoEfectivo, tipo, entidadDebounced, urgencia, soloPagoRetrasado],
+    [page, estadoEfectivo, tipo, searchDebounced, urgencia, soloPagoRetrasado],
   )
 
   const effectDeps = refetchable ? [load, listVersion] : [load]
   useAbortableEffect(load, effectDeps)
 
-  const exportFilters = useMemo<IncapacidadesFilterParams>(
+  const listFilters = useMemo<IncapacidadesFilterParams>(
     () => ({
       ...(estadoEfectivo ? { estado: estadoEfectivo } : {}),
       ...(tipo ? { tipo } : {}),
-      ...(entidadDebounced ? { entidad: entidadDebounced } : {}),
       ...(urgencia ? { urgencia } : {}),
       ...(soloPagoRetrasado ? { pagoRetrasado: true } : {}),
     }),
-    [estadoEfectivo, tipo, entidadDebounced, urgencia, soloPagoRetrasado],
+    [estadoEfectivo, tipo, urgencia, soloPagoRetrasado],
+  )
+
+  const exportFilters = useMemo<IncapacidadesFilterParams>(
+    () => ({
+      ...listFilters,
+      ...(searchDebounced ? incapacidadesSearchFilterParams(searchDebounced) : {}),
+    }),
+    [listFilters, searchDebounced],
   )
 
   return {
     data,
     loading,
+    fetching,
     error,
     page,
     setPage,
@@ -185,6 +217,7 @@ export function useIncapacidadesList(
     setUrgencia,
     soloPagoRetrasado,
     setSoloPagoRetrasado,
+    listFilters,
     exportFilters,
     ...(refetchable ? { refetch } : {}),
   }

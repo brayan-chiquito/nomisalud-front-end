@@ -39,6 +39,7 @@ describe('useEntidadSuggestions', () => {
     expect(fetchEntidadNombreSuggestions).toHaveBeenCalledWith('sur', {
       signal: expect.any(AbortSignal),
       sources: 'all',
+      listFilters: undefined,
     })
   })
 
@@ -54,6 +55,7 @@ describe('useEntidadSuggestions', () => {
     expect(fetchEntidadNombreSuggestions).toHaveBeenCalledWith('sis', {
       signal: expect.any(AbortSignal),
       sources: 'pagos',
+      listFilters: undefined,
     })
   })
 

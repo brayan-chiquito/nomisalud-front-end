@@ -65,6 +65,24 @@ describe('AuditoriaTable', () => {
     expect(onPageChange).toHaveBeenCalledWith(2)
   })
 
+  it('permite filtrar al hacer clic en el nombre de usuario', () => {
+    const onFiltrarPorUsuario = vi.fn()
+    render(
+      <AuditoriaTable
+        items={[sampleItem]}
+        loading={false}
+        page={1}
+        total={1}
+        totalPages={1}
+        pageSize={50}
+        onPageChange={vi.fn()}
+        onFiltrarPorUsuario={onFiltrarPorUsuario}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /coordinador/i }))
+    expect(onFiltrarPorUsuario).toHaveBeenCalledWith(sampleItem)
+  })
+
   it('deshabilita anterior en página 1', () => {
     render(
       <AuditoriaTable

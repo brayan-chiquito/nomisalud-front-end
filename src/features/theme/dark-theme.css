@@ -1,0 +1,138 @@
+/**
+ * Paleta «Nomisalud Night» — solo aplica con clase .dark en <html>.
+ * Remapea escala gray/slate/white/blue para que utilidades existentes
+ * (bg-white, text-gray-900, border-gray-200…) se vean correctas sin tocar cada pantalla.
+ */
+.dark {
+  color-scheme: dark;
+
+  /* Marca — más luminosa sobre fondos oscuros */
+  --color-primary: #5ca8f5;
+  --color-primary-50: #0f1f33;
+  --color-primary-100: #152a45;
+  --color-primary-200: #1e3a5c;
+  --color-primary-600: #5ca8f5;
+  --color-primary-700: #7ebdf7;
+  --color-primary-800: #a5d0fa;
+
+  /* Estados semánticos */
+  --color-success: #34d399;
+  --color-success-light: #0f2922;
+  --color-success-text: #6ee7b7;
+
+  --color-warning: #f59e0b;
+  --color-warning-light: #2a2210;
+  --color-warning-text: #fcd34d;
+
+  --color-danger: #f87171;
+  --color-danger-light: #2a1518;
+  --color-danger-text: #fca5a5;
+
+  --color-info: #a78bfa;
+  --color-info-light: #1f1838;
+  --color-info-text: #c4b5fd;
+
+  --color-neutral: #9aa8bc;
+  --color-neutral-light: #1a2332;
+  --color-neutral-text: #c5d0de;
+
+  /* Superficies base */
+  --color-white: #161e31;
+  --color-gray-50: #0b1120;
+  --color-gray-100: #1a2332;
+  --color-gray-200: #2d3a52;
+  --color-gray-300: #3d4f66;
+  --color-gray-400: #9aa8bc;
+  --color-gray-500: #9aa8bc;
+  --color-gray-600: #b8c5d6;
+  --color-gray-700: #d1dae6;
+  --color-gray-800: #1c2638;
+  --color-gray-900: #eef2f7;
+  --color-gray-950: #070b14;
+
+  --color-slate-50: #0b1120;
+  --color-slate-100: #1a2332;
+  --color-slate-200: #2d3a52;
+  --color-slate-300: #3d4f66;
+  --color-slate-400: #9aa8bc;
+  --color-slate-500: #9aa8bc;
+  --color-slate-600: #b8c5d6;
+  --color-slate-700: #c5d0de;
+
+  --color-blue-50: #132238;
+  --color-blue-100: #1a2f4a;
+  --color-blue-200: #234063;
+  --color-blue-600: #7ebdf7;
+  --color-blue-700: #93c9fd;
+
+  --color-violet-100: #221838;
+  --color-violet-700: #c4b5fd;
+
+  --color-sky-100: #132a38;
+  --color-sky-800: #7dd3fc;
+
+  --color-amber-100: #2a2210;
+  --color-amber-700: #fcd34d;
+
+  --color-orange-100: #2a1a10;
+  --color-orange-800: #fdba74;
+
+  --color-emerald-100: #0f2922;
+  --color-emerald-800: #6ee7b7;
+
+  --color-green-100: #0f2922;
+  --color-green-700: #86efac;
+
+  --color-red-100: #2a1518;
+  --color-red-700: #fca5a5;
+
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.45), 0 0 0 1px rgb(45 58 82 / 0.5);
+  --shadow-card-hover: 0 8px 24px -4px rgb(0 0 0 / 0.55), 0 0 0 1px rgb(61 79 102 / 0.45);
+}
+
+@layer base {
+  .dark select {
+    color-scheme: dark;
+  }
+
+  .dark select option {
+    background-color: var(--color-gray-800);
+    color: var(--color-gray-900);
+  }
+
+  .dark input[type='date'],
+  .dark input[type='datetime-local'] {
+    color-scheme: dark;
+  }
+
+  .dark body {
+    color: var(--color-gray-900);
+    background-color: var(--color-gray-50);
+  }
+
+  .dark ::selection {
+    background-color: rgb(92 168 245 / 0.35);
+    color: #fff;
+  }
+
+  /* Tablas y listados densos */
+  .dark table thead {
+    background-color: rgb(26 35 50 / 0.85);
+  }
+
+  .dark dialog::backdrop {
+    background-color: rgb(7 11 20 / 0.75);
+  }
+
+  /* Autocompletados y dropdowns flotantes */
+  .dark [role='listbox'],
+  .dark [role='menu']:not([class*='bg-white']) {
+    background-color: var(--color-white);
+    border-color: var(--color-gray-200);
+  }
+
+  /* Filas alternas / hover en tablas */
+  .dark tbody tr:hover {
+    background-color: rgb(28 38 56 / 0.45);
+  }
+}

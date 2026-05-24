@@ -19,12 +19,14 @@ describe('buildIncapacidadesFilterQuery', () => {
     expect(
       buildIncapacidadesFilterQuery({
         estado: 'transcrita',
+        q: 'colaborador@test.com',
         entidad: 'SURA',
         urgencia: 'ROJO',
         pagoRetrasado: true,
       }),
     ).toEqual({
       estado: 'transcrita',
+      q: 'colaborador@test.com',
       entidad: 'SURA',
       urgencia: 'rojo',
       pago_retrasado: 'true',

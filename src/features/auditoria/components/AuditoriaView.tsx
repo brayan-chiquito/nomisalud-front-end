@@ -1,4 +1,5 @@
 import { useAuditoriaAccesos } from '../hooks/useAuditoriaAccesos'
+import { usuarioAuditoriaOptionLabel } from '../utils/auditoriaUsuarioSearch'
 import { AuditoriaFilters } from './AuditoriaFilters'
 import { AuditoriaTable } from './AuditoriaTable'
 import { Card } from '@/components/ui/Card'
@@ -9,10 +10,12 @@ export function AuditoriaView() {
     data,
     loading,
     error,
+    filterError,
     page,
     setPage,
-    userId,
-    setUserId,
+    usuario,
+    setUsuario,
+    selectUsuario,
     accion,
     setAccion,
     fechaDesde,
@@ -36,16 +39,25 @@ export function AuditoriaView() {
       </div>
 
       <AuditoriaFilters
-        userId={userId}
+        usuario={usuario}
         accion={accion}
         fechaDesde={fechaDesde}
         fechaHasta={fechaHasta}
-        loading={loading}
-        onUserIdChange={setUserId}
+        onUsuarioChange={setUsuario}
+        onSelectUsuario={selectUsuario}
         onAccionChange={setAccion}
         onFechaDesdeChange={setFechaDesde}
         onFechaHastaChange={setFechaHasta}
       />
+
+      {filterError ? (
+        <p
+          className="mx-5 my-3 rounded-lg border border-warning/25 bg-warning-light px-4 py-3 text-sm text-warning-text sm:mx-6"
+          role="alert"
+        >
+          {filterError}
+        </p>
+      ) : null}
 
       {error ? (
         <p
@@ -65,6 +77,18 @@ export function AuditoriaView() {
           totalPages={totalPages}
           pageSize={pageSize}
           onPageChange={setPage}
+          onFiltrarPorUsuario={(row) => {
+            const email = row.usuario_email?.trim()
+            if (email) {
+              setUsuario(email)
+              selectUsuario({
+                id: row.user_id,
+                email,
+                nombre: row.usuario_nombre?.trim() || undefined,
+                label: usuarioAuditoriaOptionLabel(email, row.usuario_nombre),
+              })
+            }
+          }}
         />
       </section>
     </Card>

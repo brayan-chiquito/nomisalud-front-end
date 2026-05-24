@@ -13,6 +13,10 @@ vi.mock('../services/marcarCobrada.service', () => ({
   marcarIncapacidadCobrada: vi.fn(),
 }))
 
+vi.mock('@/hooks/useEntidadSuggestions', () => ({
+  useEntidadSuggestions: () => ({ suggestions: [], loading: false }),
+}))
+
 const item = {
   id: 'id-1',
   radicado: 'IN0001',

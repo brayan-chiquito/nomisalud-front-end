@@ -1,4 +1,6 @@
 import { useCallback } from 'react'
+import { ListFetchIndicator } from '@/components/ui/ListFetchIndicator'
+import { useStableTableRowCount } from '@/hooks/useStableTableRowCount'
 import { Link } from 'react-router-dom'
 import {
   ChevronDown,
@@ -8,7 +10,6 @@ import {
   Loader2,
   MoreHorizontal,
   Plus,
-  Search,
 } from 'lucide-react'
 import { useAuth } from '@/features/auth/context/AuthContext'
 import { canExportIncapacidades } from '@/features/auth/utils/roleAccess'
@@ -28,6 +29,8 @@ import {
   tipoArchivoLegible,
 } from '@/features/incapacidades/utils/listIncapacidadItemDisplay'
 import { debeMostrarPagoRetrasado } from '@/features/incapacidades/utils/pagoRetrasadoDisplay'
+import { IncapacidadEntidadSearchField } from '@/features/incapacidades/components/IncapacidadEntidadSearchField'
+import { useCurrentReturnState } from '@/hooks/useReturnNavigation'
 import { cn } from '@/utils/cn'
 
 const TIPO_OPTIONS = [
@@ -41,7 +44,7 @@ const selectFrame =
   'flex cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-2 text-sm text-gray-700 shadow-sm transition-colors duration-150 hover:border-gray-300'
 
 const selectNative =
-  'max-w-[160px] cursor-pointer border-0 bg-transparent text-[13px] text-slate-700 outline-none focus:ring-0'
+  'max-w-[160px] cursor-pointer border-0 bg-transparent text-[13px] text-gray-700 outline-none focus:ring-0'
 
 const TABLE_GRID_COLUMNS =
   'minmax(0, 1fr) minmax(0, 1.35fr) minmax(0, 88px) minmax(0, 112px) minmax(0, 100px) minmax(0, 132px) minmax(0, 88px) minmax(0, 72px)'
@@ -63,11 +66,13 @@ function pageSizeFromResponse(total: number, pages: number, rowCount: number): n
 
 export function RrhhIncapacidadesPanel() {
   const { user } = useAuth()
+  const returnState = useCurrentReturnState()
   const showExport = canExportIncapacidades(user?.role)
 
   const {
     data,
     loading,
+    fetching,
     error,
     page,
     setPage,
@@ -81,6 +86,7 @@ export function RrhhIncapacidadesPanel() {
     setUrgencia,
     soloPagoRetrasado,
     setSoloPagoRetrasado,
+    listFilters,
     exportFilters,
   } = useIncapacidadesList()
 
@@ -90,6 +96,7 @@ export function RrhhIncapacidadesPanel() {
   const total = data?.total ?? 0
   const totalPages = data?.pages ?? 0
   const items = data?.items ?? []
+  const stableRowCount = useStableTableRowCount(items.length, fetching)
   const pageSize = data ? pageSizeFromResponse(total, totalPages, items.length) : 0
   const start = total === 0 ? 0 : (page - 1) * pageSize + 1
   const end = total === 0 ? 0 : Math.min(page * pageSize, total)
@@ -100,8 +107,8 @@ export function RrhhIncapacidadesPanel() {
   const tipoLabel = TIPO_OPTIONS.find((t) => t.value === tipo)?.label ?? 'Todos'
   const urgenciaLabel = URGENCIA_FILTRO_OPTIONS.find((u) => u.value === urgencia)?.label ?? 'Todas'
 
-  const canPrev = page > 1 && !loading
-  const canNext = totalPages > 0 && page < totalPages && !loading
+  const canPrev = page > 1 && !loading && !fetching
+  const canNext = totalPages > 0 && page < totalPages && !loading && !fetching
 
   return (
     <section
@@ -118,11 +125,10 @@ export function RrhhIncapacidadesPanel() {
 
       <div className="mb-0 flex flex-wrap items-center gap-2.5 border-b border-gray-100 bg-gray-50/50 px-5 py-4 sm:px-6">
         <label className={selectFrame}>
-          <span className="shrink-0 text-slate-600">Estado:</span>
+          <span className="shrink-0 text-gray-600">Estado:</span>
           <select
             value={estado}
             onChange={(e) => setEstado(e.target.value)}
-            disabled={loading}
             className={selectNative}
             aria-label={`Estado, actualmente ${estadoLabel}`}
           >
@@ -137,11 +143,10 @@ export function RrhhIncapacidadesPanel() {
         </label>
 
         <label className={selectFrame}>
-          <span className="shrink-0 text-slate-600">Urgencia:</span>
+          <span className="shrink-0 text-gray-600">Urgencia:</span>
           <select
             value={urgencia}
             onChange={(e) => setUrgencia(e.target.value as '' | 'verde' | 'amarillo' | 'rojo')}
-            disabled={loading}
             className={selectNative}
             aria-label={`Urgencia, actualmente ${urgenciaLabel}`}
           >
@@ -155,11 +160,10 @@ export function RrhhIncapacidadesPanel() {
         </label>
 
         <label className={selectFrame}>
-          <span className="shrink-0 text-slate-600">Tipo:</span>
+          <span className="shrink-0 text-gray-600">Tipo:</span>
           <select
             value={tipo}
             onChange={(e) => setTipo(e.target.value)}
-            disabled={loading}
             className={selectNative}
             aria-label={`Tipo de archivo, actualmente ${tipoLabel}`}
           >
@@ -174,7 +178,6 @@ export function RrhhIncapacidadesPanel() {
 
         <button
           type="button"
-          disabled={loading}
           aria-pressed={soloPagoRetrasado}
           onClick={() => setSoloPagoRetrasado(!soloPagoRetrasado)}
           className={cn(
@@ -187,18 +190,15 @@ export function RrhhIncapacidadesPanel() {
           Pago retrasado
         </button>
 
-        <div className="relative flex min-w-[200px] flex-1 items-center">
-          <Search className="absolute left-3 h-4 w-4 shrink-0 text-gray-400" aria-hidden />
-          <input
-            type="search"
-            value={entidadInput}
-            onChange={(e) => setEntidadInput(e.target.value)}
-            placeholder="Buscar colaborador..."
-            aria-busy={loading}
-            className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pr-3 pl-9 text-sm transition-all duration-150 placeholder:text-gray-400 focus:border-primary/50 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:outline-none"
-            title="Filtra por nombre de colaborador o entidad (EPS/ARL) según datos del listado"
-          />
-        </div>
+        <IncapacidadEntidadSearchField
+          value={entidadInput}
+          onChange={setEntidadInput}
+          suggestionSources="incapacidades"
+          listFilters={listFilters}
+          entidadPlaceholder="Buscar colaborador, correo o entidad…"
+          entidadAriaLabel="Buscar colaborador, correo o entidad"
+          className="min-w-[200px] flex-1"
+        />
 
         {showExport ? (
           <button
@@ -237,6 +237,8 @@ export function RrhhIncapacidadesPanel() {
         </p>
       ) : null}
 
+      <ListFetchIndicator active={fetching} label="Actualizando resultados…" />
+
       <div className="min-h-0 flex-1 overflow-x-auto">
         <div className="min-w-[1060px]">
           <div
@@ -263,7 +265,11 @@ export function RrhhIncapacidadesPanel() {
               No hay trámites con los filtros seleccionados.
             </p>
           ) : (
-            <div className={cn(loading && 'pointer-events-none opacity-60')} aria-busy={loading}>
+            <div
+              className={cn('relative', fetching && 'pointer-events-none opacity-70')}
+              style={{ minHeight: Math.max(120, stableRowCount * 56) }}
+              aria-busy={fetching}
+            >
               {items.map((row) => {
                 const nombreCol = colaboradorNombreLegible(row)
                 const colaboradorTitulo = colaboradorTooltipLista(row)
@@ -314,6 +320,7 @@ export function RrhhIncapacidadesPanel() {
                     <div className="flex min-w-0 items-center justify-center gap-1">
                       <Link
                         to={`/incapacidad/revision-ia?id=${encodeURIComponent(row.id)}`}
+                        state={returnState}
                         className="rounded px-2 py-1 text-[12px] font-medium text-blue-600 hover:bg-blue-50 hover:underline"
                       >
                         Revisar

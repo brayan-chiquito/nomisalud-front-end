@@ -7,6 +7,7 @@ import { loginService } from '../services/auth.service'
 import { useAuth } from '../context/AuthContext'
 import { getPostLoginPathFromToken } from '../utils/postLoginPath'
 import { buttonClassName, inputClassName, labelClassName } from '@/components/ui/buttonStyles'
+import { ThemeToggle } from '@/features/theme/components/ThemeToggle'
 import { cn } from '@/utils/cn'
 
 export function LoginForm() {
@@ -92,7 +93,10 @@ export function LoginForm() {
       </div>
 
       {/* Panel derecho — formulario */}
-      <div className="flex flex-1 items-center justify-center bg-gray-50/50 p-8">
+      <div className="relative flex flex-1 items-center justify-center bg-gray-50/80 p-4 sm:p-8">
+        <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
+          <ThemeToggle />
+        </div>
         <div className="w-full max-w-sm animate-fade-in">
           <div className="mb-6 flex justify-center">
             <img src={logo} alt="Nomisalud" className="h-[100px] w-[150px] object-contain" />

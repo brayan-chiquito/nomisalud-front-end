@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
+import { ThemeProvider } from '@/features/theme/context/ThemeContext'
 import { RecepcionPortalShell } from './RecepcionPortalShell'
 import { useAuth } from '@/features/auth/context/AuthContext'
 
@@ -19,11 +20,13 @@ describe('RecepcionPortalShell', () => {
       logout: vi.fn(),
     })
     render(
-      <MemoryRouter>
-        <RecepcionPortalShell headerTitle="Radicar" userName="Recep" userInitials="RE">
-          <p>Contenido</p>
-        </RecepcionPortalShell>
-      </MemoryRouter>,
+      <ThemeProvider>
+        <MemoryRouter>
+          <RecepcionPortalShell headerTitle="Radicar" userName="Recep" userInitials="RE">
+            <p>Contenido</p>
+          </RecepcionPortalShell>
+        </MemoryRouter>
+      </ThemeProvider>,
     )
     expect(screen.getByText('Contenido')).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /panel rrhh/i })).not.toBeInTheDocument()
@@ -37,11 +40,13 @@ describe('RecepcionPortalShell', () => {
       logout: vi.fn(),
     })
     render(
-      <MemoryRouter initialEntries={['/recepcion/radicar']}>
-        <RecepcionPortalShell headerTitle="Radicar" userName="Admin" userInitials="AD">
-          <p>Contenido</p>
-        </RecepcionPortalShell>
-      </MemoryRouter>,
+      <ThemeProvider>
+        <MemoryRouter initialEntries={['/recepcion/radicar']}>
+          <RecepcionPortalShell headerTitle="Radicar" userName="Admin" userInitials="AD">
+            <p>Contenido</p>
+          </RecepcionPortalShell>
+        </MemoryRouter>
+      </ThemeProvider>,
     )
     expect(screen.getByRole('link', { name: /panel rrhh/i })).toHaveAttribute('href', '/dashboard')
   })

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, act, fireEvent } from '@testing-library/react'
+import { ThemeProvider } from '@/features/theme/context/ThemeContext'
 import { LoginForm } from './LoginForm'
 import { loginService } from '../services/auth.service'
 import type { LoginCredentials } from '../types'
@@ -29,7 +30,11 @@ const VALID_PASSWORD = 'Admin1234'
 const FAKE_TOKEN = 'fake.jwt.token'
 
 function renderForm() {
-  render(<LoginForm />)
+  render(
+    <ThemeProvider>
+      <LoginForm />
+    </ThemeProvider>,
+  )
 }
 
 function fillForm(email: string, password: string) {

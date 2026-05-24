@@ -53,13 +53,15 @@ export function DashboardPage() {
   }, [searchParams, setSearchParams])
 
   useEffect(() => {
-    if (hash !== '#panel-incapacidades') return
-    const id = globalThis.requestAnimationFrame(() => {
-      globalThis.document
-        .getElementById('panel-incapacidades')
-        ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    })
-    return () => globalThis.cancelAnimationFrame(id)
+    if (hash === '#panel-incapacidades') {
+      const id = globalThis.requestAnimationFrame(() => {
+        globalThis.document
+          .getElementById('panel-incapacidades')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
+      return () => globalThis.cancelAnimationFrame(id)
+    }
+    globalThis.scrollTo({ top: 0, behavior: 'smooth' })
   }, [hash])
 
   const showCoordinadorKpis = user?.role === 'coordinador_rrhh' || user?.role === 'admin'

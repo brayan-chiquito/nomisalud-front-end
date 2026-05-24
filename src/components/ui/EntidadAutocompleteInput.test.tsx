@@ -55,7 +55,7 @@ describe('EntidadAutocompleteInput', () => {
     expect(screen.getByRole('listbox')).toBeInTheDocument()
   })
 
-  it('muestra indicador de carga sin sugerencias', () => {
+  it('muestra estado de carga en el desplegable mientras carga sugerencias', () => {
     render(
       <EntidadAutocompleteInput
         value="si"
@@ -65,13 +65,13 @@ describe('EntidadAutocompleteInput', () => {
       />,
     )
     fireEvent.focus(screen.getByLabelText('Filtrar por entidad'))
-    expect(screen.getByText(/buscando entidades/i)).toBeInTheDocument()
+    expect(screen.getByText(/buscando/i)).toBeInTheDocument()
   })
 
-  it('muestra mensaje cuando no hay entidades', () => {
+  it('muestra mensaje cuando no hay coincidencias', () => {
     render(<EntidadAutocompleteInput value="xyz" onChange={vi.fn()} suggestions={[]} />)
     fireEvent.focus(screen.getByLabelText('Filtrar por entidad'))
-    expect(screen.getByText(/no se encontraron entidades/i)).toBeInTheDocument()
+    expect(screen.getByText(/no se encontraron coincidencias/i)).toBeInTheDocument()
   })
 
   it('cierra el listado al perder foco', () => {

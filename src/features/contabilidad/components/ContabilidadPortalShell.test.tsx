@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
+import { ThemeProvider } from '@/features/theme/context/ThemeContext'
 import { ContabilidadPortalShell } from './ContabilidadPortalShell'
 
 vi.mock('@/components/UserProfileMenu', () => ({
@@ -10,11 +11,13 @@ vi.mock('@/components/UserProfileMenu', () => ({
 describe('ContabilidadPortalShell', () => {
   it('muestra solo pagos y conciliación en el menú', () => {
     render(
-      <MemoryRouter>
-        <ContabilidadPortalShell headerTitle="Conciliación" userName="Conta" userInitials="CO">
-          <p>Contenido</p>
-        </ContabilidadPortalShell>
-      </MemoryRouter>,
+      <ThemeProvider>
+        <MemoryRouter>
+          <ContabilidadPortalShell headerTitle="Conciliación" userName="Conta" userInitials="CO">
+            <p>Contenido</p>
+          </ContabilidadPortalShell>
+        </MemoryRouter>
+      </ThemeProvider>,
     )
     expect(screen.getByRole('link', { name: /conciliación/i })).toHaveAttribute(
       'href',

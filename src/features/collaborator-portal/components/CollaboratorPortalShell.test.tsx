@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { AuthProvider } from '@/features/auth/context/AuthContext'
+import { ThemeProvider } from '@/features/theme/context/ThemeContext'
 import { CollaboratorPortalShell } from './CollaboratorPortalShell'
 
 vi.mock('@/assets/logo.png', () => ({ default: 'logo.png' }))
@@ -19,13 +20,15 @@ describe('CollaboratorPortalShell', () => {
   it('muestra navegación del portal sin enlace RRHH para colaborador', () => {
     localStorage.setItem('access_token', makeToken('colaborador'))
     render(
-      <AuthProvider>
-        <MemoryRouter initialEntries={['/portal/mi-tramite']}>
-          <CollaboratorPortalShell headerTitle="Mi trámite" userName="Ana" userInitials="AN">
-            <p>Contenido</p>
-          </CollaboratorPortalShell>
-        </MemoryRouter>
-      </AuthProvider>,
+      <ThemeProvider>
+        <AuthProvider>
+          <MemoryRouter initialEntries={['/portal/mi-tramite']}>
+            <CollaboratorPortalShell headerTitle="Mi trámite" userName="Ana" userInitials="AN">
+              <p>Contenido</p>
+            </CollaboratorPortalShell>
+          </MemoryRouter>
+        </AuthProvider>
+      </ThemeProvider>,
     )
     expect(screen.getByRole('link', { name: /mi trámite/i })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /radicar incapacidad/i })).toBeInTheDocument()
@@ -36,13 +39,15 @@ describe('CollaboratorPortalShell', () => {
   it('marca activa la ruta de radicar', () => {
     localStorage.setItem('access_token', makeToken('colaborador'))
     render(
-      <AuthProvider>
-        <MemoryRouter initialEntries={['/portal/radicar-incapacidad']}>
-          <CollaboratorPortalShell headerTitle="Radicar" userName="Ana" userInitials="AN">
-            <p>Contenido</p>
-          </CollaboratorPortalShell>
-        </MemoryRouter>
-      </AuthProvider>,
+      <ThemeProvider>
+        <AuthProvider>
+          <MemoryRouter initialEntries={['/portal/radicar-incapacidad']}>
+            <CollaboratorPortalShell headerTitle="Radicar" userName="Ana" userInitials="AN">
+              <p>Contenido</p>
+            </CollaboratorPortalShell>
+          </MemoryRouter>
+        </AuthProvider>
+      </ThemeProvider>,
     )
     expect(screen.getByRole('link', { name: /radicar incapacidad/i })).toHaveClass('text-primary')
   })
@@ -50,13 +55,15 @@ describe('CollaboratorPortalShell', () => {
   it('muestra enlace al panel RRHH para admin', () => {
     localStorage.setItem('access_token', makeToken('admin'))
     render(
-      <AuthProvider>
-        <MemoryRouter initialEntries={['/portal/mi-tramite']}>
-          <CollaboratorPortalShell headerTitle="Mi trámite" userName="Admin" userInitials="AD">
-            <p>Contenido</p>
-          </CollaboratorPortalShell>
-        </MemoryRouter>
-      </AuthProvider>,
+      <ThemeProvider>
+        <AuthProvider>
+          <MemoryRouter initialEntries={['/portal/mi-tramite']}>
+            <CollaboratorPortalShell headerTitle="Mi trámite" userName="Admin" userInitials="AD">
+              <p>Contenido</p>
+            </CollaboratorPortalShell>
+          </MemoryRouter>
+        </AuthProvider>
+      </ThemeProvider>,
     )
     expect(screen.getByRole('link', { name: /panel rrhh/i })).toHaveAttribute('href', '/dashboard')
   })

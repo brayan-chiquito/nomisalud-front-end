@@ -1,7 +1,16 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import axios from 'axios'
 import { renderHook, waitFor, act } from '@testing-library/react'
 import { useAuditoriaAccesos } from './useAuditoriaAccesos'
+
+vi.mock('@/features/auth/context/AuthContext', () => ({
+  useAuth: vi.fn(() => ({
+    user: { id: '1', email: 'admin@test.com', role: 'admin' },
+    isAuthenticated: true,
+    login: vi.fn(),
+    logout: vi.fn(),
+  })),
+}))
 
 vi.mock('../services/listAuditoriaAccesos.service', () => ({
   AUDITORIA_PAGE_SIZE: 50,
@@ -27,8 +36,13 @@ const sampleResponse = {
 
 describe('useAuditoriaAccesos', () => {
   beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
     vi.mocked(listAuditoriaAccesos).mockReset()
     vi.mocked(listAuditoriaAccesos).mockResolvedValue(sampleResponse)
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   it('carga registros al montar', async () => {
@@ -40,27 +54,71 @@ describe('useAuditoriaAccesos', () => {
     )
   })
 
-  it('reinicia página al cambiar filtro de acción', async () => {
+  it('reinicia página al cambiar filtro de acción debounced', async () => {
     const { result } = renderHook(() => useAuditoriaAccesos())
     await waitFor(() => expect(result.current.loading).toBe(false))
     act(() => result.current.setPage(2))
     await waitFor(() => expect(result.current.page).toBe(2))
     act(() => result.current.setAccion('POST'))
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(400)
+    })
     await waitFor(() => expect(result.current.page).toBe(1))
     expect(listAuditoriaAccesos).toHaveBeenLastCalledWith(
       expect.objectContaining({ page: 1, accion: 'POST' }),
     )
   })
 
-  it('reinicia página al cambiar userId', async () => {
+  it('envía q al API cuando filtra por correo o nombre', async () => {
     const { result } = renderHook(() => useAuditoriaAccesos())
     await waitFor(() => expect(result.current.loading).toBe(false))
-    act(() => result.current.setPage(2))
-    await waitFor(() => expect(result.current.page).toBe(2))
-    act(() => result.current.setUserId('uuid-filtro'))
-    await waitFor(() => expect(result.current.page).toBe(1))
+    act(() => result.current.setUsuario('admin@nomisalud.com'))
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(400)
+    })
+    await waitFor(() =>
+      expect(listAuditoriaAccesos).toHaveBeenLastCalledWith(
+        expect.objectContaining({ q: 'admin@nomisalud.com' }),
+      ),
+    )
     expect(listAuditoriaAccesos).toHaveBeenLastCalledWith(
-      expect.objectContaining({ page: 1, user_id: 'uuid-filtro' }),
+      expect.not.objectContaining({ user_id: expect.anything() }),
+    )
+  })
+
+  it('usa UUID directamente como user_id', async () => {
+    const { result } = renderHook(() => useAuditoriaAccesos())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    act(() => result.current.setUsuario('550e8400-e29b-41d4-a716-446655440000'))
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(400)
+    })
+    await waitFor(() =>
+      expect(listAuditoriaAccesos).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          user_id: '550e8400-e29b-41d4-a716-446655440000',
+        }),
+      ),
+    )
+  })
+
+  it('fija user_id al elegir usuario del autocompletado', async () => {
+    const { result } = renderHook(() => useAuditoriaAccesos())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    act(() =>
+      result.current.selectUsuario({
+        id: 'user-pinned',
+        email: 'colaborador@nomisalud.com',
+        label: 'Colaborador · colaborador@nomisalud.com',
+      }),
+    )
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(400)
+    })
+    await waitFor(() =>
+      expect(listAuditoriaAccesos).toHaveBeenLastCalledWith(
+        expect.objectContaining({ user_id: 'user-pinned' }),
+      ),
     )
   })
 
