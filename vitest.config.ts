@@ -14,7 +14,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
     env: {
-      VITE_API_URL: 'http://localhost:8080/api/v1',
+      VITE_API_URL: 'http://localhost:8000/api/v1',
       VITE_APP_NAME: 'Nomisalud',
       VITE_APP_VERSION: '0.1.0',
     },
